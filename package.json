@@ -1,0 +1,37 @@
+{
+  "name": "sk-sk-extension",
+  "version": "1.0.0",
+  "description": "Rozsirenie pre slovensko.sk, s lepsim podpisovacom",
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "webpack watch --config webpack.dev.ts",
+    "build": "NODE_ENV=production webpack --config webpack.prod.ts",
+    "build:dev": "webpack --config webpack.dev.ts",
+    "test": "npx jest"
+  },
+  "author": "pom",
+  "license": "EUPL-1.2",
+  "devDependencies": {
+    "@types/copy-webpack-plugin": "^8.0.0",
+    "@types/node": "^15.0.1",
+    "@types/webpack": "^4.41.27",
+    "@types/webpack-dev-server": "^3.11.3",
+    "@types/webpack-manifest-plugin": "^3.0.4",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "copy-webpack-plugin": "^8.1.1",
+    "eslint-webpack-plugin": "^2.5.4",
+    "fork-ts-checker-webpack-plugin": "^6.2.5",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.5",
+    "ts-loader": "^9.1.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4",
+    "web-ext": "^6.1.0",
+    "webpack": "^5.36.1",
+    "webpack-cli": "^4.6.0",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-manifest-plugin": "^3.1.1"
+  }
+}
