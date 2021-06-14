@@ -4,10 +4,12 @@
   "description": "Rozsirenie pre slovensko.sk, s lepsim podpisovacom",
   "main": "./src/index.ts",
   "scripts": {
-    "start": "webpack watch --config webpack.dev.ts",
-    "build": "NODE_ENV=production webpack --config webpack.prod.ts",
-    "build:dev": "webpack --config webpack.dev.ts",
-    "test": "npx jest"
+    "start": "webpack watch --config webpack/webpack.dev.ts",
+    "build": "NODE_ENV=production webpack --config webpack/webpack.prod.ts",
+    "build:dev": "webpack --config webpack/webpack.dev.ts",
+    "test": "npx jest",
+    "webext:build": "web-ext build -s 'dist' -i '*.map.js' --overwrite-dest --filename $npm_package_name-$npm_package_version.zip",
+    "webext:run": "web-ext build -s 'dist'"
   },
   "author": "pom",
   "license": "EUPL-1.2",
@@ -33,5 +35,9 @@
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^3.11.2",
     "webpack-manifest-plugin": "^3.1.1"
+  },
+  "dependencies": {
+    "@types/chrome": "^0.0.145",
+    "@types/firefox-webext-browser": "^82.0.0"
   }
 }
