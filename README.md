@@ -4,12 +4,9 @@ Issues:
 
 https://github.com/mozilla/webextension-polyfill/
 
-
-
 # Design
 
 Pouzivame webextension manifest v2 lebo ne
-
 
 # Hacky pre slovensko.sk
 
@@ -23,3 +20,8 @@ Zaujimave miesta su v
 
 Alebo ked vyhladavas klucove slova ako `ditec` a `dsigner`.
 Takisto sa oplati pozriet na `//*[@id="ctl00_ctl00_ctl00_CphMasterMain_CphMain_mainContent"]/div[3]/script` tam je samotne volanie `DSigner` funkcie/classy
+
+# TODO
+
+How to use transpiled ts library in injected code? If we use textContent to inject we need two step build process.
+If we use scripting API - it is not working yet.
