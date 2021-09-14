@@ -15,7 +15,7 @@ function generateManifest(
   // console.log(files);
   // console.log(entries);
   return {
-    manifest_version: 2,
+    manifest_version: 3, //2
     name: packageJson.name,
     version: packageJson.version,
     description: packageJson.description,
@@ -24,8 +24,11 @@ function generateManifest(
     permissions: [
       "storage",
       "webRequest",
-      "webRequestBlocking",
+      // "webRequestBlocking", //2
       "webNavigation",
+      "scripting", //3
+      "tabs", // 3
+      "activeTab", //3
     ],
 
     // icons: {
@@ -41,9 +44,12 @@ function generateManifest(
         js: entries.content,
       },
     ],
+    // background: {
+    //   scripts: entries.background,
+    //   persistent: true,
+    // },
     background: {
-      scripts: entries.background,
-      persistent: true,
+      service_worker: entries.background,
     },
   };
 }

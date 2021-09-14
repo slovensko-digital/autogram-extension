@@ -10,3 +10,10 @@ console.log("background");
 //   { urls: ["<all_urls>", "https://schranka.slovensko.sk/Content/jscript/DSignerMulti.js*"] },
 //   ["blocking", "extraHeaders"]
 // );
+
+chrome.action.onClicked.addListener((tab) => {
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['inject.bundle.js']
+  });
+});

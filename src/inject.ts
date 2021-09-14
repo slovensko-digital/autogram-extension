@@ -1,3 +1,5 @@
+import { apiClient } from "@octosign/client";
+
 console.log("original", (window as any).DSigner);
 console.log("original", (window as any).DSignerConstructor);
 console.log("original", (window as any).DSignerConstructorClient);
@@ -17,6 +19,15 @@ function DSignerConstructorCustom() {
   this.sign = function (request: any) {
     console.log(request);
     MessageBox.displayError("WOhooo DSignerConstructorCustom");
+    const client = apiClient();
+    console.log(client.getLaunchURL());
+
+    client.waitForStatus("READY").then(async () => {
+      const content =
+        '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>';
+      console.log(await client.sign({ content }));
+      // => { content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title>...</Document>' }
+    });
   };
 }
 
