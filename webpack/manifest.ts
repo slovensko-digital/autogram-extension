@@ -48,9 +48,18 @@ function generateManifest(
     //   scripts: entries.background,
     //   persistent: true,
     // },
-    background: {
-      service_worker: entries.background,
-    },
+    // background: {
+    //   service_worker: entries.background,
+    // },
+    web_accessible_resources: [
+      {
+        resources: entries.inject.map(x => [x, x + '.map']).flat(),
+        matches: [
+          "https://www.slovensko.sk/*",
+          "https://schranka.slovensko.sk/*",
+        ],
+      },
+    ],
   };
 }
 
