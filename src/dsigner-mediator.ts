@@ -49,7 +49,7 @@ export class DsignerMediator {
         level: "XADES_BASELINE_B",
         fileMimeType:  originalRequest.SignatureMetadata.MimeType,
         container: "ASICE",
-        packaging: "ENVELOPED",
+        packaging: "ENVELOPING",
         digestAlgorithm: "SHA256",
         en319132: false,
         infoCanonicalization: "INCLUSIVE",

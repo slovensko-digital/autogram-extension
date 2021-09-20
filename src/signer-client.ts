@@ -26,7 +26,7 @@ export interface SignerRequest {
     level: "PADES_BASELINE_B" | "XADES_BASELINE_B";
     fileMimeType: null | string;
     container: null | "ASICE" | "ASICS";
-    packaging: "ENVELOPED" | "ENVELOPING";
+    packaging: "ENVELOPED" | "ENVELOPING" | "DETACHED" | "INTERNALLY_DETACHED";
     digestAlgorithm: "SHA256" | "SHA384" | "SHA512";
     en319132: false;
     infoCanonicalization: null | "INCLUSIVE" | "EXCLUSIVE";
@@ -92,7 +92,7 @@ const xades: SignerRequest = {
     level: "XADES_BASELINE_B",
     fileMimeType: "application/lor.ip.xmldatacontainer+xml",
     container: "ASICE",
-    packaging: "ENVELOPED",
+    packaging: "ENVELOPING",
     digestAlgorithm: "SHA256",
     en319132: false,
     infoCanonicalization: "INCLUSIVE",

@@ -7,8 +7,7 @@ const config: webpack.Configuration = merge(common, {
   mode: "production",
   devtool: "source-map",
   output: {
-    path: "/User/pom/projects/slovensko.digital/sk-sk-extension/build",
-    filename: "[name].x.bundle.js",
+    filename: "[name].bundle.js",
     clean: true,
   },
 });
