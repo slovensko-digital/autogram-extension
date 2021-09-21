@@ -1,12 +1,19 @@
+# Slovensko.sk rozsirenie
+
+Zatial funguje iba na chrome (pouzivame extension manifest v3)
+
+- Vymeni Dsigner za Slovensko.digital podpisovac
+  
+
+
+
+
+
 # Rozsirenie pre lepsi podpisovac na slovensko.sk
 
 Issues:
 
 https://github.com/mozilla/webextension-polyfill/
-
-# Design
-
-Pouzivame webextension manifest v2 lebo ne
 
 # Hacky pre slovensko.sk
 
@@ -20,17 +27,3 @@ Zaujimave miesta su v
 
 Alebo ked vyhladavas klucove slova ako `ditec` a `dsigner`.
 Takisto sa oplati pozriet na `//*[@id="ctl00_ctl00_ctl00_CphMasterMain_CphMain_mainContent"]/div[3]/script` tam je samotne volanie `DSigner` funkcie/classy
-
-
-# Terajsi stav:
-
-Ak mam mime `application/vnd.etsi.asic-e+zip` tak dostanem
-> Pri prevode dát na TFormu sa vyskytla chyba: 2104042, Nepodporované dáta.
-
-
-Ak mam mime `application/xml` tak dostanem
-> Pri prevode dát na TFormu sa vyskytla chyba: 2104212, Nepodporovaný formát podpisu
-
-
-
-Okrem toho by to malo fungovat pre vseobecne podanie jedneho dokumentu
