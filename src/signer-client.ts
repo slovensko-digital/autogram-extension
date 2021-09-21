@@ -1,17 +1,3 @@
-import { apiClient } from "@octosign/client";
-
-function old() {
-  const client = apiClient();
-  console.log(client.getLaunchURL());
-
-  client.waitForStatus("READY").then(async () => {
-    const content =
-      '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>';
-    console.log(await client.sign({ content }));
-    // => { content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title>...</Document>' }
-  });
-}
-
 export interface SignerRequest {
   document: {
     id: string;
