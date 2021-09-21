@@ -3,19 +3,31 @@
 Zatial funguje iba na chrome (pouzivame extension manifest v3)
 
 - Vymeni Dsigner za Slovensko.digital podpisovac
-  
 
+## Building
 
+```sh
+# install dependencies
+npm install
 
+# build ts->js
+npm run build
 
+# build js->webext zip
+npm run webext:build
+```
 
-# Rozsirenie pre lepsi podpisovac na slovensko.sk
+## Developing
 
-Issues:
+```
+npm start
+```
 
-https://github.com/mozilla/webextension-polyfill/
+and point your browser to `dist` folder
 
-# Hacky pre slovensko.sk
+https://developer.chrome.com/docs/extensions/mv3/getstarted/
+
+## Hacky pre slovensko.sk
 
 Chceme zmenit dsigner za nas podpisovac. Takze hladame miesto kde je najlepsie
 vymenit volania na podpisovac za nas kod.
