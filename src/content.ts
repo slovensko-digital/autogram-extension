@@ -16,7 +16,10 @@ script.type = "text/javascript";
 
 script.onload = function () {
   console.log("script load");
+  // setUrl(chrome.runtime.getURL(""))
 };
+
+(window as any).extension_url = "this isurl"
 
 window.addEventListener("load", () => {
   console.log("DOMContentLoaded");

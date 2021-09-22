@@ -4,13 +4,14 @@ import {
   FileDescriptor,
 } from "webpack-manifest-plugin";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
 
 function generateManifest(
-  seed: object,
+  seed: Record<string, unknown>,
   files: FileDescriptor[],
   entries: Record<string, string[]>
-): object {
+): Record<string, unknown> {
   // console.log(seed);
   // console.log(files);
   // console.log(entries);
@@ -51,9 +52,16 @@ function generateManifest(
     // background: {
     //   service_worker: entries.background,
     // },
+    // action: {
+    //   default_icon: "static/logo.png",
+    //   default_popup: "popup.html",
+    // },
     web_accessible_resources: [
       {
-        resources: entries.inject.map(x => [x, x + '.map']).flat(),
+        resources: [
+          ...entries.inject.map((x) => [x, x + ".map"]).flat(),
+          "static/logo.png",
+        ],
         matches: [
           "https://www.slovensko.sk/*",
           "https://schranka.slovensko.sk/*",
