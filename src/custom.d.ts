@@ -3,6 +3,11 @@ declare module "*?astext" {
   export default str;
 }
 
+declare module "*.png" {
+  const str: string;
+  export default str;
+}
+
 interface MessageBox {
   displayInfo(msg: string): void;
   displayError(msg: string): void;

@@ -14,6 +14,7 @@ const config: webpack.Configuration = {
     background: "./src/background.ts",
     content: "./src/content.ts",
     inject: "./src/inject.ts",
+    popup: "./src/popup.ts",
   },
   mode: "development",
   devtool: "source-map",
@@ -41,6 +42,10 @@ const config: webpack.Configuration = {
         resourceQuery: /astext/,
         type: "asset/source",
       },
+      {
+        test: /\.(png|jpg|gif)$/i,
+        type: "asset/inline",
+      },
     ],
   },
   resolve: {
@@ -49,9 +54,12 @@ const config: webpack.Configuration = {
   plugins: [
     // new CleanWebpackPlugin(),
     new ForkTsCheckerWebpackPlugin(),
-    // new CopyPlugin({
-    //   patterns: [{ from: "src/static", to: "." }],
-    // }),
+    new CopyPlugin({
+      patterns: [{ from: "src/static", to: "./static" }],
+    }),
+    new CopyPlugin({
+      patterns: [{ from: "src/popup.html", to: "." }],
+    }),
     new ESLintPlugin({
       extensions: [".tsx", ".ts", ".js"],
       exclude: "node_modules",
