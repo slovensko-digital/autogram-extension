@@ -1,5 +1,4 @@
 import {
-  WebpackManifestPlugin,
   Options as WMPOptions,
   FileDescriptor,
 } from "webpack-manifest-plugin";

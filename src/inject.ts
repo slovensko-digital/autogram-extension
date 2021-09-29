@@ -1,11 +1,10 @@
-import { SignerClient } from "./signer-client";
-import { DsignerMediator, DsignerRequest } from "./dsigner-mediator";
-import { DxrData, DxrMediator } from "./dxr-mediator";
+import { SignerClient } from "./sksk/signer-client";
+import { DsignerMediator, DsignerRequest } from "./sksk/dsigner-mediator";
+import { DxrData, DxrMediator } from "./sksk/dxr-mediator";
 import { extensionId } from "./constants";
-import sdLogo from "./static/sd_logo_small.png"
+import sdLogo from "./static/sd_logo_small.png";
 
 const windowAny = window as any;
-
 
 console.log("original", windowAny.DSigner);
 console.log("original", windowAny.DSignerConstructor);
@@ -133,7 +132,6 @@ Action|sign|Data|{"Data":"UEsDBAoAAAgAAIG4LlOKIflFHwAAAB8AAAAIAAAAbWltZXR5cGVhcH
 
 console.log(chrome);
 
-
 // chrome.runtime.onMessageExternal.addListener(function (
 //   request,
 //   sender,
@@ -142,7 +140,6 @@ console.log(chrome);
 //   console.log(request);
 //   console.log(sender);
 // });
-
 
 // chrome.runtime.onMessage.addListener(
 //   function(request, sender, sendResponse) {
@@ -154,12 +151,13 @@ console.log(chrome);
 //   }
 // );
 
-chrome.runtime.sendMessage(extensionId, {greeting: "hello"}, function(response) {
-  console.log(response.farewell);
-});
-
+chrome.runtime.sendMessage(
+  extensionId,
+  { greeting: "hello" },
+  function (response) {
+    console.log(response.farewell);
+  }
+);
 
 // eslint-disable-next-line no-debugger
 debugger;
-
-
