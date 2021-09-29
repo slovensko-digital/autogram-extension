@@ -10,11 +10,9 @@ import { manifestOptions } from "./manifest";
 
 const config: webpack.Configuration = {
   entry: {
-    index: "./src/index.ts",
     background: "./src/background.ts",
     content: "./src/content.ts",
     inject: "./src/inject.ts",
-    popup: "./src/popup.ts",
   },
   mode: "development",
   devtool: "source-map",

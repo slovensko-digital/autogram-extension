@@ -2,7 +2,7 @@
   "name": "sk-sk-extension",
   "version": "1.0.1",
   "description": "Rozsirenie pre slovensko.sk, s lepsim podpisovacom",
-  "main": "./src/index.ts",
+  "main": "./webpack/manifest.ts",
   "scripts": {
     "start": "webpack watch --config webpack/webpack.dev.ts",
     "build": "NODE_ENV=production webpack --config webpack/webpack.prod.ts",
