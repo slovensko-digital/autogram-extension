@@ -55,9 +55,9 @@ const config: webpack.Configuration = {
     new CopyPlugin({
       patterns: [{ from: "src/static", to: "./static" }],
     }),
-    new CopyPlugin({
-      patterns: [{ from: "src/popup.html", to: "." }],
-    }),
+    // new CopyPlugin({
+    //   patterns: [{ from: "src/popup.html", to: "." }],
+    // }),
     new ESLintPlugin({
       extensions: [".tsx", ".ts", ".js"],
       exclude: "node_modules",

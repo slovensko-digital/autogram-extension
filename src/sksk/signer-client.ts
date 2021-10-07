@@ -1,10 +1,7 @@
+import { apiClient, SignatureParameters, Document } from "@octosign/client";
+
 export interface SignerRequest {
-  document: {
-    id: string;
-    title: string;
-    content: string;
-    legalEffect?: string;
-  };
+  document: Document;
   parameters: {
     identifier: null | string;
     version: null | string;
@@ -27,100 +24,36 @@ export interface SignerRequest {
   hmac: "string";
 }
 
-export interface SignerResponse {
-  id: string;
-  title: string;
-  content: string;
-  legalEffect?: string;
-}
-
-const pades: SignerRequest = {
-  document: {
-    id: "456",
-    title: "PDF random file",
-    content: "asdfsadf",
-    legalEffect: "By signing this pdf document...",
-  },
-  parameters: {
-    identifier: null,
-    version: null,
-    format: "PADES",
-    level: "PADES_BASELINE_B",
-    fileMimeType: null,
-    container: null,
-    packaging: "ENVELOPED",
-    digestAlgorithm: "SHA256",
-    en319132: false,
-    infoCanonicalization: null,
-    propertiesCanonicalization: null,
-    keyInfoCanonicalization: null,
-    signaturePolicyId: null,
-    signaturePolicyContent: null,
-    transformation: null,
-    schema: null,
-  },
-  payloadMimeType: "application/pdf;base64",
-  hmac: "string",
-};
-
-const xades: SignerRequest = {
-  document: {
-    id: "123",
-    title: "Yur arbitrary title",
-    content:
-      '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>',
-    legalEffect: "By signing this document...",
-  },
-  parameters: {
-    identifier: "https://data.gov.sk/id/egov/eform/36126624.Rozhodnutie.sk",
-    version: "1.11",
-    format: "XADES",
-    level: "XADES_BASELINE_B",
-    fileMimeType: "application/lor.ip.xmldatacontainer+xml",
-    container: "ASICE",
-    packaging: "ENVELOPING",
-    digestAlgorithm: "SHA256",
-    en319132: false,
-    infoCanonicalization: "INCLUSIVE",
-    propertiesCanonicalization: "INCLUSIVE",
-    keyInfoCanonicalization: "INCLUSIVE",
-    signaturePolicyId: "http://www.example.com/policy.txt",
-    signaturePolicyContent: "Don't be evil.",
-    transformation:
-      '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>',
-    schema:
-      '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>',
-  },
-  payloadMimeType: "application/xml",
-  hmac: "string",
-};
+export type SignerResponse = Document;
 
 export class SignerClient {
   // constructor() {}
 
-  signRequest(requestBody: SignerRequest): Promise<SignerResponse> {
-    const url = "http://127.0.0.1:37200/sign";
+  private client: ReturnType<typeof apiClient>;
 
-    const init: RequestInit = {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain",
-        Accept: "application/json",
-        Origin: window.origin,
-      },
-      cache: "no-store",
-      body: JSON.stringify(requestBody),
-    };
-    return fetch(url, init).then((response) => {
-      if (!response.ok) {
-        throw response;
-      }
-      return response.json();
-    });
+  constructor() {
+    this.client = apiClient();
   }
 
-  exec(requestBody: SignerRequest): Promise<SignerResponse> {
-    // old();
-    return this.signRequest(requestBody);
+  public async sign(requestBody: SignerRequest): Promise<SignerResponse> {
+    this.client.getLaunchURL();
+    await this.client.waitForStatus("READY");
+    const document: Document = requestBody.document;
+    const signParams: SignatureParameters= requestBody.parameters;
+
+    return this.client.sign(document, signParams, requestBody.payloadMimeType);
   }
 }
+
+
+
+
+/*
+@octosign/client
+
+Exportovat viacero typov napr.:
+client: ReturnType<typeof apiClient>;
+
+
+
+*/
