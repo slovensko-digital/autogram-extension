@@ -1,12 +1,15 @@
 {
   "name": "sk-sk-extension",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Rozsirenie pre slovensko.sk, s lepsim podpisovacom",
   "main": "./webpack/manifest.ts",
   "scripts": {
-    "start": "webpack watch --config webpack/webpack.dev.ts",
-    "build": "NODE_ENV=production webpack --config webpack/webpack.prod.ts",
-    "build:dev": "webpack --config webpack/webpack.dev.ts",
+    "start": "npm run webpack:build-dev && run-p webpack:watch webext:run",
+    "build": "run-s webpack:build-dev webext:build",
+    "build:prod": "run-s webpack:build-prod webext:build",
+    "webpack:watch": "webpack watch --config webpack/webpack.dev.ts",
+    "webpack:build-prod": "NODE_ENV=production webpack --config webpack/webpack.prod.ts",
+    "webpack:build-dev": "webpack --config webpack/webpack.dev.ts",
     "test": "npx jest",
     "webext:build": "web-ext build -s 'dist' -i '*.map.js' --overwrite-dest --filename $npm_package_name-$npm_package_version.zip",
     "webext:run": "web-ext build -s 'dist' --overwrite-dest "
@@ -27,6 +30,7 @@
     "eslint-webpack-plugin": "^2.5.4",
     "fork-ts-checker-webpack-plugin": "^6.2.5",
     "jest": "^26.6.3",
+    "npm-run-all": "^4.1.5",
     "ts-jest": "^26.5.5",
     "ts-loader": "^9.1.1",
     "ts-node": "^9.1.1",
@@ -38,6 +42,7 @@
     "webpack-manifest-plugin": "^3.1.1"
   },
   "dependencies": {
+    "@octosign/client": "file:../white-label-client",
     "@types/chrome": "^0.0.145",
     "@types/firefox-webext-browser": "^82.0.0"
   }
