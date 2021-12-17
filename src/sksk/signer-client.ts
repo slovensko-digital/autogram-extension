@@ -1,4 +1,9 @@
-import { apiClient, SignatureParameters, Document } from "@octosign/client";
+import {
+  apiClient,
+  SignatureParameters,
+  Document,
+  ServerInfo,
+} from "@octosign/client";
 
 export interface SignerRequest {
   document: Document;
@@ -32,21 +37,31 @@ export class SignerClient {
   private client: ReturnType<typeof apiClient>;
 
   constructor() {
-    this.client = apiClient();
+    console.log("1.0.3");
+    this.client = apiClient({
+      disableSecurity: true,
+    });
+  }
+
+  public async startSignerIfNotUp(): Promise<ServerInfo> {
+    try {
+      return await this.client.waitForStatus("READY", 1);
+    } catch (e) {
+      console.error(e);
+      const url = this.client.getLaunchURL();
+      window.open(url);
+      return await this.client.waitForStatus("READY");
+    }
   }
 
   public async sign(requestBody: SignerRequest): Promise<SignerResponse> {
-    this.client.getLaunchURL();
-    await this.client.waitForStatus("READY");
     const document: Document = requestBody.document;
-    const signParams: SignatureParameters= requestBody.parameters;
+    const signParams: SignatureParameters = requestBody.parameters;
 
+    await this.startSignerIfNotUp();
     return this.client.sign(document, signParams, requestBody.payloadMimeType);
   }
 }
-
-
-
 
 /*
 @octosign/client
