@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "moduleResolution": "node",
-    "noImplicitAny": true,
+    // "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
