@@ -1,10 +1,10 @@
 import { extensionId } from "./constants";
-import { DSignerConstructorClientCustom } from "./sksk/dsigner-custom";
+import { inject } from "./dbridge_js";
+// import { inject } from "./sksk/dsigner-custom";
 
 const windowAny = window as any;
 
-windowAny.originalDSCC = windowAny.DSignerConstructorClient;
-windowAny.DSignerConstructorClient = new DSignerConstructorClientCustom();
+inject(windowAny);
 
 console.log("inject");
 
@@ -31,9 +31,9 @@ chrome.runtime.sendMessage(
   extensionId,
   { greeting: "hello" },
   function (response) {
-    console.log(response.farewell);
+    console.log(response && response.farewell);
   }
 );
 
 // eslint-disable-next-line no-debugger
-debugger;
+// debugger;

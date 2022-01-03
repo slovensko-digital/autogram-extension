@@ -86,3 +86,8 @@ export class DSignerConstructorCustom {
     MessageBox.displayInfo("WOhooo DSignerConstructorCustom");
   }
 }
+
+export function inject(windowAny: any): void {
+  windowAny.originalDSCC = windowAny.DSignerConstructorClient;
+  windowAny.DSignerConstructorClient = new DSignerConstructorClientCustom();
+}
