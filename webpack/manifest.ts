@@ -1,7 +1,4 @@
-import {
-  Options as WMPOptions,
-  FileDescriptor,
-} from "webpack-manifest-plugin";
+import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
@@ -40,6 +37,7 @@ function generateManifest(
         matches: [
           "https://www.slovensko.sk/*",
           "https://schranka.slovensko.sk/*",
+          "https://pfseform.financnasprava.sk/*",
         ],
         js: entries.content,
       },
@@ -59,11 +57,13 @@ function generateManifest(
       {
         resources: [
           ...entries.inject.map((x) => [x, x + ".map"]).flat(),
+          ...entries.content.map((x) => [x, x + ".map"]).flat(),
           "static/logo.png",
         ],
         matches: [
           "https://www.slovensko.sk/*",
           "https://schranka.slovensko.sk/*",
+          "https://pfseform.financnasprava.sk/*",
         ],
       },
     ],
