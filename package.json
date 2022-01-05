@@ -5,6 +5,8 @@
   "main": "./webpack/manifest.ts",
   "scripts": {
     "start": "npm run webpack:build-dev && run-p webpack:watch webext:run",
+    "start:manifest2": "SKSE_MANIFEST_VERSION=2 npm start",
+    "start:manifest3": "SKSE_MANIFEST_VERSION=3 npm start",
     "build": "run-s webpack:build-dev webext:build",
     "build:prod": "run-s webpack:build-prod webext:build",
     "webpack:watch": "webpack watch --config webpack/webpack.dev.ts",
