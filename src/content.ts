@@ -19,14 +19,24 @@ script.onload = function () {
   // setUrl(chrome.runtime.getURL(""))
 };
 
-(window as any).extension_url = "this isurl"
+(window as any).extension_url = "this isurl";
 
-window.addEventListener("load", () => {
-  console.log("DOMContentLoaded");
+let appended = false;
+function append() {
   console.log(script);
   console.log(script.src);
-  document.head.appendChild(script);
-});
+  if (!appended) document.head.appendChild(script);
+  appended = true;
+}
+
+if (document.readyState == "complete") {
+  append();
+} else {
+  window.addEventListener("load", () => {
+    console.log("window event: load");
+    append();
+  });
+}
 
 // var s = document.createElement('script');
 // s.src = chrome.runtime.getURL('script.js');
