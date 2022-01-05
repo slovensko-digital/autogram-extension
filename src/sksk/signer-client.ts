@@ -32,8 +32,6 @@ export interface SignerRequest {
 export type SignerResponse = Document;
 
 export class SignerClient {
-  // constructor() {}
-
   private client: ReturnType<typeof apiClient>;
 
   constructor() {

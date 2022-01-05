@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { dSigXadesBpJs } from "./dSigXadesBpJs";
-import { dSigXadesJs } from "./dSigXadesJs";
+import { DSigXadesBpAdapter } from "./dsig-xades-bp-adapter";
+import { DSigXadesAdapter } from "./dsig-xades-adapter";
+import { DBridgeOctosignImpl } from "./implementation";
+
+const implementation = new DBridgeOctosignImpl();
 
 export const ditecX = {
   config: {
@@ -22,6 +25,6 @@ export const ditecX = {
       return true;
     },
   },
-  dSigXadesJs: dSigXadesJs,
-  dSigXadesBpJs: dSigXadesBpJs,
+  dSigXadesJs: new DSigXadesAdapter(implementation),
+  dSigXadesBpJs: new DSigXadesBpAdapter(implementation),
 };
