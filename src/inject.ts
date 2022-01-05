@@ -27,13 +27,13 @@ console.log("inject");
 //   }
 // );
 
-chrome.runtime.sendMessage(
-  extensionId,
-  { greeting: "hello" },
-  function (response) {
-    console.log(response && response.farewell);
-  }
-);
+// chrome.runtime.sendMessage(
+//   extensionId,
+//   { greeting: "hello" },
+//   function (response) {
+//     console.log(response && response.farewell);
+//   }
+// );
 
 // eslint-disable-next-line no-debugger
 // debugger;
