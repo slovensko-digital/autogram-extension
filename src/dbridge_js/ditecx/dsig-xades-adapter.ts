@@ -45,7 +45,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     transformType,
     callback
   ) {
-    this.log("addXmlObject2", arguments);
+    this.stub("addXmlObject2", arguments);
   }
 
   addPdfObject(
@@ -58,7 +58,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     convert,
     callback
   ) {
-    this.log("addPdfObject", arguments);
+    this.stub("addPdfObject", arguments);
   }
   addTxtObject(
     objectId,
@@ -67,7 +67,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     objectFormatIdentifier,
     callback
   ) {
-    this.log("addTxtObject", arguments);
+    this.stub("addTxtObject", arguments);
   }
   addPngObject(
     objectId,
@@ -76,7 +76,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     objectFormatIdentifier,
     callback
   ) {
-    this.log("addPngObject", arguments);
+    this.stub("addPngObject", arguments);
   }
 
   sign11(
@@ -88,7 +88,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     dataEnvelopeDescr,
     callback
   ) {
-    this.log("sign11", arguments);
+    this.stub("sign11", arguments);
   }
   sign20(
     signatureId,
@@ -99,28 +99,91 @@ export class DSigXadesAdapter extends DSigAdapter {
     dataEnvelopeDescr,
     callback
   ) {
-    this.log("sign20", arguments);
+    this.stub("sign20", arguments);
   }
 
-  getSignedXmlWithEnvelope(cb) {
-    this.log("getSignedXmlWithEnvelope", arguments);
+  // ---------------
+  setSigningTimeProcessing(displayGui, includeSigningTime, callback) {
+    this.stub("setSigningTimeProcessing", arguments);
   }
-
+  setWindowSize(width, height, callback) {
+    this.stub("", arguments);
+  }
   checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {
-    this.log("checkPDFACompliance", arguments);
+    this.stub("", arguments);
   }
   convertToPDFA(sourcePdfBase64, password, reqLevel, callback) {
-    this.log("convertToPDFA", arguments);
+    this.stub("", arguments);
   }
-  getConvertedPDFA(cb) {
-    this.log("getConvertedPDFA", arguments);
+  setCertificateFilter(filterID, callback) {
+    this.stub("", arguments);
   }
-
-  setSigningTimeProcessing(displayGui, includeSigningTime, callback) {
-    this.log("setSigningTimeProcessing", arguments);
+  getSignedXmlWithEnvelope(callback) {
+    this.stub("getSignedXmlWithEnvelope", arguments);
   }
-
-  getSignedXmlWithEnvelopeBase64(cb) {
+  getSignedXmlWithEnvelopeBase64(callback) {
     this.log("getSignedXmlWithEnvelopeBase64", arguments);
+    this.__implementation.getSignature(
+      { container: "ASICE", packaging: "ENVELOPED" },
+      callback
+    );
+  }
+  getSignedXmlWithEnvelopeGZipBase64(callback) {
+    this.stub("getSignedXmlWithEnvelopeGZipBase64", arguments);
+  }
+  getSignerIdentification(callback) {
+    this.stub("getSignerIdentification", arguments);
+  }
+  getSigningTime(callback) {
+    this.stub("getSigningTime", arguments);
+  }
+  getConvertedPDFA(callback) {
+    this.stub("getConvertedPDFA", arguments);
+  }
+  getSigningCertificate(callback) {
+    this.stub("getSigningCertificate", arguments);
+  }
+  getVersion(callback) {
+    this.stub("getVersion", arguments);
+  }
+  loadConfiguration(configsZipBase64, callback) {
+    this.stub("loadConfiguration", arguments);
+  }
+  getSignedXmlWithEnvelopeAndTimeStamp(callback) {
+    this.stub("getSignedXmlWithEnvelopeAndTimeStamp", arguments);
+  }
+  getSignedXmlWithEnvelopeAndTimeStampBase64(callback) {
+    this.stub("getSignedXmlWithEnvelopeAndTimeStampBase64", arguments);
+  }
+  getSignedXmlWithEnvelopeAndTimeStampGZipBase64(callback) {
+    this.stub("getSignedXmlWithEnvelopeAndTimeStampGZipBase64", arguments);
+  }
+  getSignatureTimeStampTokenBase64(callback) {
+    this.stub("getSignatureTimeStampTokenBase64", arguments);
+  }
+  getSignatureTimeStampCert(callback) {
+    this.stub("getSignatureTimeStampCert", arguments);
+  }
+  getSignatureTimeStampTime(callback) {
+    this.stub("getSignatureTimeStampTime", arguments);
+  }
+  getTSAIdentification(callback) {
+    this.stub("getTSAIdentification", arguments);
+  }
+  getSignatureTimeStampRequestBase64(reqPolicy, digestAlgUri, callback) {
+    this.stub("getSignatureTimeStampRequestBase64", arguments);
+  }
+  getSignatureTimeStampRequest2Base64(
+    reqPolicy,
+    digestAlgUri,
+    nonce,
+    certReq,
+    extensions,
+    callback
+  ) {
+    this.stub("getSignatureTimeStampRequest2Base64", arguments);
+  }
+  createXAdESZepT(tsResponseB64, tsCertB64, callback) {
+    this.stub("createXAdESZepT", arguments);
   }
 }
