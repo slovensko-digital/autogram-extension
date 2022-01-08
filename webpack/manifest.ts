@@ -102,7 +102,6 @@ function generateManifest(
               "https://www.slovensko.sk/*",
               "https://schranka.slovensko.sk/*",
               "https://pfseform.financnasprava.sk/*",
-              "https://pfseform.financnasprava.sk",
             ],
             js: entries.content,
           },
@@ -114,7 +113,6 @@ function generateManifest(
           "https://www.slovensko.sk/*",
           "https://schranka.slovensko.sk/*",
           "https://pfseform.financnasprava.sk/*",
-          "https://pfseform.financnasprava.sk",
         ],
       };
   }

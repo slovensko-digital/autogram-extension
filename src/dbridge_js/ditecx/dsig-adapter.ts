@@ -23,6 +23,7 @@ export class DSigAdapter {
 
   constructor(implementation: DBridgeOctosignImpl) {
     this.__implementation = implementation;
+    // this.__implementation.setAdapter(this);
   }
 
   initialize(callback: { onSuccess: () => void }): void {
@@ -40,7 +41,17 @@ export class DSigAdapter {
     );
   }
 
-  log(...rest) {
+  setLanguage(language, callback) {
+    this.log("setLanguage", arguments);
+    this.__implementation.setLanguage(language);
+  }
+
+  log(...rest: any[]): void {
     console.log(this.constructor.name, ...rest);
+  }
+
+  stub(name: string, ...rest: any[]): void {
+    this.log(name, ...rest);
+    alert(`Stubbed ${this.constructor.name} method: \n\n${name}`);
   }
 }

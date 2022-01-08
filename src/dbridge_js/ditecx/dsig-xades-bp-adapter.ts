@@ -58,11 +58,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     transformType,
     callback
   ) {
-    this.log("addXmlObject2", arguments);
-  }
-  setLanguage(lang) {
-    this.log("setLanguage", arguments);
-    this.__implementation.language = lang;
+    this.stub("addXmlObject2", arguments);
   }
 
   getSignerIdentification(callback) {
@@ -71,7 +67,10 @@ export class DSigXadesBpAdapter extends DSigAdapter {
   }
   getSignatureWithASiCEnvelopeBase64(callback) {
     this.log("getSignatureWithASiCEnvelopeBase64", arguments);
-    this.__implementation.getSignatureWithASiCEnvelopeBase64(callback);
+    this.__implementation.getSignature(
+      { container: "ASICE", packaging: "ENVELOPING", level: "BASELINE_B" },
+      callback
+    );
   }
 
   deploy(options, callback) {
@@ -79,8 +78,8 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback.onSuccess();
   }
 
-  getConvertedPDFA(cb) {
-    this.log("getConvertedPDFA", arguments);
+  getConvertedPDFA(callback) {
+    this.stub("getConvertedPDFA", arguments);
   }
 
   addTxtObject(
