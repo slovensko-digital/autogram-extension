@@ -1,5 +1,5 @@
-import { extensionId } from "./constants";
-import { inject } from "./dbridge_js";
+import { extensionId } from "../constants";
+import { inject } from "../dbridge_js";
 // import { inject } from "./sksk/dsigner-custom";
 
 const windowAny = window as any;
