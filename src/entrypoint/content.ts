@@ -1,43 +1,81 @@
-// import content from "./inject?astext";
+import { isExtensionEnabled } from "../options/content";
+import browser from "webextension-polyfill";
+import { extensionId } from "../constants";
+
+import React from "react";
+import ReactDOM from "react-dom";
+import { App } from "../ui/app";
 
 console.log("content");
 
-// console.log(content);
+isExtensionEnabled().then((enabled) => {
+  if (enabled) {
+    console.log("Extension is enabled");
+    insertInjectScript();
+    insertUI();
+  }
+});
 
-const url = chrome.runtime.getURL("inject.bundle.js");
-console.log(url);
+function insertInjectScript() {
+  const url = browser.runtime.getURL("inject.bundle.js");
+  console.log(url);
 
-const script = document.createElement("script");
-// script.src = "/inject.bundle.js";
-script.src = url;
-script.type = "text/javascript";
-// script.textContent = content;
-// script.dataset.findme = "findme";
+  const script = document.createElement("script");
+  script.src = url;
+  script.type = "text/javascript";
 
-script.onload = function () {
-  console.log("script load");
-  // setUrl(chrome.runtime.getURL(""))
-};
+  script.onload = function () {
+    console.log("script load");
+  };
 
-(window as any).extension_url = "this isurl";
+  function append() {
+    console.log(script);
+    console.log(script.src);
+    document.head.appendChild(script);
+  }
 
-let appended = false;
-function append() {
-  console.log(script);
-  console.log(script.src);
-  if (!appended) document.head.appendChild(script);
-  appended = true;
-}
+  websiteReady().then(append);
 
-if (document.readyState == "complete") {
-  append();
-} else {
-  window.addEventListener("load", () => {
-    console.log("window event: load");
+  if (document.readyState == "complete") {
     append();
+  } else {
+    window.addEventListener("load", () => {
+      console.log("window event: load");
+      append();
+    });
+  }
+
+  const port = browser.runtime.connect(null, { name: "log" });
+  document.addEventListener(extensionId, function (event: CustomEvent) {
+    port.postMessage(event.detail);
   });
 }
 
+function insertUI() {
+  function append() {
+    console.log("adding UI");
+    const uiDiv = document.createElement("div");
+    uiDiv.id = "sk-sk-extension-ui";
+    document.body.appendChild(uiDiv);
+
+    ReactDOM.render(React.createElement(App), uiDiv);
+  }
+  websiteReady().then(append);
+}
+
+function websiteReady(): Promise<void> {
+  let resolved = false;
+  return new Promise((resolve, reject) => {
+    if (document.readyState == "complete") {
+      resolved = true;
+      resolve();
+    } else {
+      window.addEventListener("load", () => {
+        if (!resolved) resolve();
+      });
+    }
+  });
+}
 // var s = document.createElement('script');
 // s.src = chrome.runtime.getURL('script.js');
 // s.onload = function() {

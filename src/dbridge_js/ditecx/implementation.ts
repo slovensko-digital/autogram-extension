@@ -1,4 +1,5 @@
 import { apiClient, Document } from "@octosign/client";
+import { logMessage } from "../../audit/inject";
 import { OctoSwitcherError } from "../../error";
 import { TODO } from "../../util";
 import { DSigAdapter } from "./dsig-adapter";
@@ -74,18 +75,31 @@ export class DBridgeOctosignImpl {
     parameters: PartialSignerParameters,
     callback: OnSuccessCallback1
   ): Promise<void> {
-    this.signedObject = await this.client.sign(
-      this.signRequest.document,
-      this.signRequest.signatureParameters(parameters),
-      this.signRequest.payloadMimeType
-    );
-    TODO("restart SignRequest?");
-    this.signRequest.signStarted = false;
-    callback.onSuccess(this.signedObject.content);
+    this.client
+      .sign(
+        this.signRequest.document,
+        this.signRequest.signatureParameters(parameters),
+        this.signRequest.payloadMimeType
+      )
+      .then((signedObject) => {
+        TODO("restart SignRequest?");
+        this.signRequest.signStarted = false;
+        this.signedObject = signedObject;
+        callback.onSuccess(this.signedObject.content);
+      });
+    logMessage({
+      class: this.constructor.name,
+      msg: "Prepnite sa do Octosign okna",
+    });
   }
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
     TODO("Signer identification missing in octosign");
+
+    logMessage({
+      class: this.constructor.name,
+      msg: "Chybajuca metoda getSignerIdentification",
+    });
     callback.onSuccess(`CN=Tester Testovic`);
   }
 }

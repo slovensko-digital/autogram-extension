@@ -7,3 +7,13 @@ declare module "*.png" {
   const str: string;
   export default str;
 }
+
+declare module "*.html" {
+  const str: string;
+  export default str;
+}
+
+declare module "*.module.css" {
+  const cssModule: { [key: string]: string };
+  export default cssModule;
+}
