@@ -55,7 +55,7 @@ function insertUI() {
   function append() {
     console.log("adding UI");
     const uiDiv = document.createElement("div");
-    uiDiv.id = "sk-sk-extension-ui";
+    uiDiv.id = "signer-switcher-extension-ui";
     document.body.appendChild(uiDiv);
 
     ReactDOM.render(React.createElement(App), uiDiv);
