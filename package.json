@@ -1,5 +1,5 @@
 {
-  "name": "sk-sk-extension",
+  "name": "signer-switcher-extension",
   "version": "1.1.0",
   "description": "Rozsirenie pre slovensko.sk, s lepsim podpisovacom",
   "main": "./webpack/manifest.ts",
