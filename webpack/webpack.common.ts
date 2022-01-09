@@ -13,11 +13,18 @@ const config: webpack.Configuration = {
     background: "./src/entrypoint/background.ts",
     content: "./src/entrypoint/content.ts",
     inject: "./src/entrypoint/inject.ts",
+    popup: "./src/entrypoint/popup.tsx",
+    options: "./src/entrypoint/options.ts",
   },
   mode: "development",
   devtool: "source-map",
   optimization: {
     usedExports: true,
+    // splitChunks: {
+    //   chunks(chunk) {
+    //     return chunk.name !== "inject";
+    //   },
+    // },
   },
   output: {
     filename: "[name].[contenthash].js",
@@ -25,6 +32,20 @@ const config: webpack.Configuration = {
   },
   module: {
     rules: [
+      {
+        test: /\.module\.css$/i,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 1,
+              modules: true,
+              exportType: "array"
+            },
+          },
+        ],
+      },
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
@@ -39,6 +60,10 @@ const config: webpack.Configuration = {
       {
         resourceQuery: /astext/,
         type: "asset/source",
+      },
+      {
+        test: /\.html$/i,
+        type: "asset/resource",
       },
       {
         test: /\.(png|jpg|gif)$/i,
