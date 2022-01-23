@@ -60,4 +60,17 @@ export class DSigAdapter {
     this.log(name, ...rest);
     alert(`Stubbed ${this.constructor.name} method: \n\n${name}`);
   }
+
+  checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {
+    this.stub("checkPDFACompliance", arguments);
+    callback.onSuccess();
+  }
+  convertToPDFA(sourcePdfBase64, password, reqLevel, callback) {
+    this.stub("convertToPDFA", arguments);
+    callback.onSuccess();
+  }
+  getConvertedPDFA(callback) {
+    this.stub("getConvertedPDFA", arguments);
+    this.__implementation.getOriginalObject(callback);
+  }
 }
