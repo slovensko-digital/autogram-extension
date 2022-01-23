@@ -15,6 +15,7 @@ const config: webpack.Configuration = {
     inject: "./src/entrypoint/inject.ts",
     popup: "./src/entrypoint/popup.tsx",
     options: "./src/entrypoint/options.ts",
+    redirect: "./src/entrypoint/redirect.ts",
   },
   mode: "development",
   devtool: "source-map",
