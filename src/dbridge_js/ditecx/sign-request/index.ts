@@ -1,5 +1,5 @@
 import { Document } from "@octosign/client";
-import { TODO } from "../../util";
+import { TODO } from "../../../util";
 
 export class SignRequest {
   // objects = [];
@@ -15,7 +15,7 @@ export class SignRequest {
   // }
 
   addObject(obj: InputObject): void {
-    if (this.object && !this.signStarted){
+    if (this.object && !this.signStarted) {
       console.log("ERROR: overwriting unsigned object");
     }
     this.object = obj;
@@ -68,10 +68,15 @@ export class SignRequest {
         return { content: obj.sourceXml, id: obj.objectId };
 
       case "XadesBpPng":
+      case "XadesPng":
         return { content: obj.sourcePngBase64 };
 
       case "XadesBpTxt":
         return { content: obj.sourceTxt };
+
+      case "XadesPdf":
+      case "XadesBpPdf":
+        return { content: obj.sourcePdfBase64 };
 
       default:
         throw new Error("failed");
@@ -88,6 +93,13 @@ export class SignRequest {
         return obj.sourceXsd;
 
       case "XadesBpPng":
+      case "XadesPng":
+        return null;
+
+      case "XadesPdf":
+      case "XadesBpPdf":
+        return null; // no idea what this should be
+
       case "XadesBpTxt":
       default:
         throw new Error("failed");
@@ -104,6 +116,13 @@ export class SignRequest {
         return obj.sourceXsl;
 
       case "XadesBpPng":
+      case "XadesPng":
+        return null;
+
+      case "XadesPdf":
+      case "XadesBpPdf":
+        return null;
+
       case "XadesBpTxt":
       default:
         throw new Error("failed");
@@ -120,6 +139,13 @@ export class SignRequest {
         return obj.namespaceUri;
 
       case "XadesBpPng":
+      case "XadesPng":
+        return null;
+
+      case "XadesPdf":
+      case "XadesBpPdf":
+        return null;
+
       case "XadesBpTxt":
       default:
         throw new Error("failed");
@@ -137,6 +163,13 @@ export class SignRequest {
         return obj.namespaceUri;
 
       case "XadesBpPng":
+      case "XadesPng":
+        return obj.objectId;
+
+      case "XadesPdf":
+      case "XadesBpPdf":
+        return obj.objectId;
+
       case "XadesBpTxt":
       default:
         throw new Error("failed");
@@ -150,11 +183,17 @@ export class SignRequest {
       case "XadesXml":
       case "Xades2Xml":
         return "application/xml";
-      case "XadesBpPng":
-        return "*/*";
 
       case "XadesBpTxt":
         return "text/plain";
+
+      case "XadesBpPng":
+      case "XadesPng":
+        return "application/pdf;base64";
+
+      case "XadesPdf":
+      case "XadesBpPdf":
+        return "application/pdf;base64";
 
       default:
         throw new Error("failed");
@@ -215,11 +254,22 @@ interface ObjectXadesBpTxt {
 }
 
 interface ObjectXadesBpPng {
-  type: "XadesBpPng";
+  type: "XadesBpPng" | "XadesPng";
   objectId: string;
   objectDescription: string;
   sourcePngBase64: string;
   objectFormatIdentifier: string;
+}
+
+interface ObjectXadesPdf {
+  type: "XadesPdf" | "XadesBpPdf";
+  objectId: string;
+  objectDescription: string;
+  sourcePdfBase64: string;
+  password: string;
+  objectFormatIdentifier: string;
+  reqLevel: number;
+  convert: boolean;
 }
 
 export type InputObject =
@@ -227,7 +277,8 @@ export type InputObject =
   | ObjectXadesBpXml
   | ObjectXades2Xml
   | ObjectXadesBpTxt
-  | ObjectXadesBpPng;
+  | ObjectXadesBpPng
+  | ObjectXadesPdf;
 
 interface FullSignerParameters {
   identifier: null | string;
@@ -256,5 +307,12 @@ export type PartialSignerParameters = Partial<FullSignerParameters>;
 type PayloadMimeTypeStr =
   | "application/xml"
   | "application/xml;base64"
+  | "image/png;base64"
+  | "application/pdf"
+  | "application/pdf;base64"
   | "text/plain"
   | "*/*";
+
+// function assertUnreachable(x: never): never {
+//   throw new Error("Didn't expect to get here");
+// }

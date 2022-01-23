@@ -59,6 +59,19 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("addPdfObject", arguments);
+    this.__implementation.addObject(
+      {
+        type: "XadesPdf",
+        objectId,
+        objectDescription,
+        sourcePdfBase64,
+        password,
+        objectFormatIdentifier,
+        reqLevel,
+        convert,
+      },
+      callback
+    );
   }
   addTxtObject(
     objectId,
@@ -76,7 +89,17 @@ export class DSigXadesAdapter extends DSigAdapter {
     objectFormatIdentifier,
     callback
   ) {
-    this.stub("addPngObject", arguments);
+    // this.stub("addPngObject", arguments);
+    this.__implementation.addObject(
+      {
+        type: "XadesPng",
+        objectId,
+        objectDescription,
+        objectFormatIdentifier,
+        sourcePngBase64,
+      },
+      callback
+    );
   }
 
   sign11(
@@ -109,12 +132,6 @@ export class DSigXadesAdapter extends DSigAdapter {
   setWindowSize(width, height, callback) {
     this.stub("", arguments);
   }
-  checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {
-    this.stub("", arguments);
-  }
-  convertToPDFA(sourcePdfBase64, password, reqLevel, callback) {
-    this.stub("", arguments);
-  }
   setCertificateFilter(filterID, callback) {
     this.stub("", arguments);
   }
@@ -136,9 +153,6 @@ export class DSigXadesAdapter extends DSigAdapter {
   }
   getSigningTime(callback) {
     this.stub("getSigningTime", arguments);
-  }
-  getConvertedPDFA(callback) {
-    this.stub("getConvertedPDFA", arguments);
   }
   getSigningCertificate(callback) {
     this.stub("getSigningCertificate", arguments);

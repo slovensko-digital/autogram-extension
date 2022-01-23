@@ -33,12 +33,13 @@ export class DBridgeOctosignImpl {
 
   async launch(callback: OnSuccessCallback): Promise<void> {
     try {
-      await this.client.waitForStatus("READY", 1);
+      const info = await this.client.info();
+      if (info.status != "READY") throw new Error("Wait for server");
     } catch (e) {
       console.error(e);
       const url = this.client.getLaunchURL();
       window.open(url);
-      await this.client.waitForStatus("READY");
+      const info = await this.client.waitForStatus("READY", 100, 5);
     }
     callback.onSuccess();
   }
@@ -101,6 +102,10 @@ export class DBridgeOctosignImpl {
       msg: "Chybajuca metoda getSignerIdentification",
     });
     callback.onSuccess(`CN=Tester Testovic`);
+  }
+
+  getOriginalObject(callback: OnSuccessCallback1) {
+    callback.onSuccess(this.signRequest.object);
   }
 }
 

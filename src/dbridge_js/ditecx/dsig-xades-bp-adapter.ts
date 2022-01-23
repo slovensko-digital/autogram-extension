@@ -120,4 +120,31 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       callback
     );
   }
+
+
+  addPdfObject(
+    objectId,
+    objectDescription,
+    sourcePdfBase64,
+    password,
+    objectFormatIdentifier,
+    reqLevel,
+    convert,
+    callback
+  ) {
+    this.stub("addPdfObject", arguments);
+    this.__implementation.addObject(
+      {
+        type: "XadesBpPdf",
+        objectId,
+        objectDescription,
+        sourcePdfBase64,
+        password,
+        objectFormatIdentifier,
+        reqLevel,
+        convert,
+      },
+      callback
+    );
+  }
 }
