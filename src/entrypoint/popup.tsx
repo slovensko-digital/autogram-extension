@@ -7,3 +7,7 @@ document.getElementById("open-options").addEventListener("click", () => {
     window.open(browser.runtime.getURL("static/options.html"));
   }
 });
+
+document.getElementById("check").addEventListener("click", () => {
+  window.open(browser.runtime.getURL("static/redirect.html"));
+});
