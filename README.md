@@ -34,7 +34,7 @@ There are `start:manifest3` and `start:manifest2` scripts to run selected manife
 
 ## Hacky pre slovensko.sk
 
-Nahradzujeme `dsigner` nasim adapterom ktory preklada volania na octosign
+Nahradzujeme `dsigner` nasim adapterom ktory preklada volania na Autogram (Octosign)
 
 Zaujimave miesta su v
 

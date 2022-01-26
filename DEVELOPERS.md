@@ -31,7 +31,7 @@ Options are saved into `browser.storage.local`
 
 CSS is implemented using CSS modules inserted directly into page.
 
-## Communication with Octosign
+## Communication with Autogram
 
 We are using @octosign/client as base, but it was missing some types so we don't use theirs.
 
@@ -41,3 +41,15 @@ Right now we are using `webextension-polyfill`, so extension should run in all b
 Because we want to support Firefox we need to use manifest version 2. If situation
 arises we can create builds for every browser individually, but right now I don't see
 reason to do that.
+
+
+### Safari
+
+Safari needs xcode project and associated app. We generate such app 
+
+
+https://developer.apple.com/documentation/safariservices/safari_web_extensions/converting_a_web_extension_for_safari
+
+https://developer.apple.com/documentation/safariservices/safari_web_extensions/running_your_safari_web_extension
+
+https://developer.apple.com/documentation/safariservices/safari_web_extensions/assessing_your_safari_web_extension_s_browser_compatibility
