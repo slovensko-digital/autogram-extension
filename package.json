@@ -16,7 +16,8 @@
     "manifest:webpack:watch-dev": "chokidar \"**/*.ts\" -c \"npm run webpack:build-dev\"",
     "test": "npx jest",
     "webext:build": "web-ext build -s 'dist' -i '*.map.js' --overwrite-dest --filename $npm_package_name-$npm_package_version.zip",
-    "webext:run": "web-ext build -s 'dist' --overwrite-dest "
+    "webext:run": "web-ext build -s 'dist' --overwrite-dest ",
+    "xcode-generate-safari-web-extension": "xcrun safari-web-extension-converter --macos-only --project-location ./safari/ ./dist/"
   },
   "author": "pom",
   "license": "EUPL-1.2",
