@@ -1,7 +1,7 @@
 import { apiClient, Document } from "@octosign/client";
 import { logMessage } from "../../audit/inject";
 import { OctoSwitcherError } from "../../error";
-import { TODO } from "../../util";
+import { isSafari, TODO } from "../../util";
 import { DSigAdapter } from "./dsig-adapter";
 import {
   InputObject,
@@ -18,7 +18,18 @@ export class DBridgeOctosignImpl {
   private _adapter: DSigAdapter;
 
   constructor() {
+    let serverProtocol = "http";
+    let serverHost = "localhost";
+
+    if (isSafari()) {
+      // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http
+      serverProtocol = "https";
+      serverHost = "loopback.autogram.slovensko.digital";
+    }
+
     this.client = apiClient({
+      serverProtocol,
+      serverHost,
       disableSecurity: true,
       requestsOrigin: "*",
     });
