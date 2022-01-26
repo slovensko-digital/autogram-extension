@@ -53,7 +53,11 @@ export class DSigAdapter {
 
   log(...rest: any[]): void {
     console.log(this.constructor.name, ...rest);
-    logMessage({ class: this.constructor.name, msg: rest[0] });
+    logMessage({
+      type: "info",
+      class: this.constructor.name,
+      msg: JSON.stringify(rest[0]),
+    });
   }
 
   stub(name: string, ...rest: any[]): void {

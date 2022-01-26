@@ -4,6 +4,7 @@ import browser from "webextension-polyfill";
 import style from "./style.module.css";
 import logo from "../static/logo-32.png";
 import clsx from "clsx";
+import { Toaster } from "./toaster";
 
 export function App() {
   const [open, setOpen] = useState(true);
@@ -14,6 +15,7 @@ export function App() {
       className={style.ui}
       style={position == "right" ? { right: "0" } : { left: "0" }}
     >
+      <Toaster />
       {open ? (
         <Ui
           onCloseUi={() => {
@@ -34,6 +36,21 @@ export function App() {
         }}
       />
     </div>
+  );
+}
+
+function Ui(props: { onCloseUi: () => void }) {
+  return (
+    <>
+      <button onClick={props.onCloseUi}>X</button>
+      <h1>
+        Autogram Switcher <Logo />
+      </h1>
+      <Logger />
+      <OpenOptionsButton />
+
+      <button>Report Bug</button>
+    </>
   );
 }
 
@@ -65,21 +82,6 @@ function OpenOptionsButton() {
     >
       Options
     </button>
-  );
-}
-
-function Ui(props: { onCloseUi: () => void }) {
-  return (
-    <>
-      <button onClick={props.onCloseUi}>X</button>
-      <h1>
-        Octoext <Logo />
-      </h1>
-      <Logger />
-      <OpenOptionsButton />
-
-      <button>Report Bug</button>
-    </>
   );
 }
 

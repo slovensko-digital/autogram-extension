@@ -1,5 +1,5 @@
 import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
-import { enabledUrls, extensionId } from "../src/constants";
+import { enabledUrls } from "../src/constants";
 
 const manifestVersion: 2 | 3 =
   process.env.SKSE_MANIFEST_VERSION === "3" ? 3 : 2;
