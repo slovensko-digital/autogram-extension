@@ -1,6 +1,6 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
-import { extensionId } from "../constants";
+import { logMessageEventId } from "../constants";
 
 import React from "react";
 import ReactDOM from "react-dom";
@@ -46,7 +46,7 @@ function insertInjectScript() {
   }
 
   const port = browser.runtime.connect(null, { name: "log" });
-  document.addEventListener(extensionId, function (event: CustomEvent) {
+  document.addEventListener(logMessageEventId, function (event: CustomEvent) {
     port.postMessage(event.detail);
   });
 }

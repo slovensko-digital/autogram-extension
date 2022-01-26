@@ -11,7 +11,7 @@
 .ui {
   position: absolute;
   top: 0;
-  z-index: 100;
+  z-index: 999999;
   background: var(--color-white);
   border: solid 5px var(--color-primary);
   border-top: none;

@@ -18,7 +18,7 @@ export class DBridgeOctosignImpl {
   private _adapter: DSigAdapter;
 
   constructor() {
-    let serverProtocol = "http";
+    let serverProtocol: "http" | "https" = "http";
     let serverHost = "localhost";
 
     if (isSafari()) {
@@ -100,6 +100,7 @@ export class DBridgeOctosignImpl {
         callback.onSuccess(this.signedObject.content);
       });
     logMessage({
+      type: "info",
       class: this.constructor.name,
       msg: "Prepnite sa do Octosign okna",
     });
@@ -109,6 +110,7 @@ export class DBridgeOctosignImpl {
     TODO("Signer identification missing in octosign");
 
     logMessage({
+      type: "info",
       class: this.constructor.name,
       msg: "Chybajuca metoda getSignerIdentification",
     });
