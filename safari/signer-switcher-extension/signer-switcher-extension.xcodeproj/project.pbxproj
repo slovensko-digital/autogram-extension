@@ -1,0 +1,617 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FE1A80C527A1635500BFDE59 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A80C427A1635500BFDE59 /* AppDelegate.swift */; };
+		FE1A80C927A1635500BFDE59 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80C727A1635500BFDE59 /* Main.html */; };
+		FE1A80CB27A1635500BFDE59 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80CA27A1635500BFDE59 /* Icon.png */; };
+		FE1A80CD27A1635500BFDE59 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80CC27A1635500BFDE59 /* Style.css */; };
+		FE1A80CF27A1635500BFDE59 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80CE27A1635500BFDE59 /* Script.js */; };
+		FE1A80D127A1635500BFDE59 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A80D027A1635500BFDE59 /* ViewController.swift */; };
+		FE1A80D427A1635500BFDE59 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80D227A1635500BFDE59 /* Main.storyboard */; };
+		FE1A80D627A1635700BFDE59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80D527A1635700BFDE59 /* Assets.xcassets */; };
+		FE1A80DF27A1635700BFDE59 /* signer-switcher-extension Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = FE1A80DE27A1635700BFDE59 /* signer-switcher-extension Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FE1A80E427A1635700BFDE59 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A80E327A1635700BFDE59 /* SafariWebExtensionHandler.swift */; };
+		FE1A80FF27A1635800BFDE59 /* inject.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80F127A1635800BFDE59 /* inject.bundle.js */; };
+		FE1A810027A1635800BFDE59 /* background.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80F427A1635800BFDE59 /* background.bundle.js */; };
+		FE1A810127A1635800BFDE59 /* redirect.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80F727A1635800BFDE59 /* redirect.bundle.js */; };
+		FE1A810227A1635800BFDE59 /* static in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80F827A1635800BFDE59 /* static */; };
+		FE1A810327A1635800BFDE59 /* options.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80F927A1635800BFDE59 /* options.bundle.js */; };
+		FE1A810427A1635800BFDE59 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80FA27A1635800BFDE59 /* manifest.json */; };
+		FE1A810527A1635800BFDE59 /* content.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80FC27A1635800BFDE59 /* content.bundle.js */; };
+		FE1A810627A1635800BFDE59 /* popup.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE1A80FE27A1635800BFDE59 /* popup.bundle.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FE1A80E027A1635700BFDE59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE1A80B927A1635500BFDE59 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE1A80DD27A1635700BFDE59;
+			remoteInfo = "signer-switcher-extension Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FE1A80EC27A1635700BFDE59 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FE1A80DF27A1635700BFDE59 /* signer-switcher-extension Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		FE1A80C127A1635500BFDE59 /* signer-switcher-extension.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "signer-switcher-extension.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE1A80C427A1635500BFDE59 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FE1A80C827A1635500BFDE59 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		FE1A80CA27A1635500BFDE59 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		FE1A80CC27A1635500BFDE59 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		FE1A80CE27A1635500BFDE59 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		FE1A80D027A1635500BFDE59 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		FE1A80D327A1635500BFDE59 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		FE1A80D527A1635700BFDE59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FE1A80D727A1635700BFDE59 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FE1A80D827A1635700BFDE59 /* signer_switcher_extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = signer_switcher_extension.entitlements; sourceTree = "<group>"; };
+		FE1A80D927A1635700BFDE59 /* signer-switcher-extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "signer-switcher-extension.entitlements"; sourceTree = "<group>"; };
+		FE1A80DE27A1635700BFDE59 /* signer-switcher-extension Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "signer-switcher-extension Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE1A80E327A1635700BFDE59 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		FE1A80E527A1635700BFDE59 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FE1A80E627A1635700BFDE59 /* signer_switcher_extension_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = signer_switcher_extension_Extension.entitlements; sourceTree = "<group>"; };
+		FE1A80F127A1635800BFDE59 /* inject.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = inject.bundle.js; path = ../../../dist/inject.bundle.js; sourceTree = "<group>"; };
+		FE1A80F227A1635800BFDE59 /* content.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = content.bundle.js.map; path = ../../../dist/content.bundle.js.map; sourceTree = "<group>"; };
+		FE1A80F327A1635800BFDE59 /* options.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = options.bundle.js.map; path = ../../../dist/options.bundle.js.map; sourceTree = "<group>"; };
+		FE1A80F427A1635800BFDE59 /* background.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.bundle.js; path = ../../../dist/background.bundle.js; sourceTree = "<group>"; };
+		FE1A80F527A1635800BFDE59 /* popup.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = popup.bundle.js.map; path = ../../../dist/popup.bundle.js.map; sourceTree = "<group>"; };
+		FE1A80F627A1635800BFDE59 /* redirect.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = redirect.bundle.js.map; path = ../../../dist/redirect.bundle.js.map; sourceTree = "<group>"; };
+		FE1A80F727A1635800BFDE59 /* redirect.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = redirect.bundle.js; path = ../../../dist/redirect.bundle.js; sourceTree = "<group>"; };
+		FE1A80F827A1635800BFDE59 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; name = static; path = ../../../dist/static; sourceTree = "<group>"; };
+		FE1A80F927A1635800BFDE59 /* options.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = options.bundle.js; path = ../../../dist/options.bundle.js; sourceTree = "<group>"; };
+		FE1A80FA27A1635800BFDE59 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../dist/manifest.json; sourceTree = "<group>"; };
+		FE1A80FB27A1635800BFDE59 /* inject.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = inject.bundle.js.map; path = ../../../dist/inject.bundle.js.map; sourceTree = "<group>"; };
+		FE1A80FC27A1635800BFDE59 /* content.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.bundle.js; path = ../../../dist/content.bundle.js; sourceTree = "<group>"; };
+		FE1A80FD27A1635800BFDE59 /* background.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = background.bundle.js.map; path = ../../../dist/background.bundle.js.map; sourceTree = "<group>"; };
+		FE1A80FE27A1635800BFDE59 /* popup.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.bundle.js; path = ../../../dist/popup.bundle.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FE1A80BE27A1635500BFDE59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE1A80DB27A1635700BFDE59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FE1A80B827A1635500BFDE59 = {
+			isa = PBXGroup;
+			children = (
+				FE1A80C327A1635500BFDE59 /* signer-switcher-extension */,
+				FE1A80E227A1635700BFDE59 /* signer-switcher-extension Extension */,
+				FE1A80C227A1635500BFDE59 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FE1A80C227A1635500BFDE59 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FE1A80C127A1635500BFDE59 /* signer-switcher-extension.app */,
+				FE1A80DE27A1635700BFDE59 /* signer-switcher-extension Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FE1A80C327A1635500BFDE59 /* signer-switcher-extension */ = {
+			isa = PBXGroup;
+			children = (
+				FE1A80C427A1635500BFDE59 /* AppDelegate.swift */,
+				FE1A80D027A1635500BFDE59 /* ViewController.swift */,
+				FE1A80D227A1635500BFDE59 /* Main.storyboard */,
+				FE1A80D527A1635700BFDE59 /* Assets.xcassets */,
+				FE1A80D727A1635700BFDE59 /* Info.plist */,
+				FE1A80D827A1635700BFDE59 /* signer_switcher_extension.entitlements */,
+				FE1A80D927A1635700BFDE59 /* signer-switcher-extension.entitlements */,
+				FE1A80C627A1635500BFDE59 /* Resources */,
+			);
+			path = "signer-switcher-extension";
+			sourceTree = "<group>";
+		};
+		FE1A80C627A1635500BFDE59 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FE1A80C727A1635500BFDE59 /* Main.html */,
+				FE1A80CA27A1635500BFDE59 /* Icon.png */,
+				FE1A80CC27A1635500BFDE59 /* Style.css */,
+				FE1A80CE27A1635500BFDE59 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FE1A80E227A1635700BFDE59 /* signer-switcher-extension Extension */ = {
+			isa = PBXGroup;
+			children = (
+				FE1A80F027A1635800BFDE59 /* Resources */,
+				FE1A80E327A1635700BFDE59 /* SafariWebExtensionHandler.swift */,
+				FE1A80E527A1635700BFDE59 /* Info.plist */,
+				FE1A80E627A1635700BFDE59 /* signer_switcher_extension_Extension.entitlements */,
+			);
+			path = "signer-switcher-extension Extension";
+			sourceTree = "<group>";
+		};
+		FE1A80F027A1635800BFDE59 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FE1A80F127A1635800BFDE59 /* inject.bundle.js */,
+				FE1A80F227A1635800BFDE59 /* content.bundle.js.map */,
+				FE1A80F327A1635800BFDE59 /* options.bundle.js.map */,
+				FE1A80F427A1635800BFDE59 /* background.bundle.js */,
+				FE1A80F527A1635800BFDE59 /* popup.bundle.js.map */,
+				FE1A80F627A1635800BFDE59 /* redirect.bundle.js.map */,
+				FE1A80F727A1635800BFDE59 /* redirect.bundle.js */,
+				FE1A80F827A1635800BFDE59 /* static */,
+				FE1A80F927A1635800BFDE59 /* options.bundle.js */,
+				FE1A80FA27A1635800BFDE59 /* manifest.json */,
+				FE1A80FB27A1635800BFDE59 /* inject.bundle.js.map */,
+				FE1A80FC27A1635800BFDE59 /* content.bundle.js */,
+				FE1A80FD27A1635800BFDE59 /* background.bundle.js.map */,
+				FE1A80FE27A1635800BFDE59 /* popup.bundle.js */,
+			);
+			name = Resources;
+			path = "signer-switcher-extension Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FE1A80C027A1635500BFDE59 /* signer-switcher-extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE1A80ED27A1635700BFDE59 /* Build configuration list for PBXNativeTarget "signer-switcher-extension" */;
+			buildPhases = (
+				FE1A80BD27A1635500BFDE59 /* Sources */,
+				FE1A80BE27A1635500BFDE59 /* Frameworks */,
+				FE1A80BF27A1635500BFDE59 /* Resources */,
+				FE1A80EC27A1635700BFDE59 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FE1A80E127A1635700BFDE59 /* PBXTargetDependency */,
+			);
+			name = "signer-switcher-extension";
+			productName = "signer-switcher-extension";
+			productReference = FE1A80C127A1635500BFDE59 /* signer-switcher-extension.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FE1A80DD27A1635700BFDE59 /* signer-switcher-extension Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE1A80E927A1635700BFDE59 /* Build configuration list for PBXNativeTarget "signer-switcher-extension Extension" */;
+			buildPhases = (
+				FE1A80DA27A1635700BFDE59 /* Sources */,
+				FE1A80DB27A1635700BFDE59 /* Frameworks */,
+				FE1A80DC27A1635700BFDE59 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "signer-switcher-extension Extension";
+			productName = "signer-switcher-extension Extension";
+			productReference = FE1A80DE27A1635700BFDE59 /* signer-switcher-extension Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FE1A80B927A1635500BFDE59 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1310;
+				LastUpgradeCheck = 1310;
+				TargetAttributes = {
+					FE1A80C027A1635500BFDE59 = {
+						CreatedOnToolsVersion = 13.1;
+					};
+					FE1A80DD27A1635700BFDE59 = {
+						CreatedOnToolsVersion = 13.1;
+					};
+				};
+			};
+			buildConfigurationList = FE1A80BC27A1635500BFDE59 /* Build configuration list for PBXProject "signer-switcher-extension" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FE1A80B827A1635500BFDE59;
+			productRefGroup = FE1A80C227A1635500BFDE59 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FE1A80C027A1635500BFDE59 /* signer-switcher-extension */,
+				FE1A80DD27A1635700BFDE59 /* signer-switcher-extension Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FE1A80BF27A1635500BFDE59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE1A80CB27A1635500BFDE59 /* Icon.png in Resources */,
+				FE1A80D427A1635500BFDE59 /* Main.storyboard in Resources */,
+				FE1A80CF27A1635500BFDE59 /* Script.js in Resources */,
+				FE1A80C927A1635500BFDE59 /* Main.html in Resources */,
+				FE1A80D627A1635700BFDE59 /* Assets.xcassets in Resources */,
+				FE1A80CD27A1635500BFDE59 /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE1A80DC27A1635700BFDE59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE1A810127A1635800BFDE59 /* redirect.bundle.js in Resources */,
+				FE1A80FF27A1635800BFDE59 /* inject.bundle.js in Resources */,
+				FE1A810227A1635800BFDE59 /* static in Resources */,
+				FE1A810027A1635800BFDE59 /* background.bundle.js in Resources */,
+				FE1A810427A1635800BFDE59 /* manifest.json in Resources */,
+				FE1A810327A1635800BFDE59 /* options.bundle.js in Resources */,
+				FE1A810627A1635800BFDE59 /* popup.bundle.js in Resources */,
+				FE1A810527A1635800BFDE59 /* content.bundle.js in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FE1A80BD27A1635500BFDE59 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE1A80D127A1635500BFDE59 /* ViewController.swift in Sources */,
+				FE1A80C527A1635500BFDE59 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FE1A80DA27A1635700BFDE59 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE1A80E427A1635700BFDE59 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FE1A80E127A1635700BFDE59 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FE1A80DD27A1635700BFDE59 /* signer-switcher-extension Extension */;
+			targetProxy = FE1A80E027A1635700BFDE59 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		FE1A80C727A1635500BFDE59 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE1A80C827A1635500BFDE59 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		FE1A80D227A1635500BFDE59 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FE1A80D327A1635500BFDE59 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		FE1A80E727A1635700BFDE59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		FE1A80E827A1635700BFDE59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		FE1A80EA27A1635700BFDE59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "signer-switcher-extension Extension/signer_switcher_extension_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "signer-switcher-extension Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "signer-switcher-extension Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.signer-switcher-extension.Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FE1A80EB27A1635700BFDE59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "signer-switcher-extension Extension/signer_switcher_extension_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "signer-switcher-extension Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "signer-switcher-extension Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.signer-switcher-extension.Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FE1A80EE27A1635700BFDE59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "signer-switcher-extension/signer-switcher-extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "signer-switcher-extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "signer-switcher-extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.signer-switcher-extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FE1A80EF27A1635700BFDE59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "signer-switcher-extension/signer-switcher-extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "signer-switcher-extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "signer-switcher-extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourCompany.signer-switcher-extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FE1A80BC27A1635500BFDE59 /* Build configuration list for PBXProject "signer-switcher-extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE1A80E727A1635700BFDE59 /* Debug */,
+				FE1A80E827A1635700BFDE59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE1A80E927A1635700BFDE59 /* Build configuration list for PBXNativeTarget "signer-switcher-extension Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE1A80EA27A1635700BFDE59 /* Debug */,
+				FE1A80EB27A1635700BFDE59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE1A80ED27A1635700BFDE59 /* Build configuration list for PBXNativeTarget "signer-switcher-extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE1A80EE27A1635700BFDE59 /* Debug */,
+				FE1A80EF27A1635700BFDE59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FE1A80B927A1635500BFDE59 /* Project object */;
+}
