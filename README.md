@@ -1,4 +1,4 @@
-# Slovensko.sk rozsirenie
+# Autogram rozsirenie
 
 Zatial funguje iba na chrome (pouzivame extension manifest v3)
 
@@ -17,7 +17,7 @@ npm install
 npm run build
 ```
 
-Environment variable `SKSE_MANIFEST_VERSION` expects value `2` or `3`
+Environment variable `AE_MANIFEST_VERSION` expects value `2` or `3`
 and changes output manifest.json file version.
 
 ## Developing

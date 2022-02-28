@@ -1,8 +1,6 @@
 import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
 import { enabledUrls } from "../src/constants";
-
-const manifestVersion: 2 | 3 =
-  process.env.SKSE_MANIFEST_VERSION === "3" ? 3 : 2;
+import { manifestVersion } from "./manifest-version";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
