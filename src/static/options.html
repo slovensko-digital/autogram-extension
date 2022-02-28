@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Autogram Extension Options</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Signer Switcher Options</title>
+  <body>
+    <label>
+      <input type="checkbox" id="extensionEnabled" />
+      Zapnúť rozšírenie.
+    </label>
 
-</head>
+    <div id="status"></div>
+    <button id="save">Save</button>
 
-<body>
-
-  <label>
-    <input type="checkbox" id="extensionEnabled">
-    Zapnúť rozšírenie.
-  </label>
-
-  <div id="status"></div>
-  <button id="save">Save</button>
-  <script src="/options.bundle.js"></script>
-
-</body>
-
+    <ul>
+      <li>
+        <a href="https://autogram.slovensko.digital/ext/check" target="_blank"
+          >Vyskúšať či mi všetko funguje správne</a
+        >
+      </li>
+      <li>
+        <a href="https://autogram.slovensko.digital/ext/help" target="_blank"
+          >Help</a
+        >
+      </li>
+      <li>
+        <a
+          href="https://autogram.slovensko.digital/ext/feedback"
+          target="_blank"
+          >Feedback</a
+        >
+      </li>
+    </ul>
+    <script src="/options.bundle.js"></script>
+  </body>
 </html>

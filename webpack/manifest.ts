@@ -127,6 +127,7 @@ function generateManifest(
         options_ui: {
           page: "static/options.html",
           open_in_tab: true,
+          browser_style: true
         },
         // browser_specific_settings: {
         //   gecko: {
