@@ -38,7 +38,7 @@
       },
       "pathMappings": [
         {
-          "url": "webpack://sk-sk-extension/src",
+          "url": "webpack://autogram-extension/src",
           "path": "${workspaceFolder}/src"
         }
       ]
