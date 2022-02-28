@@ -64,7 +64,7 @@ https://developer.apple.com/documentation/safariservices/safari_web_extensions/a
 
 - Nahradzame globalny `ditec` objekt (javascript)
 - Weby FS/UPVS volaju metody na `ditec` objekte, ktore my mockujeme
-- Po zavolani metody rozsirenie zabezpeci aby octosign mal podobne spravanie ako by mal dsigner
+- Po zavolani metody rozsirenie zabezpeci aby autogram mal podobne spravanie ako by mal dsigner
 
 ### Ako funguje dsigner/dbridge
 
@@ -75,7 +75,7 @@ Web (UPVS/FS) -(js call)-> dbridge -(websocket)-> dsigner
 ked pouzijeme rozsirenie tak
 
 ```
-Web (UPVS/FS) -(js call)-> fake dbridge / rozsirenie -(http)-> octosign
+Web (UPVS/FS) -(js call)-> fake dbridge / rozsirenie -(http)-> autogram
 ```
 
 API dbridge_js funguje nasledovne:
