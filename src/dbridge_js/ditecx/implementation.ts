@@ -1,5 +1,4 @@
 import { apiClient, Document } from "@octosign/client";
-import { logMessage } from "../../audit/inject";
 import { OctoSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
 import { DSigAdapter } from "./dsig-adapter";
@@ -99,21 +98,10 @@ export class DBridgeOctosignImpl {
         this.signedObject = signedObject;
         callback.onSuccess(this.signedObject.content);
       });
-    logMessage({
-      type: "info",
-      class: this.constructor.name,
-      msg: "Prepnite sa do Octosign okna",
-    });
   }
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
     TODO("Signer identification missing in octosign");
-
-    logMessage({
-      type: "info",
-      class: this.constructor.name,
-      msg: "Chybajuca metoda getSignerIdentification",
-    });
     callback.onSuccess(`CN=Tester Testovic`);
   }
 

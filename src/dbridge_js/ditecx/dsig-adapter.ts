@@ -1,7 +1,6 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { logMessage } from "../../audit/inject";
 import { DBridgeOctosignImpl } from "./implementation";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -56,11 +55,6 @@ export class DSigAdapter {
 
   log(...rest: any[]): void {
     console.log(this.constructor.name, ...rest);
-    logMessage({
-      type: "info",
-      class: this.constructor.name,
-      msg: JSON.stringify(rest[0]),
-    });
   }
 
   stub(name: string, ...rest: any[]): void {
