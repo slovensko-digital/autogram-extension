@@ -102,11 +102,18 @@ export class DBridgeOctosignImpl {
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
     TODO("Signer identification missing in octosign");
+    console.log(this.signedObject)
     callback.onSuccess(`CN=Tester Testovic`);
   }
 
   getOriginalObject(callback: OnSuccessCallback1) {
     callback.onSuccess(this.signRequest.object);
+  }
+
+  getVersion(callback: OnSuccessCallback1){
+    const fakeVersion =
+      '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
+    callback.onSuccess(fakeVersion)
   }
 }
 

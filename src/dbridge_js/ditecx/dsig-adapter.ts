@@ -46,13 +46,6 @@ export class DSigAdapter {
     this.__implementation.setLanguage(language);
   }
 
-  getVersion(callback) {
-    this.stub("getVersion");
-    const fakeVersion =
-      '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
-    callback(fakeVersion);
-  }
-
   log(...rest: any[]): void {
     console.log(this.constructor.name, ...rest);
   }
@@ -73,5 +66,15 @@ export class DSigAdapter {
   getConvertedPDFA(callback) {
     this.stub("getConvertedPDFA", arguments);
     this.__implementation.getOriginalObject(callback);
+  }
+
+  getVersion(callback) {
+    this.log("getVersion", arguments);
+    this.__implementation.getVersion(callback);
+  }
+
+  getSignerIdentification(callback) {
+    this.log("getSignerIdentification", arguments);
+    this.__implementation.getSignerIdentification(callback);
   }
 }
