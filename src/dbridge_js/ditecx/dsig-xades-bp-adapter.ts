@@ -58,13 +58,24 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     transformType,
     callback
   ) {
-    this.stub("addXmlObject2", arguments);
+    this.log("addXmlObject2", arguments);
+
+    this.__implementation.addObject(
+      {
+        type: "XadesXml",
+        objectId,
+        objectDescription,
+        sourceXml,
+        sourceXsd,
+        namespaceUri,
+        xsdReference,
+        sourceXsl,
+        xslReference,
+      },
+      callback
+    );
   }
 
-  getSignerIdentification(callback) {
-    this.log("getSignerIdentification", arguments);
-    this.__implementation.getSignerIdentification(callback);
-  }
   getSignatureWithASiCEnvelopeBase64(callback) {
     this.log("getSignatureWithASiCEnvelopeBase64", arguments);
     this.__implementation.getSignature(
@@ -120,7 +131,6 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       callback
     );
   }
-
 
   addPdfObject(
     objectId,

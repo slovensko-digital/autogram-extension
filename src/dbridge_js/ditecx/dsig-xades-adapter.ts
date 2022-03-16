@@ -45,7 +45,22 @@ export class DSigXadesAdapter extends DSigAdapter {
     transformType,
     callback
   ) {
-    this.stub("addXmlObject2", arguments);
+    this.log("addXmlObject2", arguments);
+
+    this.__implementation.addObject(
+      {
+        type: "XadesXml",
+        objectId,
+        objectDescription,
+        sourceXml,
+        sourceXsd,
+        namespaceUri,
+        xsdReference,
+        sourceXsl,
+        xslReference,
+      },
+      callback
+    );
   }
 
   addPdfObject(
@@ -148,17 +163,11 @@ export class DSigXadesAdapter extends DSigAdapter {
   getSignedXmlWithEnvelopeGZipBase64(callback) {
     this.stub("getSignedXmlWithEnvelopeGZipBase64", arguments);
   }
-  getSignerIdentification(callback) {
-    this.stub("getSignerIdentification", arguments);
-  }
   getSigningTime(callback) {
     this.stub("getSigningTime", arguments);
   }
   getSigningCertificate(callback) {
     this.stub("getSigningCertificate", arguments);
-  }
-  getVersion(callback) {
-    this.stub("getVersion", arguments);
   }
   loadConfiguration(configsZipBase64, callback) {
     this.stub("loadConfiguration", arguments);

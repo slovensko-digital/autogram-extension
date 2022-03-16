@@ -14,27 +14,29 @@ import {
 export { InputObject, PartialSignerParameters } from "./types";
 export class SignRequest {
   object: InputObject;
-  objectInfo: ObjectStrategy;
+  private objectInfo: ObjectStrategy;
 
-  signatureId: string;
-  digestAlgUri: string;
-  signaturePolicyIdentifier: string;
-  signStarted = false;
+  public signatureId: string;
+  public digestAlgUri: string;
+  public signaturePolicyIdentifier: string;
+  public signStarted = false;
 
   // objects = [];
   // get object(): InputObject {
   //   return this.objects[0];
   // }
 
-  addObject(obj: InputObject): void {
+  public addObject(obj: InputObject): void {
     if (this.object && !this.signStarted) {
-      console.log("ERROR: overwriting unsigned object");
+      console.error("ERROR: overwriting unsigned object");
     }
     this.object = obj;
     this.objectInfo = this.getObjectInfo();
   }
 
-  signatureParameters(params: PartialSignerParameters): FullSignerParameters {
+  public signatureParameters(
+    params: PartialSignerParameters
+  ): FullSignerParameters {
     return {
       identifier: this.objectInfo.identifier,
       version: this.objectInfo.formVersion,
@@ -65,7 +67,7 @@ export class SignRequest {
     };
   }
 
-  getObjectInfo() {
+  private getObjectInfo() {
     const obj = this.object;
     switch (obj.type) {
       case "XadesBpXml":
