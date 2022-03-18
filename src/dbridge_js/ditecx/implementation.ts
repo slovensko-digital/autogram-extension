@@ -18,7 +18,7 @@ export class DBridgeOctosignImpl {
 
   constructor() {
     let serverProtocol: "http" | "https" = "http";
-    let serverHost = "localhost";
+    let serverHost = "127.0.0.1";
 
     if (isSafari()) {
       // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http
@@ -79,6 +79,7 @@ export class DBridgeOctosignImpl {
   addObject(obj: InputObject, callback: OnSuccessCallback): void {
     console.log(obj);
     this.signRequest.addObject(obj);
+    console.log(callback);
     callback.onSuccess();
   }
 
@@ -97,12 +98,16 @@ export class DBridgeOctosignImpl {
         this.signRequest.signStarted = false;
         this.signedObject = signedObject;
         callback.onSuccess(this.signedObject.content);
+      })
+      .catch((reason) => {
+        console.error(reason);
+        callback.onError(reason);
       });
   }
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
     TODO("Signer identification missing in octosign");
-    console.log(this.signedObject)
+    console.log(this.signedObject);
     callback.onSuccess(`CN=Tester Testovic`);
   }
 
@@ -110,10 +115,10 @@ export class DBridgeOctosignImpl {
     callback.onSuccess(this.signRequest.object);
   }
 
-  getVersion(callback: OnSuccessCallback1){
+  getVersion(callback: OnSuccessCallback1) {
     const fakeVersion =
       '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
-    callback.onSuccess(fakeVersion)
+    callback.onSuccess(fakeVersion);
   }
 }
 
@@ -122,6 +127,7 @@ interface OnSuccessCallback {
 }
 interface OnSuccessCallback1 {
   onSuccess: (v) => void;
+  onError?: (v) => void;
 }
 
 interface OnErrorCallback {
