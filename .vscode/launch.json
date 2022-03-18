@@ -10,10 +10,8 @@
       "name": "Launch Chrome against slovensko.sk",
       "url": "https://slovensko.sk/",
       "webRoot": "${workspaceFolder}/dist",
-      "runtimeArgs": [
-        "--load-extension=${workspaceFolder}/dist"
-      ],
-      "runtimeExecutable": "canary",
+      "pathMapping": { "__webpack_modules__..": "${workspaceFolder}" },
+      "runtimeArgs": ["--load-extension=${workspaceFolder}/dist"],
       "timeout": 100000,
       "includeDefaultArgs": true,
       "trace": true,

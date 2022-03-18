@@ -5,6 +5,7 @@ import {
   XadesBpXmlStrategy,
   XadesPdfStrategy,
   XadesXmlStrategy,
+  XadesBp2XmlStrategy,
 } from "./strategy";
 import {
   InputObject,
@@ -76,6 +77,9 @@ export class SignRequest {
       case "XadesXml":
       case "Xades2Xml":
         return new XadesXmlStrategy(obj);
+
+      case "XadesBp2Xml":
+        return new XadesBp2XmlStrategy(obj);
 
       case "XadesPdf":
       case "XadesBpPdf":

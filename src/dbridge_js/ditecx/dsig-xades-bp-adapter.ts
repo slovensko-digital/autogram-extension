@@ -46,31 +46,27 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       callback
     );
   }
+
   addXmlObject2(
     objectId,
     objectDescription,
+    namespaceUri,
     sourceXml,
     sourceXsd,
-    namespaceUri,
-    xsdReference,
     sourceXsl,
-    xslReference,
-    transformType,
     callback
   ) {
     this.log("addXmlObject2", arguments);
 
     this.__implementation.addObject(
       {
-        type: "XadesXml",
+        type: "XadesBp2Xml",
         objectId,
         objectDescription,
+        namespaceUri,
         sourceXml,
         sourceXsd,
-        namespaceUri,
-        xsdReference,
         sourceXsl,
-        xslReference,
       },
       callback
     );
