@@ -1,6 +1,8 @@
 import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { Document } from "@octosign/client";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
+import { Base64 } from 'js-base64';
+
 
 export class XadesBpXmlStrategy implements ObjectStrategy {
   obj: ObjectXadesBpXml;
@@ -49,10 +51,10 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     };
   }
   get objSchema(): string {
-    return this.obj.sourceXsd;
+    return Base64.encode(this.obj.sourceXsd);
   }
   get objTransformation(): string {
-    return this.obj.sourceXsl;
+    return Base64.encode(this.obj.sourceXsl);
   }
   get formVersion() {
     return this.obj.namespaceUri;
@@ -64,6 +66,6 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
-    return "application/xml";
+    return "application/xml;base64";
   }
 }

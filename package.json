@@ -57,6 +57,7 @@
     "@types/chrome": "^0.0.145",
     "@types/firefox-webext-browser": "^82.0.0",
     "@types/webextension-polyfill": "^0.8.2",
+    "js-base64": "^3.7.2",
     "webextension-polyfill": "^0.8.0"
   }
 }
