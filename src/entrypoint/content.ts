@@ -42,7 +42,7 @@ function insertInjectScript() {
 
 function websiteReady(): Promise<void> {
   let resolved = false;
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (document.readyState == "complete") {
       resolved = true;
       resolve();

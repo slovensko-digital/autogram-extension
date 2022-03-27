@@ -45,11 +45,13 @@ export class DBridgeOctosignImpl {
     try {
       const info = await this.client.info();
       if (info.status != "READY") throw new Error("Wait for server");
+      console.log(`Autogram ${info.version} is ready`);
     } catch (e) {
       console.error(e);
       const url = this.client.getLaunchURL();
       window.open(url);
       const info = await this.client.waitForStatus("READY", 100, 5);
+      console.log(`Autogram ${info.version} is ready`);
     }
     callback.onSuccess();
   }
