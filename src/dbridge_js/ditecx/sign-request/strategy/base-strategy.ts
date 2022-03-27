@@ -38,6 +38,7 @@ class EmptyStrategy implements ObjectStrategy {
 export type PayloadMimeTypeStr =
   | "application/xml"
   | "application/xml;base64"
+  | "application/vnd.gov.sk.xmldatacontainer+xml;base64"
   | "image/png;base64"
   | "application/pdf"
   | "application/pdf;base64"
