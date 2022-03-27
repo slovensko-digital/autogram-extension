@@ -1,5 +1,4 @@
 import browser from "webextension-polyfill";
-import { defaultOptionsStorage } from "../options/default";
 
 console.log("options");
 

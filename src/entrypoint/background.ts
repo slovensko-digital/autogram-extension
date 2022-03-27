@@ -26,7 +26,7 @@ function declarativeContentRules() {
     actions: [new chrome.declarativeContent.ShowPageAction()],
   };
 
-  chrome.runtime.onInstalled.addListener(function (details) {
+  chrome.runtime.onInstalled.addListener(function () {
     chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
       chrome.declarativeContent.onPageChanged.addRules([
         ruleOnEnabledPagesActivatePageAction,

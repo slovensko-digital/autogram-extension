@@ -10,6 +10,7 @@ export interface ObjectStrategy {
   payloadMimeType: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EmptyStrategy implements ObjectStrategy {
   get document(): Document {
     return { content: "" };

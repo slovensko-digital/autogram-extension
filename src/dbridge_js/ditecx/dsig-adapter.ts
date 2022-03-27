@@ -46,11 +46,11 @@ export class DSigAdapter {
     this.__implementation.setLanguage(language);
   }
 
-  log(...rest: any[]): void {
+  log(...rest: unknown[]): void {
     console.log(this.constructor.name, ...rest);
   }
 
-  stub(name: string, ...rest: any[]): void {
+  stub(name: string, ...rest: unknown[]): void {
     this.log(name, ...rest);
     alert(`Stubbed ${this.constructor.name} method: \n\n${name}`);
   }
