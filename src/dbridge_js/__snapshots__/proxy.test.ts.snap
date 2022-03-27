@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`proxy to run 1`] = `
+Array [
+  Object {
+    "prop": "a",
+    "receiver": Object {
+      "a": "test",
+      "b": Object {
+        "a": "test",
+      },
+      "fn": [Function],
+    },
+    "target": Object {
+      "a": "test",
+      "b": Object {
+        "a": "test",
+      },
+      "fn": [Function],
+    },
+    "type": "get",
+  },
+]
+`;
