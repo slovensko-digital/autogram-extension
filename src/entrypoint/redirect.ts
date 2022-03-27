@@ -1,5 +1,5 @@
 setTimeout(function () {
-  window.location.assign("https://slovensko.digital/");
+  window.location.assign("https://autogram.slovensko.digital/ext/is-autogram-missing");
 }, 20000);
 
 window.location.assign(
