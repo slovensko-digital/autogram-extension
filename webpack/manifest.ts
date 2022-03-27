@@ -23,6 +23,12 @@ function generateManifest(
       "128": "static/logo-128.png",
       "512": "static/logo-512.png",
     },
+
+    options_ui: {
+      page: "static/options.html",
+      open_in_tab: true,
+      browser_style: true,
+    },
   };
 
   switch (manifestVersion) {
@@ -61,6 +67,7 @@ function generateManifest(
           },
           default_popup: "static/popup.html",
         },
+        options_page: "static/options.html",
         web_accessible_resources: [
           {
             resources: [
@@ -130,12 +137,6 @@ function generateManifest(
           matches: enabledUrls,
         },
         // options_page: "static/options.html",
-
-        options_ui: {
-          page: "static/options.html",
-          open_in_tab: true,
-          browser_style: true,
-        },
         // browser_specific_settings: {
         //   gecko: {
         //     id: "extension@aaa.sk",
