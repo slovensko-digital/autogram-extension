@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      window.ditec = {};
+    </script>
+  </head>
+  <body>
+    is extension installed?
+    <div id="answer"></div>
+    <script>
+      setTimeout(() => {
+        console.log("x", window.ditec);
+        if (window.ditec && window.ditec.isAutogram) {
+          document.getElementById("answer").innerText = "yes";
+        } else {
+          document.getElementById("answer").innerText = "no";
+        }
+      }, 1000);
+    </script>
+  </body>
+</html>
