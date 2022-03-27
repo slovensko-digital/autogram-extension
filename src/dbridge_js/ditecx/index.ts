@@ -8,6 +8,7 @@ import { DBridgeOctosignImpl } from "./implementation";
 const implementation = new DBridgeOctosignImpl();
 
 export const ditecX = {
+  isAutogram: true,
   config: {
     downloadPage: {
       url: "",

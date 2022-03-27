@@ -1,10 +1,14 @@
 import { ditecX } from "./ditecx";
 import { wrapWithProxy } from "./proxy";
 
-export function inject(windowAny: {ditec?: any}): void {
+type OriginalDitec = unknown;
+
+export function inject(windowAny: { ditec?: OriginalDitec }): void {
   console.log("Start inject");
   console.log(windowAny.ditec);
 
-  // windowAny.ditec = wrapWithProxy(ditecX);
-  windowAny.ditec = ditecX;
+  if (windowAny.ditec) {
+    windowAny.ditec = ditecX;
+    // windowAny.ditec = wrapWithProxy(ditecX);
+  }
 }

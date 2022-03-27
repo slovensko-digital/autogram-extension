@@ -1,5 +1,7 @@
-web-ext-artifacts/*.zip
+dist
+web-ext-artifacts/*
 node_modules
+
 ### https://raw.github.com/github/gitignore/2a4de265d37eca626309d8e115218d18985b5435/Global/VisualStudioCode.gitignore
 
 .vscode/*
