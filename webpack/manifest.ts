@@ -1,5 +1,6 @@
 import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
 import { enabledUrls } from "../src/constants";
+import { ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -9,7 +10,7 @@ function generateManifest(
   seed: Record<string, unknown>,
   files: FileDescriptor[],
   entries: Record<string, string[]>
-): Record<string, unknown> {
+): ManifestV3 | ManifestV2 | Record<string, unknown> {
   const common = {
     name: packageJson.name,
     version: packageJson.version,
@@ -26,7 +27,7 @@ function generateManifest(
 
   switch (manifestVersion) {
     case 3:
-      return {
+      return <ManifestV3>{
         manifest_version: 3,
 
         /* Common properties */
@@ -50,10 +51,16 @@ function generateManifest(
         // background: {
         //   service_worker: entries.background,
         // },
-        // action: {
-        //   default_icon: "static/logo.png",
-        //   default_popup: "popup.html",
-        // },
+        action: {
+          default_icon: {
+            "16": "static/logo-16.png",
+            "32": "static/logo-32.png",
+            "64": "static/logo-64.png",
+            "128": "static/logo-128.png",
+            "512": "static/logo-512.png",
+          },
+          default_popup: "static/popup.html",
+        },
         web_accessible_resources: [
           {
             resources: [
@@ -68,7 +75,7 @@ function generateManifest(
 
     case 2:
     default:
-      return {
+      return <ManifestV2>{
         manifest_version: 2,
 
         /* Common properties */
@@ -127,7 +134,7 @@ function generateManifest(
         options_ui: {
           page: "static/options.html",
           open_in_tab: true,
-          browser_style: true
+          browser_style: true,
         },
         // browser_specific_settings: {
         //   gecko: {
