@@ -1,8 +1,7 @@
 import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { Document } from "@octosign/client";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
-import { Base64 } from 'js-base64';
-
+import { Base64 } from "js-base64";
 
 export class XadesBpXmlStrategy implements ObjectStrategy {
   obj: ObjectXadesBpXml;
@@ -66,6 +65,14 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
+    try {
+      const decoded = Base64.decode(this.obj.sourceXml);
+      if (decoded.indexOf("<XMLDataContainer") !== -1) {
+        return "application/vnd.gov.sk.xmldatacontainer+xml;base64";
+      }
+    } catch (error) {
+      console.error(error);
+    }
     return "application/xml;base64";
   }
 }
