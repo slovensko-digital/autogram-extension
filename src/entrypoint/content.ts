@@ -5,7 +5,7 @@ console.log("content");
 
 isExtensionEnabled().then((enabled) => {
   if (enabled) {
-    console.log("Extension is enabled");
+    console.log("Autogram extension is enabled");
     insertInjectScript();
   }
 });
