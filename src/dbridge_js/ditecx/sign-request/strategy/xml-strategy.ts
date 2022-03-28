@@ -1,4 +1,8 @@
-import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
+import {
+  FileMimeTypeStr,
+  ObjectStrategy,
+  PayloadMimeTypeStr,
+} from "./base-strategy";
 import { Document } from "@octosign/client";
 import { ObjectXades2Xml, ObjectXadesXml } from "../types";
 
@@ -28,6 +32,16 @@ export class XadesXmlStrategy implements ObjectStrategy {
     return this.obj.namespaceUri;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
+    return "application/xml";
+  }
+
+  get objTransformationOutputMimeType(): string {
+    return this.objTransformation.search(/xsl:output method="text"/) != -1
+      ? "text/plain"
+      : "text/html";
+  }
+
+  get fileMimeType(): FileMimeTypeStr {
     return "application/xml";
   }
 }

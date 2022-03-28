@@ -1,4 +1,8 @@
-import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
+import {
+  FileMimeTypeStr,
+  ObjectStrategy,
+  PayloadMimeTypeStr,
+} from "./base-strategy";
 import { Document } from "@octosign/client";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
@@ -34,12 +38,34 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/xml";
   }
+
+  get objTransformationOutputMimeType(): string {
+    return this.objTransformation.search(/xsl:output method="text"/) != -1
+      ? "text/plain"
+      : "text/html";
+  }
+
+  get fileMimeType(): FileMimeTypeStr {
+    return "application/xml";
+  }
 }
 
 export class XadesBp2XmlStrategy implements ObjectStrategy {
   obj: ObjectXadesBp2Xml;
   constructor(object: ObjectXadesBp2Xml) {
     this.obj = object;
+  }
+
+  isXmlDataContainer() {
+    try {
+      const decoded = Base64.decode(this.obj.sourceXml);
+      if (decoded.indexOf("<XMLDataContainer") !== -1) {
+        return true;
+      }
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
 
   get document(): Document {
@@ -65,14 +91,22 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
-    try {
-      const decoded = Base64.decode(this.obj.sourceXml);
-      if (decoded.indexOf("<XMLDataContainer") !== -1) {
-        return "application/vnd.gov.sk.xmldatacontainer+xml;base64";
-      }
-    } catch (error) {
-      console.error(error);
+    if (this.isXmlDataContainer()) {
+      return "application/vnd.gov.sk.xmldatacontainer+xml;base64";
     }
     return "application/xml;base64";
+  }
+
+  get objTransformationOutputMimeType(): string {
+    return this.objTransformation.search(/xsl:output method="text"/) != -1
+      ? "text/plain"
+      : "text/html";
+  }
+
+  get fileMimeType(): FileMimeTypeStr {
+    if (this.isXmlDataContainer()) {
+      return "application/vnd.gov.sk.xmldatacontainer+xml";
+    }
+    return "application/xml";
   }
 }

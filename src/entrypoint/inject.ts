@@ -1,6 +1,6 @@
 import { inject } from "../dbridge_js";
 
-type WindowWithDitec = Window & {ditec?: object};
+type WindowWithDitec = Window & { ditec?: object };
 
 const windowAny = window as WindowWithDitec;
 

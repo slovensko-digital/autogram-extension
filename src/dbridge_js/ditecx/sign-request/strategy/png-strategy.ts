@@ -1,4 +1,4 @@
-import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
+import { FileMimeTypeStr, ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { Document } from "@octosign/client";
 import { ObjectXadesBpPng } from "../types";
 
@@ -32,5 +32,13 @@ export class XadesBpPngStrategy implements ObjectStrategy {
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "image/png;base64";
+  }
+
+  get objTransformationOutputMimeType(): string {
+    return null;
+  }
+
+  get fileMimeType(): FileMimeTypeStr {
+    return "image/png";
   }
 }

@@ -44,7 +44,7 @@ export class SignRequest {
       format: params.format || "XADES",
       level: params.level || "XADES_BASELINE_B",
       fileMimeType:
-        params.fileMimeType ||
+        params.fileMimeType || this.objectInfo.fileMimeType ||
         "application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8",
       container: params.container || "ASICE",
       containerFilename: params.containerFilename || this.object.objectId,
@@ -63,7 +63,7 @@ export class SignRequest {
       signaturePolicyContent: params.signaturePolicyContent || "Don't be evil.",
       transformation: this.objectInfo.objTransformation,
       transformationOutputMimeType:
-        params.transformationOutputMimeType || "text/plain",
+        params.transformationOutputMimeType || this.objectInfo.objTransformationOutputMimeType || "text/plain",
       schema: this.objectInfo.objSchema,
     };
   }
