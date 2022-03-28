@@ -2,11 +2,22 @@ import { Document } from "@octosign/client";
 
 export interface ObjectStrategy {
   document: Document;
+  /**
+   * Type of returned file from Autogram (Autogram output)
+   */
+  fileMimeType: FileMimeTypeStr;
   objectId: string;
   objSchema: string;
   objTransformation: string;
+  /**
+   * Visualization payload type
+   */
+  objTransformationOutputMimeType: string | "text/html" | "text/plain";
   identifier: string;
   formVersion: string;
+  /**
+   * Type of payload for Autogram (Autogram input)
+   */
   payloadMimeType: string;
 }
 
@@ -34,6 +45,12 @@ class EmptyStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";
   }
+  get fileMimeType() {
+    return null;
+  }
+  get objTransformationOutputMimeType() {
+    return null;
+  }
 }
 
 export type PayloadMimeTypeStr =
@@ -45,3 +62,11 @@ export type PayloadMimeTypeStr =
   | "application/pdf;base64"
   | "text/plain"
   | "*/*";
+
+export type FileMimeTypeStr =
+  | "application/xml"
+  | "application/vnd.gov.sk.xmldatacontainer+xml"
+  | "image/png"
+  | "image/png"
+  | "application/pdf"
+  | "text/plain";

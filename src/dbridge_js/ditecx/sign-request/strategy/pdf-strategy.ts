@@ -1,4 +1,8 @@
-import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
+import {
+  FileMimeTypeStr,
+  ObjectStrategy,
+  PayloadMimeTypeStr,
+} from "./base-strategy";
 import { Document } from "@octosign/client";
 import { ObjectXadesPdf } from "../types";
 
@@ -28,5 +32,13 @@ export class XadesPdfStrategy implements ObjectStrategy {
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/pdf;base64";
+  }
+
+  get objTransformationOutputMimeType(): string {
+    return null;
+  }
+
+  get fileMimeType(): FileMimeTypeStr {
+    return "application/pdf";
   }
 }
