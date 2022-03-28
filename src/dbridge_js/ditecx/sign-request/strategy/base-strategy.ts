@@ -66,6 +66,7 @@ export type PayloadMimeTypeStr =
 export type FileMimeTypeStr =
   | "application/xml"
   | "application/vnd.gov.sk.xmldatacontainer+xml"
+  | "application/lor.ip.xmldatacontainer+xml"
   | "image/png"
   | "image/png"
   | "application/pdf"

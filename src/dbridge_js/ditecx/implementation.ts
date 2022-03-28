@@ -7,6 +7,8 @@ import {
   PartialSignerParameters,
   SignRequest,
 } from "./sign-request";
+import { Base64 } from 'js-base64';
+
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 export class DBridgeOctosignImpl {
@@ -87,7 +89,8 @@ export class DBridgeOctosignImpl {
 
   async getSignature(
     parameters: PartialSignerParameters,
-    callback: OnSuccessCallback1
+    callback: OnSuccessCallback1,
+    decodeBase64 = false
   ): Promise<void> {
     this.client
       .sign(
@@ -99,7 +102,7 @@ export class DBridgeOctosignImpl {
         TODO("restart SignRequest?");
         this.signRequest.signStarted = false;
         this.signedObject = signedObject;
-        callback.onSuccess(this.signedObject.content);
+        callback.onSuccess(decodeBase64 ? Base64.decode(this.signedObject.content) : this.signedObject.content);
       })
       .catch((reason) => {
         console.error(reason);

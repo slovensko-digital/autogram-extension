@@ -151,7 +151,17 @@ export class DSigXadesAdapter extends DSigAdapter {
     this.stub("", arguments);
   }
   getSignedXmlWithEnvelope(callback) {
-    this.stub("getSignedXmlWithEnvelope", arguments);
+    this.log("getSignedXmlWithEnvelope", arguments);
+    this.__implementation.getSignature(
+      {
+        container: null,
+        containerXmlns: null,
+        containerFilename: null,
+        format: "XADES",
+        packaging: "ENVELOPING",
+      },
+      callback
+    );
   }
   getSignedXmlWithEnvelopeBase64(callback) {
     this.log("getSignedXmlWithEnvelopeBase64", arguments);

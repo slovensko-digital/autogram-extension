@@ -28,7 +28,7 @@ export class XadesXmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get identifier() {
-    console.warn("Not sure if this is identifier");
+    console.warn("Not sure if this is identifier", this.obj.namespaceUri);
     return this.obj.namespaceUri;
   }
   get payloadMimeType(): PayloadMimeTypeStr {

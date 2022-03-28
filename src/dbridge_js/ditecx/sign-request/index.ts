@@ -41,29 +41,59 @@ export class SignRequest {
     return {
       identifier: this.objectInfo.identifier,
       version: this.objectInfo.formVersion,
-      format: params.format || "XADES",
-      level: params.level || "XADES_BASELINE_B",
-      fileMimeType:
-        params.fileMimeType || this.objectInfo.fileMimeType ||
-        "application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8",
-      container: params.container || "ASICE",
-      containerFilename: params.containerFilename || this.object.objectId,
-      containerXmlns:
-        params.containerXmlns ||
-        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
-      packaging: params.packaging || "ENVELOPING",
-      digestAlgorithm: params.digestAlgorithm || "SHA256",
-      en319132: params.en319132 || false,
-      infoCanonicalization: params.infoCanonicalization || "INCLUSIVE",
-      propertiesCanonicalization:
-        params.propertiesCanonicalization || "INCLUSIVE",
-      keyInfoCanonicalization: params.keyInfoCanonicalization || "INCLUSIVE",
-      signaturePolicyId:
-        params.signaturePolicyId || "http://www.example.com/policy.txt",
-      signaturePolicyContent: params.signaturePolicyContent || "Don't be evil.",
+      format: getProperty(params, "format", "XADES"),
+      level: getProperty(params, "level", "XADES_BASELINE_B"),
+      fileMimeType: getProperty(
+        params,
+        "fileMimeType",
+        this.objectInfo.fileMimeType ||
+          "application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"
+      ),
+      container: getProperty(params, "container", "ASICE"),
+      containerFilename: getProperty(
+        params,
+        "containerFilename",
+        this.object.objectId
+      ),
+      containerXmlns: getProperty(
+        params,
+        "containerXmlns",
+        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
+      ),
+      packaging: getProperty(params, "packaging", "ENVELOPING"),
+      digestAlgorithm: getProperty(params, "digestAlgorithm", "SHA256"),
+      en319132: getProperty(params, "en319132", false),
+      infoCanonicalization: getProperty(
+        params,
+        "infoCanonicalization",
+        "INCLUSIVE"
+      ),
+      propertiesCanonicalization: getProperty(
+        params,
+        "propertiesCanonicalization",
+        "INCLUSIVE"
+      ),
+      keyInfoCanonicalization: getProperty(
+        params,
+        "keyInfoCanonicalization",
+        "INCLUSIVE"
+      ),
+      signaturePolicyId: getProperty(
+        params,
+        "signaturePolicyId",
+        "http://www.example.com/policy.txt"
+      ),
+      signaturePolicyContent: getProperty(
+        params,
+        "signaturePolicyContent",
+        "Don't be evil."
+      ),
       transformation: this.objectInfo.objTransformation,
-      transformationOutputMimeType:
-        params.transformationOutputMimeType || this.objectInfo.objTransformationOutputMimeType || "text/plain",
+      transformationOutputMimeType: getProperty(
+        params,
+        "transformationOutputMimeType",
+        this.objectInfo.objTransformationOutputMimeType || "text/plain"
+      ),
       schema: this.objectInfo.objSchema,
     };
   }
@@ -104,6 +134,19 @@ export class SignRequest {
   get payloadMimeType() {
     return this.objectInfo.payloadMimeType;
   }
+}
+
+/**
+ * Gets property from object or returns defaultValue
+ * @param obj
+ * @propertyName propertyName
+ * @param defaultValue
+ * @returns
+ */
+function getProperty<T>(obj: object, propertyName: string, defaultValue: T) {
+  return Object.prototype.hasOwnProperty.call(obj, propertyName)
+    ? obj[propertyName]
+    : defaultValue;
 }
 
 // function assertUnreachable(x: never): never {
