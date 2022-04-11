@@ -1,5 +1,5 @@
 import { apiClient, Document } from "@octosign/client";
-import { OctoSwitcherError } from "../../error";
+import { AutogramSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
 import { DSigAdapter } from "./dsig-adapter";
 import {
@@ -39,7 +39,7 @@ export class DBridgeOctosignImpl {
   }
 
   setAdapter(adapter: DSigAdapter): void {
-    if (this._adapter) throw new OctoSwitcherError("Adapter already set");
+    if (this._adapter) throw new AutogramSwitcherError("Adapter already set");
     this._adapter = adapter;
   }
 
