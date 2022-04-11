@@ -1,1 +1,1 @@
-export class OctoSwitcherError extends Error {}
+export class AutogramSwitcherError extends Error {}
