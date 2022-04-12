@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { DSigAdapter } from "./dsig-adapter";
+import { DSigAdapter } from "./dsig-base-adapter";
 
 export class DSigXadesBpAdapter extends DSigAdapter {
   addXmlObject(

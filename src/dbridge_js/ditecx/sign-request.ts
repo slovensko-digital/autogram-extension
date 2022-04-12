@@ -6,7 +6,7 @@ import {
   XadesPdfStrategy,
   XadesXmlStrategy,
   XadesBp2XmlStrategy,
-} from "./strategy";
+} from "./filetype-strategy";
 import {
   InputObject,
   PartialSignerParameters,

@@ -1,17 +1,16 @@
 import { apiClient, Document } from "@octosign/client";
 import { AutogramSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
-import { DSigAdapter } from "./dsig-adapter";
+import { DSigAdapter } from "./dsig-base-adapter";
 import {
   InputObject,
   PartialSignerParameters,
   SignRequest,
 } from "./sign-request";
-import { Base64 } from 'js-base64';
-
+import { Base64 } from "js-base64";
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
-export class DBridgeOctosignImpl {
+export class DBridgeAutogramImpl {
   private client: ReturnType<typeof apiClient>;
   private signRequest: SignRequest;
   private language = "sk";
@@ -102,7 +101,11 @@ export class DBridgeOctosignImpl {
         TODO("restart SignRequest?");
         this.signRequest.signStarted = false;
         this.signedObject = signedObject;
-        callback.onSuccess(decodeBase64 ? Base64.decode(this.signedObject.content) : this.signedObject.content);
+        callback.onSuccess(
+          decodeBase64
+            ? Base64.decode(this.signedObject.content)
+            : this.signedObject.content
+        );
       })
       .catch((reason) => {
         console.error(reason);

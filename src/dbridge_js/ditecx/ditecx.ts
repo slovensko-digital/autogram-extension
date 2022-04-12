@@ -3,9 +3,9 @@
 
 import { DSigXadesBpAdapter } from "./dsig-xades-bp-adapter";
 import { DSigXadesAdapter } from "./dsig-xades-adapter";
-import { DBridgeOctosignImpl } from "./implementation";
+import { DBridgeAutogramImpl } from "./autogram-implementation";
 
-const implementation = new DBridgeOctosignImpl();
+const implementation = new DBridgeAutogramImpl();
 
 export const ditecX = {
   isAutogram: true,

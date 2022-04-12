@@ -1,8 +1,8 @@
-import { ditecX } from "./ditecx";
+import { ditecX } from "./ditecx/ditecx";
 
 type OriginalDitec = object;
 
-const useProxy = true;
+const useProxy = false;
 const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: { ditec?: OriginalDitec }): void {
   console.log("Start inject");

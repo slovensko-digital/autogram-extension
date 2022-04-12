@@ -1,7 +1,7 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { DBridgeOctosignImpl } from "./implementation";
+import { DBridgeAutogramImpl } from "./autogram-implementation";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export class DSigAdapter {
@@ -19,9 +19,9 @@ export class DSigAdapter {
   PDF_CONFORMANCE_LEVEL_NONE = 2;
   ERROR_SIGNING_CANCELLED = 1;
 
-  __implementation: DBridgeOctosignImpl;
+  __implementation: DBridgeAutogramImpl;
 
-  constructor(implementation: DBridgeOctosignImpl) {
+  constructor(implementation: DBridgeAutogramImpl) {
     this.__implementation = implementation;
     // this.__implementation.setAdapter(this);
   }

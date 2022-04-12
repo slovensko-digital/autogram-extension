@@ -1,4 +1,4 @@
-import { inject } from "../dbridge_js";
+import { inject } from "../dbridge_js/inject-ditec";
 
 type WindowWithDitec = Window & { ditec?: object };
 

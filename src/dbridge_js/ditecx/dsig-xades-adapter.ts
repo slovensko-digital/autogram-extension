@@ -2,18 +2,18 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { DSigAdapter } from "./dsig-adapter";
+import { DSigAdapter } from "./dsig-base-adapter";
 
 export class DSigXadesAdapter extends DSigAdapter {
   addXmlObject(
-    objectId,
-    objectDescription,
-    sourceXml,
-    sourceXsd,
-    namespaceUri,
-    xsdReference,
-    sourceXsl,
-    xslReference,
+    objectId: string,
+    objectDescription: string,
+    sourceXml: string,
+    sourceXsd: string,
+    namespaceUri: string,
+    xsdReference: string,
+    sourceXsl: string,
+    xslReference: string,
     callback
   ) {
     this.log("addXmlObject", arguments);
