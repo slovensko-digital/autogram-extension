@@ -22,6 +22,8 @@ and changes output manifest.json file version.
 
 ## Developing
 
+Look into [DEVELOPERS.md](DEVELOPERS.md)
+
 ```
 npm start
 ```

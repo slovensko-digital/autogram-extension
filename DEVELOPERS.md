@@ -85,3 +85,24 @@ API dbridge_js funguje nasledovne:
 - `addXY` - prida objekt (file) do serveru
 - `sign` - vyvola podpisovanie - podpisany dokument nie je rovno odosielany do browseru
 - `getABC` - vypyta si od serveru data ktore potrebuje - tu sa urcuje typ vystupu
+
+
+## Štruktúra codebase
+
+- `src` samotná aplikácia 
+    - `dbridge_js` - "hlavná časť"
+        - `inject-ditec.ts` - samotne vkladanie objektu
+        - `proxy.ts` - debugovacie interceptovanie/nahravanie pri pouzivani (WIP) (napr. na vyrabanie testov)
+        - `ditecx` - 
+            - `ditecx.ts` - samotny objekt ktory nahradza `window.ditec`
+            - `filetype-strategy` - rozne typy suborov maju rozne data ktore treba premapovat na format pre Autogram
+            - `dsig-*-adapter.ts` - adaptery simulujuce spravania ditec implementacii
+            - ...
+    - `entrypoint` - vstupné skripty pre rôzne kontexty v ktorých beží extension
+        - `content.ts` - časť spúšťajúca sa nad stránkou, vkladá `inject.ts`
+        - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
+        - `popup.ts` - správanie popup-u
+        - ...
+    - `img` - zdrojové obrázky na distribuciu (do store-u)
+    - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
+    - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
