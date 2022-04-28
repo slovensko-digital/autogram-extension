@@ -3,36 +3,174 @@
   <head>
     <meta charset="UTF-8" />
     <title>Autogram Extension Options</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400&display=swap");
+      body {
+        font-family: "Source Sans Pro", Arial, sans-serif;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
+        line-height: 1.31579;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      button {
+        font-family: "Source Sans Pro", Arial, sans-serif;
+        font-weight: 400;
+        font-size: 19px;
+        line-height: 1;
+        display: inline-block;
+        padding: 8px 10px 7px;
+        border: 2px solid transparent;
+        border-radius: 0;
+        color: #ffffff;
+        background-color: #00703c;
+        box-shadow: 0 2px 0 #002d18;
+        text-align: center;
+        vertical-align: top;
+        cursor: pointer;
+        appearance: none;
+      }
+      button:hover {
+        background-color: #005a30;
+      }
+
+      ul {
+        padding-left: 20px;
+        list-style-type: disc;
+        margin-bottom: 20px;
+        font-size: 19px;
+        color: #0b0c0c;
+      }
+      ul li {
+        margin-bottom: 5px;
+      }
+
+      a {
+        font-size: 19px;
+        color: #0065b3;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.1em;
+      }
+      a:hover {
+        color: #003078;
+        text-decoration-thickness: 3px;
+      }
+
+      .checkbox {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+
+      .checkbox__input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+      }
+      .checkbox__input:checked + .checkbox__checkmark:before {
+        opacity: 1;
+      }
+
+      .checkbox__checkmark {
+        content: "";
+        box-sizing: border-box;
+        width: 40px;
+        height: 40px;
+        border: 2px solid black;
+        margin-right: 15px;
+      }
+      .checkbox__checkmark::before {
+        content: "";
+        position: absolute;
+        top: 11px;
+        left: 9px;
+        width: 18px;
+        height: 7px;
+        -webkit-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+        transform: rotate(-45deg);
+        border: solid;
+        border-width: 0 0 5px 5px;
+        border-top-color: transparent;
+        opacity: 0;
+        background: transparent;
+      }
+      .checkbox__checkmark .checkbox__label {
+        font-size: 19px;
+      }
+
+      .wrapper {
+        margin: 0 auto;
+        padding: 100px 0 0;
+        max-width: 600px;
+      }
+
+      .header {
+        background-color: #003078;
+        height: 60px;
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+      }
+
+      .header__tricolor {
+        height: 3px;
+        background-image: linear-gradient(
+          to right,
+          #ffffff 0%,
+          #ffffff 33.3%,
+          #003183 33.3%,
+          #003183 66.6%,
+          #d0190f 66.6%,
+          #d0190f 100%
+        );
+        background-size: 150px 100%;
+        background-repeat: repeat;
+      }
+    </style>
   </head>
 
   <body>
-    <label>
-      <input type="checkbox" id="extensionEnabled" />
-      Zapnúť rozšírenie.
-    </label>
+    <div class="wrapper">
+      <header class="header"><div class="header__tricolor"></div></header>
 
-    <div id="status"></div>
-    <button id="save">Save</button>
+      <h1>Autogram nastavenia</h1>
+      <label class="checkbox">
+        <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
+        <span class="checkbox__checkmark"></span>
+        <span class="checkbox__label">Zapnúť rozšírenie.</span>
+      </label>
 
-    <ul>
-      <li>
-        <a href="https://autogram.slovensko.digital/ext/check" target="_blank"
-          >Vyskúšať či mi všetko funguje správne</a
-        >
-      </li>
-      <li>
-        <a href="https://autogram.slovensko.digital/ext/help" target="_blank"
-          >Help</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://autogram.slovensko.digital/ext/feedback"
-          target="_blank"
-          >Feedback</a
-        >
-      </li>
-    </ul>
+      <div id="status"></div>
+      <button id="save">Uložiť</button>
+
+      <ul>
+        <li>
+          <a href="https://autogram.slovensko.digital/ext/check" target="_blank"
+            >Vyskúšať či mi všetko funguje správne</a
+          >
+        </li>
+        <li>
+          <a href="https://autogram.slovensko.digital/ext/help" target="_blank"
+            >Help</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://autogram.slovensko.digital/ext/feedback"
+            target="_blank"
+            >Feedback</a
+          >
+        </li>
+      </ul>
+    </div>
     <script src="/options.bundle.js"></script>
   </body>
 </html>
