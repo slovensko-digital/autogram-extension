@@ -41,6 +41,8 @@ CSS is implemented using CSS modules inserted directly into page.
 
 We are using @octosign/client as base, but it was missing some types so we don't use theirs.
 
+(Because it was out-of-date on npm, you have to `git clone https://github.com/octosign/white-label-client` next to this repo and build it `npm install && npm run build`)
+
 ## Browser support
 
 Right now we are using `webextension-polyfill`, so extension should run in all browsers.
