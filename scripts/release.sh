@@ -2,6 +2,7 @@ VERSION=$(npx auto version)
 
 ## Support for label 'skip-release'
 if [ ! -z "$VERSION" ]; then
+    npm run clean
     npm run build:prod
     ## Update Changelog
     npx auto changelog
