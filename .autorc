@@ -1,7 +1,13 @@
 {
   "plugins": [
     "git-tag",
-    "conventional-commits"
+    "conventional-commits",
+    [
+      "upload-assets",
+      [
+        "./web-ext-artifacts/autogram-extension-mv*.zip"
+      ]
+    ]
   ],
   "owner": "slovensko-digital",
   "repo": "signer-switcher-extension",
