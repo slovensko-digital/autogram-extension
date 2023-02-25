@@ -1,3 +1,20 @@
+# v1.3.5 (Sat Feb 25 2023)
+
+#### 🐛 Bug Fix
+
+- fix: add skip-release info (***REMOVED***)
+- fix: move release into script (***REMOVED***)
+
+#### ⚠️ Pushed to `master`
+
+- build: clean before release (***REMOVED***)
+
+#### Authors: 1
+
+- pom (***REMOVED***)
+
+---
+
 # v1.3.3 (Sat Feb 25 2023)
 
 #### 🐛 Bug Fix
