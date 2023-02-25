@@ -14,4 +14,6 @@ if [ ! -z "$VERSION" ]; then
     ## Create GitHub Release
     git push --follow-tags --set-upstream origin $branch
     npx auto release
+else
+    echo "Skipping relase"
 fi
