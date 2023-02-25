@@ -1,4 +1,4 @@
-import { Document } from "@octosign/client";
+import { Document } from "../../../client";
 
 export interface ObjectStrategy {
   document: Document;
@@ -24,7 +24,7 @@ export interface ObjectStrategy {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EmptyStrategy implements ObjectStrategy {
   get document(): Document {
-    return { content: "" };
+    return { content: "", filename: "" };
   }
   get objSchema(): string {
     return null;
@@ -61,6 +61,7 @@ export type PayloadMimeTypeStr =
   | "application/pdf"
   | "application/pdf;base64"
   | "text/plain"
+  | "text/plain;base64"
   | "*/*";
 
 export type FileMimeTypeStr =

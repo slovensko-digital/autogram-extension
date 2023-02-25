@@ -1,4 +1,4 @@
-import { apiClient, Document } from "@octosign/client";
+import { apiClient, BaseDocument } from "../../client";
 import { AutogramSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
 import { DSigAdapter } from "./dsig-base-adapter";
@@ -14,7 +14,7 @@ export class DBridgeAutogramImpl {
   private client: ReturnType<typeof apiClient>;
   private signRequest: SignRequest;
   private language = "sk";
-  private signedObject: Document;
+  private signedObject: BaseDocument;
   private _adapter: DSigAdapter;
 
   constructor() {
