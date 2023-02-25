@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    "git-tag",
+    "conventional-commits"
+  ],
+  "owner": "slovensko-digital",
+  "repo": "signer-switcher-extension",
+  "name": "pomali",
+  "email": "stanislavparnicky@gmail.com"
+}
