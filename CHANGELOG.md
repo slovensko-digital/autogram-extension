@@ -1,3 +1,20 @@
+# v1.3.3 (Sat Feb 25 2023)
+
+#### 🐛 Bug Fix
+
+- fix: add release assets upload ([@pomali](https://github.com/pomali))
+
+#### ⚠️ Pushed to `master`
+
+- 1.3.3 (stanislavparnicky@gmail.com)
+
+#### Authors: 2
+
+- [@pomali](https://github.com/pomali)
+- pom (stanislavparnicky@gmail.com)
+
+---
+
 # v1.3.1 (Sat Feb 25 2023)
 
 #### 🐛 Bug Fix
