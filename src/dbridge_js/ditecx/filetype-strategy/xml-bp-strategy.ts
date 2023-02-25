@@ -3,7 +3,7 @@ import {
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
-import { Document } from "@octosign/client";
+import { Document } from "../../../client";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
 
@@ -17,6 +17,7 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     return {
       content: this.obj.xdcXMLData,
       id: this.obj.objectId,
+      filename: this.obj.objectId,
       title: this.obj.objectDescription,
     };
   }
@@ -73,6 +74,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
       content: this.obj.sourceXml,
       id: this.obj.objectId,
       title: this.obj.objectDescription,
+      filename: this.obj.objectId,
     };
   }
   get objSchema(): string {

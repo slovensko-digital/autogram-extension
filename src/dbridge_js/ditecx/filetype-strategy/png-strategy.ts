@@ -1,5 +1,10 @@
-import { FileMimeTypeStr, ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
-import { Document } from "@octosign/client";
+import {
+  FileMimeTypeStr,
+  ObjectStrategy,
+  PayloadMimeTypeStr,
+} from "./base-strategy";
+import { Document } from "../../../client";
+("@octosign/client");
 import { ObjectXadesBpPng } from "../types";
 
 export class XadesBpPngStrategy implements ObjectStrategy {
@@ -13,6 +18,7 @@ export class XadesBpPngStrategy implements ObjectStrategy {
       content: this.obj.sourcePngBase64,
       title: this.obj.objectDescription,
       id: this.obj.objectId,
+      filename: this.obj.objectId,
     };
   }
   get objSchema(): string {

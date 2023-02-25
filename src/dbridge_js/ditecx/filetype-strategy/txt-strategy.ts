@@ -1,6 +1,12 @@
-import { FileMimeTypeStr, ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
-import { Document } from "@octosign/client";
+import {
+  FileMimeTypeStr,
+  ObjectStrategy,
+  PayloadMimeTypeStr,
+} from "./base-strategy";
+
 import { ObjectXadesBpTxt } from "../types";
+import { Base64 } from "js-base64";
+import { Document } from "../../../client";
 
 export class XadesBpTxtStrategy implements ObjectStrategy {
   obj: ObjectXadesBpTxt;
@@ -10,9 +16,10 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
 
   get document(): Document {
     return {
-      content: this.obj.sourceTxt,
+      content: Base64.encode(this.obj.sourceTxt),
       title: this.obj.objectDescription,
       id: this.obj.objectId,
+      filename: this.obj.objectId,
     };
   }
   get objSchema(): string {
@@ -31,7 +38,7 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
     return this.obj.objectFormatIdentifier;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
-    return "text/plain";
+    return "text/plain;base64";
   }
 
   get objTransformationOutputMimeType(): string {

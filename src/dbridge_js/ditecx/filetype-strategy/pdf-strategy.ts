@@ -3,7 +3,7 @@ import {
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
-import { Document } from "@octosign/client";
+import { Document } from "../../../client";
 import { ObjectXadesPdf } from "../types";
 
 export class XadesPdfStrategy implements ObjectStrategy {
@@ -13,7 +13,7 @@ export class XadesPdfStrategy implements ObjectStrategy {
   }
 
   get document(): Document {
-    return { content: this.obj.sourcePdfBase64 };
+    return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };
   }
   get objSchema(): string {
     return null;

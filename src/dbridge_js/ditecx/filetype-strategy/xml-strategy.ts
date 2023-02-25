@@ -3,7 +3,7 @@ import {
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
-import { Document } from "@octosign/client";
+import { Document } from "../../../client";
 import { ObjectXades2Xml, ObjectXadesXml } from "../types";
 
 export class XadesXmlStrategy implements ObjectStrategy {
@@ -13,7 +13,11 @@ export class XadesXmlStrategy implements ObjectStrategy {
   }
 
   get document(): Document {
-    return { content: this.obj.sourceXml, id: this.obj.objectId };
+    return {
+      content: this.obj.sourceXml,
+      id: this.obj.objectId,
+      filename: this.obj.objectId,
+    };
   }
   get objSchema(): string {
     return this.obj.sourceXsd;
