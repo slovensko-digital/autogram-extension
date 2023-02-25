@@ -1,6 +1,6 @@
 {
   "name": "autogram-extension",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Browser extension for Autogram signer",
   "main": "./webpack/manifest.ts",
   "scripts": {
@@ -8,7 +8,7 @@
     "start:manifest2": "AE_MANIFEST_VERSION=2 npm start",
     "start:manifest3": "AE_MANIFEST_VERSION=3 npm start",
     "lint": "eslint src webpack",
-    "release": "npm version $(auto version) && auto shipit",
+    "release": "npm version $(auto version) && npm run build:prod && auto shipit",
     "build:dev": "run-s webpack:build-dev webext:build",
     "build:prod": "run-s build:prod:mv2 build:prod:mv3",
     "build:prod:mv2": "AE_MANIFEST_VERSION=2 run-s webpack:build-prod webext:build",
