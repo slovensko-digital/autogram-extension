@@ -1,3 +1,21 @@
+# v1.3.1 (Sat Feb 25 2023)
+
+#### 🐛 Bug Fix
+
+- fix: add version updating (***REMOVED***)
+
+#### ⚠️ Pushed to `master`
+
+- 1.3.1 (***REMOVED***)
+- 1.3.0 (***REMOVED***)
+- 1.2.2 (***REMOVED***)
+
+#### Authors: 1
+
+- pom (***REMOVED***)
+
+---
+
 # v1.3.0 (Sat Feb 25 2023)
 
 #### 🚀 Enhancement
