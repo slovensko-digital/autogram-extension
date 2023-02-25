@@ -1,3 +1,21 @@
+# v1.3.1 (Sat Feb 25 2023)
+
+#### 🐛 Bug Fix
+
+- fix: add version updating (stanislavparnicky@gmail.com)
+
+#### ⚠️ Pushed to `master`
+
+- 1.3.1 (stanislavparnicky@gmail.com)
+- 1.3.0 (stanislavparnicky@gmail.com)
+- 1.2.2 (stanislavparnicky@gmail.com)
+
+#### Authors: 1
+
+- pom (stanislavparnicky@gmail.com)
+
+---
+
 # v1.3.0 (Sat Feb 25 2023)
 
 #### 🚀 Enhancement
