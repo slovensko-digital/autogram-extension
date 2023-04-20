@@ -197,7 +197,7 @@ export function apiClient(options?: ApiClientConfiguration) {
      */
     sign(
       document: AutogramDocument,
-      signatureParameters: SignatureParameters = { form: "XAdES_BASELINE_B" },
+      signatureParameters: SignatureParameters = { level: "XAdES_BASELINE_B" },
       payloadMimeType = "application/xml"
     ): Promise<SignResponseBody> {
       const url = new URL("sign", serverUrl);
@@ -216,7 +216,12 @@ export function apiClient(options?: ApiClientConfiguration) {
         body: JSON.stringify(body),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => response.json());
+      return fetch(url.toString(), init).then((response) => {
+        // if (response.status == 204) {
+        //   throw new UserCancelledSigningException();
+        // }
+        return response.json();
+      });
     },
   };
 }
@@ -312,3 +317,5 @@ export type AutogramDocument = components["schemas"]["Document"];
 export type SignatureParameters = components["schemas"]["SignatureParameters"];
 type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
 export type SignResponseBody = components["schemas"]["SignResponseBody"];
+
+export class UserCancelledSigningException extends Error {}

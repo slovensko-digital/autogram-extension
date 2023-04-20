@@ -36,23 +36,10 @@ export interface components {
        * @example application/xml
        */
       payloadMimeType: string;
-      /**
-       * @description Base64 encoded HMAC-SHA512 of the nonce and body that is required if the server was launched with the optional secret key.
-       * You should encode the body prepared for sending and create its HMAC-SHA512 before encoding it again with this property.
-       * 
-       * Example:
-       * 
-       * 0. Serialize the request body `body = serialize(payload)`.
-       * 1. Calculate the SHA256 of the concatenated nonce and body `hash = sha256(nonce + body)`.
-       * 2. Calculate the HMAC of the URI path and query and the prepared hash using the agreed on secret key `hmac = hmac-512(/sign?template=lorem + hash, key)`.
-       * 3. Serialize the request body again, but this time with the calculated additional `hmac` property.
-       * 4. Increase the nonce if the request succeeded.
-       */
-      hmac?: string;
     };
     Document: {
       /**
-       * @description Filename of the original file to be signed. Is used inside ASiC container. 
+       * @description Filename of the original file to be signed. Is used inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container. 
        * @example document.xml
        */
       filename?: string;
@@ -85,7 +72,7 @@ export interface components {
        * @example XAdES_BASELINE_B 
        * @enum {string}
        */
-      form: "XAdES_BASELINE_B" | "XAdES_BASELINE_T" | "XAdES_BASELINE_LT" | "XAdES_BASELINE_LTA" | "PAdES_BASELINE_B" | "PAdES_BASELINE_T" | "PAdES_BASELINE_LT" | "PAdES_BASELINE_LTA" | "CAdES_BASELINE_B" | "CAdES_BASELINE_T" | "CAdES_BASELINE_LT" | "CAdES_BASELINE_LTA";
+      level: "XAdES_BASELINE_B" | "PAdES_BASELINE_B" | "CAdES_BASELINE_B";
       /**
        * @description Optional container type that should be used to place the file with signature to. 
        * @example ASiC_E 

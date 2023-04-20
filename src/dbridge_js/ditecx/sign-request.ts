@@ -37,7 +37,7 @@ export class SignRequest {
   ): SignatureParameters {
     return {
       identifier: this.objectInfo.identifier,
-      form: getProperty(params, "form", "XAdES_BASELINE_B"),
+      level: getProperty(params, "form", "XAdES_BASELINE_B"),
       container: getProperty(params, "container", "ASICE"),
       containerXmlns: getProperty(
         params,

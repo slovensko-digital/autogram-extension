@@ -1,5 +1,6 @@
 import { SignResponseBody } from "../../autogram-api";
-import { apiClient, BaseDocument } from "../../client";
+import { UserCancelledSigningException } from "../../autogram-api/lib/apiClient";
+import { apiClient } from "../../client";
 import { AutogramSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
 import { DSigAdapter } from "./dsig-base-adapter";
@@ -103,12 +104,17 @@ export class DBridgeAutogramImpl {
         this.signRequest.signStarted = false;
         this.signedObject = signedObject;
         callback.onSuccess(
+          // TODO skontrolovat ci sa to niekedy moze pouzivat
           decodeBase64
             ? Base64.decode(this.signedObject.content)
             : this.signedObject.content
         );
       })
       .catch((reason) => {
+        if (reason instanceof UserCancelledSigningException) {
+          console.log(reason);
+          // callback.onError(reason);
+        }
         console.error(reason);
         callback.onError(reason);
       });
