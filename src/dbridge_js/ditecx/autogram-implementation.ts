@@ -20,6 +20,9 @@ export class DBridgeAutogramImpl {
   private signedObject: SignResponseBody;
   private _adapter: DSigAdapter;
 
+  private signerIdentificationListeners: (() => void)[];
+  private signatureIndex = 1;
+
   constructor() {
     let serverProtocol: "http" | "https" = "http";
     let serverHost = "127.0.0.1";
@@ -41,6 +44,7 @@ export class DBridgeAutogramImpl {
   }
 
   resetSignRequest() {
+    this.signerIdentificationListeners = [];
     this.signRequest = new SignRequest();
   }
 
@@ -120,6 +124,11 @@ export class DBridgeAutogramImpl {
         TODO("restart SignRequest?");
         this.signRequest.signingStatus = SigningStatus.signed;
         this.signedObject = signedObject;
+
+        this.signerIdentificationListeners.forEach((cb) => cb());
+        this.signerIdentificationListeners = [];
+        this.signatureIndex++;
+
         callback.onSuccess(
           // TODO skontrolovat ci sa to niekedy moze pouzivat
           decodeBase64
@@ -139,7 +148,10 @@ export class DBridgeAutogramImpl {
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
     this.assertSignedRequest();
-    callback.onSuccess(this.signedObject?.signedBy);
+    callback.onSuccess(`CN=(Používateľ Autogramu #${this.signatureIndex})`);
+    this.signerIdentificationListeners.push(() => {
+      // callback.onSuccess(this.signedObject?.signedBy);
+    });
   }
 
   getOriginalObject(callback: OnSuccessCallback1) {
@@ -171,3 +183,33 @@ interface OnSuccessCallback1 {
 interface OnErrorCallback {
   onError: (e) => void;
 }
+
+/**
+ *
+ * @returns [string-proxy, valueObject]
+ */
+// function useStringProxy(inputString = "?"): [string, { value: string }] {
+//   const valueObj = { value: inputString };
+//   const proxy = new Proxy(valueObj, {
+//     get(target, prop, receiver) {
+//       const prim = Reflect.get(target, "value");
+//       const value = prim[prop];
+//       if (typeof value === "function") {
+//         console.log({ target, prop, receiver });
+//         if (prop === "substring") {
+//           return function (...args) {
+//             // eslint-disable-next-line prefer-spread
+//             return useStringProxy(prim.substring.apply(prim, args));
+//           };
+//         }
+//         return value.bind(prim);
+//       } else {
+//         return value;
+//       }
+//     },
+//     apply(target, thisArg, argArray) {
+//       console.log({ target, thisArg, argArray });
+//     },
+//   });
+//   return [proxy as unknown as string, valueObj];
+// }
