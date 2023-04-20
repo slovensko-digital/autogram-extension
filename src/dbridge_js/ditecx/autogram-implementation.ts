@@ -1,3 +1,4 @@
+import { SignResponseBody } from "../../autogram-api";
 import { apiClient, BaseDocument } from "../../client";
 import { AutogramSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
@@ -14,7 +15,7 @@ export class DBridgeAutogramImpl {
   private client: ReturnType<typeof apiClient>;
   private signRequest: SignRequest;
   private language = "sk";
-  private signedObject: BaseDocument;
+  private signedObject: SignResponseBody;
   private _adapter: DSigAdapter;
 
   constructor() {
@@ -106,8 +107,6 @@ export class DBridgeAutogramImpl {
             ? Base64.decode(this.signedObject.content)
             : this.signedObject.content
         );
-
-        this.issuer
       })
       .catch((reason) => {
         console.error(reason);
@@ -116,9 +115,7 @@ export class DBridgeAutogramImpl {
   }
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
-    TODO("Signer identification missing in octosign");
-    console.log(this.signedObject);
-    callback.onSuccess(`CN=Tester Testovic`);
+    callback.onSuccess(this.signedObject?.signedBy);
   }
 
   getOriginalObject(callback: OnSuccessCallback1) {

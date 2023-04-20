@@ -2,7 +2,7 @@ import fetch from "cross-fetch";
 
 import { getRandomBytes, toHex, toUint32 } from "./crypto/random";
 
-import { components } from "./autogram-api";
+import { components } from "./autogram-api.generated";
 
 /**
  * Octosign White Label API client for the app running in the server mode.
@@ -199,7 +199,7 @@ export function apiClient(options?: ApiClientConfiguration) {
       document: AutogramDocument,
       signatureParameters: SignatureParameters = { form: "XAdES_BASELINE_B" },
       payloadMimeType = "application/xml"
-    ): Promise<components["schemas"]["SignResponseBody"]> {
+    ): Promise<SignResponseBody> {
       const url = new URL("sign", serverUrl);
 
       const body: AutogramSignRequestBody = {
@@ -311,3 +311,4 @@ export type AutogramDocument = components["schemas"]["Document"];
  */
 export type SignatureParameters = components["schemas"]["SignatureParameters"];
 type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
+export type SignResponseBody = components["schemas"]["SignResponseBody"];
