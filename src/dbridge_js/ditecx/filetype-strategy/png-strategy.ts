@@ -35,8 +35,4 @@ export class XadesBpPngStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "image/png;base64";
   }
-
-  get objTransformationOutputMimeType(): string {
-    return null;
-  }
 }

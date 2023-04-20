@@ -1,23 +1,16 @@
+import { SignatureParameters } from "../../../autogram-api";
 import { AutogramDocument } from "../../../client";
 
 export interface ObjectStrategy {
   document: AutogramDocument;
-  /**
-   * Type of returned file from Autogram (Autogram output)
-   */
-  objectId: string;
   objSchema: string;
   objTransformation: string;
-  /**
-   * Visualization payload type
-   */
-  objTransformationOutputMimeType: string | "text/html" | "text/plain";
-  identifier: string;
+  identifier: SignatureParameters["identifier"];
   formVersion: string;
   /**
    * Type of payload for Autogram (Autogram input)
    */
-  payloadMimeType: string;
+  payloadMimeType:  `${string}/${string}${";base64" | ""}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,9 +36,6 @@ class EmptyStrategy implements ObjectStrategy {
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";
-  }
-  get objTransformationOutputMimeType() {
-    return null;
   }
 }
 

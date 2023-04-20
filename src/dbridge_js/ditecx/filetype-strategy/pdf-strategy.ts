@@ -32,8 +32,4 @@ export class XadesPdfStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/pdf;base64";
   }
-
-  get objTransformationOutputMimeType(): string {
-    return null;
-  }
 }
