@@ -156,8 +156,7 @@ export class DSigXadesAdapter extends DSigAdapter {
       {
         container: null,
         containerXmlns: null,
-        containerFilename: null,
-        format: "XADES",
+        form: "XAdES_BASELINE_B",
         packaging: "ENVELOPING",
       },
       callback
@@ -166,7 +165,7 @@ export class DSigXadesAdapter extends DSigAdapter {
   getSignedXmlWithEnvelopeBase64(callback) {
     this.log("getSignedXmlWithEnvelopeBase64", arguments);
     this.__implementation.getSignature(
-      { container: "ASICE", packaging: "ENVELOPED" },
+      { container: "ASiC_E", packaging: "ENVELOPED" },
       callback
     );
   }

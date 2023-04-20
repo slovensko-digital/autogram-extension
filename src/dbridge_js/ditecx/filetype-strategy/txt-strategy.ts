@@ -5,7 +5,7 @@ import {
 
 import { ObjectXadesBpTxt } from "../types";
 import { Base64 } from "js-base64";
-import { Document } from "../../../client";
+import { AutogramDocument } from "../../../client";
 
 export class XadesBpTxtStrategy implements ObjectStrategy {
   obj: ObjectXadesBpTxt;
@@ -13,11 +13,9 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): Document {
+  get document(): AutogramDocument {
     return {
       content: Base64.encode(this.obj.sourceTxt),
-      title: this.obj.objectDescription,
-      id: this.obj.objectId,
       filename: this.obj.objectId,
     };
   }

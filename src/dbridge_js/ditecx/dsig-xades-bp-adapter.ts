@@ -75,7 +75,11 @@ export class DSigXadesBpAdapter extends DSigAdapter {
   getSignatureWithASiCEnvelopeBase64(callback) {
     this.log("getSignatureWithASiCEnvelopeBase64", arguments);
     this.__implementation.getSignature(
-      { container: "ASICE", packaging: "ENVELOPING", level: "BASELINE_B" },
+      {
+        container: "ASiC_E",
+        packaging: "ENVELOPING",
+        form: "XAdES_BASELINE_B",
+      },
       callback
     );
   }

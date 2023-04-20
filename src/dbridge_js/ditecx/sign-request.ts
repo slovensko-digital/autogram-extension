@@ -1,3 +1,4 @@
+import { SignatureParameters } from "../../autogram-api";
 import {
   ObjectStrategy,
   XadesBpPngStrategy,
@@ -7,11 +8,7 @@ import {
   XadesXmlStrategy,
   XadesBp2XmlStrategy,
 } from "./filetype-strategy";
-import {
-  InputObject,
-  PartialSignerParameters,
-  FullSignerParameters,
-} from "./types";
+import { InputObject, PartialSignerParameters } from "./types";
 export { InputObject, PartialSignerParameters } from "./types";
 export class SignRequest {
   object: InputObject;
@@ -37,18 +34,11 @@ export class SignRequest {
 
   public signatureParameters(
     params: PartialSignerParameters
-  ): FullSignerParameters {
+  ): SignatureParameters {
     return {
       identifier: this.objectInfo.identifier,
-      version: this.objectInfo.formVersion,
-      format: getProperty(params, "format", "XADES"),
-      level: getProperty(params, "level", "XADES_BASELINE_B"),
+      form: getProperty(params, "form", "XAdES_BASELINE_B"),
       container: getProperty(params, "container", "ASICE"),
-      containerFilename: getProperty(
-        params,
-        "containerFilename",
-        this.object.objectId
-      ),
       containerXmlns: getProperty(
         params,
         "containerXmlns",
@@ -72,22 +62,7 @@ export class SignRequest {
         "keyInfoCanonicalization",
         "INCLUSIVE"
       ),
-      signaturePolicyId: getProperty(
-        params,
-        "signaturePolicyId",
-        "http://www.example.com/policy.txt"
-      ),
-      signaturePolicyContent: getProperty(
-        params,
-        "signaturePolicyContent",
-        "Don't be evil."
-      ),
       transformation: this.objectInfo.objTransformation,
-      transformationOutputMimeType: getProperty(
-        params,
-        "transformationOutputMimeType",
-        this.objectInfo.objTransformationOutputMimeType || "text/plain"
-      ),
       schema: this.objectInfo.objSchema,
     };
   }

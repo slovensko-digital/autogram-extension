@@ -1,6 +1,6 @@
-import { ApiDocument as BaseDocument } from "./autogram-api";
+import { AutogramDocument as BaseDocument } from "./autogram-api";
 
 export { apiClient } from "./autogram-api";
 
-export type Document = BaseDocument & { filename: string };
+export type AutogramDocument = BaseDocument & { filename: string };
 export { BaseDocument };

@@ -2,7 +2,7 @@ import {
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
-import { Document } from "../../../client";
+import { AutogramDocument } from "../../../client";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
 
@@ -12,12 +12,10 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): Document {
+  get document(): AutogramDocument {
     return {
       content: this.obj.xdcXMLData,
-      id: this.obj.objectId,
       filename: this.obj.objectId,
-      title: this.obj.objectDescription,
     };
   }
   get objSchema(): string {
@@ -65,11 +63,9 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     // }
   }
 
-  get document(): Document {
+  get document(): AutogramDocument {
     return {
       content: this.obj.sourceXml,
-      id: this.obj.objectId,
-      title: this.obj.objectDescription,
       filename: this.obj.objectId,
     };
   }

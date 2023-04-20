@@ -1,3 +1,5 @@
+import { SignatureParameters } from "../../autogram-api";
+
 export interface ObjectXadesXml {
   type: "XadesXml";
   objectId: string;
@@ -95,25 +97,5 @@ export type InputObject =
   | ObjectXadesPdf
   | ObjectXadesBp2Xml;
 
-export interface FullSignerParameters {
-  identifier: null | string;
-  version: null | string;
-  format: "PADES" | "XADES";
-  level: "PADES_BASELINE_B" | "XADES_BASELINE_B" | "BASELINE_B";
-  container: null | "ASICE" | "ASICS";
-  containerFilename: null | string;
-  containerXmlns: null | string;
-  packaging: "ENVELOPED" | "ENVELOPING" | "DETACHED" | "INTERNALLY_DETACHED";
-  digestAlgorithm: "SHA256" | "SHA384" | "SHA512";
-  en319132: false;
-  infoCanonicalization: null | "INCLUSIVE" | "EXCLUSIVE";
-  propertiesCanonicalization: null | "INCLUSIVE" | "EXCLUSIVE";
-  keyInfoCanonicalization: null | "INCLUSIVE" | "EXCLUSIVE";
-  signaturePolicyId: null | string;
-  signaturePolicyContent: null | string;
-  schema: null | string;
-  transformation: null | string;
-  transformationOutputMimeType: string;
-}
 
-export type PartialSignerParameters = Partial<FullSignerParameters>;
+export type PartialSignerParameters = Partial<SignatureParameters>;

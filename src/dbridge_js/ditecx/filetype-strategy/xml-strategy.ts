@@ -2,7 +2,7 @@ import {
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
-import { Document } from "../../../client";
+import { AutogramDocument } from "../../../client";
 import { ObjectXades2Xml, ObjectXadesXml } from "../types";
 
 export class XadesXmlStrategy implements ObjectStrategy {
@@ -11,10 +11,9 @@ export class XadesXmlStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): Document {
+  get document(): AutogramDocument {
     return {
       content: this.obj.sourceXml,
-      id: this.obj.objectId,
       filename: this.obj.objectId,
     };
   }

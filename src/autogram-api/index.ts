@@ -1,6 +1,6 @@
 export {
   ApiClientConfiguration,
-  Document as ApiDocument,
+  AutogramDocument,
   ServerInfo,
   SignatureParameters,
   apiClient,
