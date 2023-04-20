@@ -61,10 +61,11 @@
     "webpack-manifest-plugin": "^3.1.1"
   },
   "dependencies": {
-    "@octosign/client": "file:../white-label-client",
     "@types/chrome": "^0.0.145",
     "@types/firefox-webext-browser": "^82.0.0",
     "@types/webextension-polyfill": "^0.8.2",
+    "cross-fetch": "^3.1.5",
+    "isomorphic-webcrypto": "^2.3.8",
     "js-base64": "^3.7.2",
     "webextension-polyfill": "^0.8.0"
   }
