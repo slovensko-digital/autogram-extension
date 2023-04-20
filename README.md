@@ -20,6 +20,14 @@ npm run build
 Environment variable `AE_MANIFEST_VERSION` expects value `2` or `3`
 and changes output manifest.json file version.
 
+
+## Release
+
+```sh
+npm run release
+```
+
+
 ## Developing
 
 Look into [DEVELOPERS.md](DEVELOPERS.md)
