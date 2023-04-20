@@ -4,7 +4,6 @@ import {
   PayloadMimeTypeStr,
 } from "./base-strategy";
 import { Document } from "../../../client";
-("@octosign/client");
 import { ObjectXadesBpPng } from "../types";
 
 export class XadesBpPngStrategy implements ObjectStrategy {

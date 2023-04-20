@@ -58,15 +58,16 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
   }
 
   isXmlDataContainer() {
-    try {
-      const decoded = Base64.decode(this.obj.sourceXml);
-      if (decoded.indexOf("<XMLDataContainer") !== -1) {
-        return true;
-      }
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
+    return true;
+    // try {
+    //   const decoded = Base64.decode(this.obj.sourceXml);
+    //   if (decoded.indexOf("<XMLDataContainer") !== -1 || decoded.match(/<[a-zA-Z0-9\-]*:XMLDataContainer)) {
+    //     return true;
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    //   return false;
+    // }
   }
 
   get document(): Document {
