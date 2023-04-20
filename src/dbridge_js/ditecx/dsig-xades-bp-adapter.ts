@@ -78,7 +78,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       {
         container: "ASiC_E",
         packaging: "ENVELOPING",
-        form: "XAdES_BASELINE_B",
+        level: "XAdES_BASELINE_B",
       },
       callback
     );

@@ -166,7 +166,7 @@ export class DSigXadesAdapter extends DSigAdapter {
       {
         container: null,
         containerXmlns: null,
-        form: "XAdES_BASELINE_B",
+        level: "XAdES_BASELINE_B",
         packaging: "ENVELOPING",
       },
       callback,
