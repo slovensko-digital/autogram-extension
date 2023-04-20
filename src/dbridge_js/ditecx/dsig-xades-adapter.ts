@@ -169,7 +169,8 @@ export class DSigXadesAdapter extends DSigAdapter {
         form: "XAdES_BASELINE_B",
         packaging: "ENVELOPING",
       },
-      callback
+      callback,
+      true
     );
   }
   getSignedXmlWithEnvelopeBase64(callback) {
