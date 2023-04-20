@@ -1,3 +1,19 @@
+# v1.4.1 (Thu Apr 20 2023)
+
+#### 🐛 Bug Fix
+
+- fix: bump version (stanislavparnicky@gmail.com)
+
+#### ⚠️ Pushed to `master`
+
+- build: fix relase script (stanislavparnicky@gmail.com)
+
+#### Authors: 1
+
+- pom (stanislavparnicky@gmail.com)
+
+---
+
 # v1.4.0 (Thu Apr 20 2023)
 
 #### 🚀 Enhancement
