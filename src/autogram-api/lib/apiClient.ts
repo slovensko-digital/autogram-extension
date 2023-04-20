@@ -2,7 +2,7 @@ import fetch from "cross-fetch";
 
 import { getRandomBytes, toHex, toUint32 } from "./crypto/random";
 
-import { components } from "./autogram";
+import { components } from "./autogram-api";
 
 /**
  * Octosign White Label API client for the app running in the server mode.
