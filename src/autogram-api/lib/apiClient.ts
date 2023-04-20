@@ -47,7 +47,7 @@ export function apiClient(options?: ApiClientConfiguration) {
         serverProtocol: 'http',
         serverHost: '127.0.0.1',
         serverPort: 37200,
-        customProtocol: 'signer',
+        customProtocol: 'autogram',
         disableSecurity: false,
         requestsOrigin: typeof location !== 'undefined' ? location.origin : '*',
         secretKey: toHex(getRandomBytes(32)),
@@ -72,7 +72,7 @@ export function apiClient(options?: ApiClientConfiguration) {
          * import { apiClient } from '@octosign/client';
          * const client = apiClient();
          * console.log(client.createLaunchURI());
-         * // => signer://listen/37200/https%3A%2F%2Fexample.com/3a2bca8d73c62e75177fa877de283cc0c96cdf3ba08f8eb878a96da93de3d798/260372071
+         * // => autogram://listen/37200/https%3A%2F%2Fexample.com/3a2bca8d73c62e75177fa877de283cc0c96cdf3ba08f8eb878a96da93de3d798/260372071
          * ```
          *
          * @returns URL that can be opened by the user.
