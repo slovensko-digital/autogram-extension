@@ -1,5 +1,4 @@
 import {
-  FileMimeTypeStr,
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
@@ -36,9 +35,5 @@ export class XadesPdfStrategy implements ObjectStrategy {
 
   get objTransformationOutputMimeType(): string {
     return null;
-  }
-
-  get fileMimeType(): FileMimeTypeStr {
-    return "application/pdf";
   }
 }

@@ -5,7 +5,6 @@ export interface ObjectStrategy {
   /**
    * Type of returned file from Autogram (Autogram output)
    */
-  fileMimeType: FileMimeTypeStr;
   objectId: string;
   objSchema: string;
   objTransformation: string;
@@ -45,9 +44,6 @@ class EmptyStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";
   }
-  get fileMimeType() {
-    return null;
-  }
   get objTransformationOutputMimeType() {
     return null;
   }
@@ -63,12 +59,3 @@ export type PayloadMimeTypeStr =
   | "text/plain"
   | "text/plain;base64"
   | "*/*";
-
-export type FileMimeTypeStr =
-  | "application/xml"
-  | "application/vnd.gov.sk.xmldatacontainer+xml"
-  | "application/lor.ip.xmldatacontainer+xml"
-  | "image/png"
-  | "image/png"
-  | "application/pdf"
-  | "text/plain";

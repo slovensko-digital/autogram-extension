@@ -43,12 +43,6 @@ export class SignRequest {
       version: this.objectInfo.formVersion,
       format: getProperty(params, "format", "XADES"),
       level: getProperty(params, "level", "XADES_BASELINE_B"),
-      fileMimeType: getProperty(
-        params,
-        "fileMimeType",
-        this.objectInfo.fileMimeType ||
-          "application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"
-      ),
       container: getProperty(params, "container", "ASICE"),
       containerFilename: getProperty(
         params,
