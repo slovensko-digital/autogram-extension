@@ -36,12 +36,6 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/xml";
   }
-
-  get objTransformationOutputMimeType(): string {
-    return this.objTransformation.search(/xsl:output method="text"/) != -1
-      ? "text/plain"
-      : "text/html";
-  }
 }
 
 export class XadesBp2XmlStrategy implements ObjectStrategy {
@@ -52,15 +46,6 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
 
   isXmlDataContainer() {
     return true;
-    // try {
-    //   const decoded = Base64.decode(this.obj.sourceXml);
-    //   if (decoded.indexOf("<XMLDataContainer") !== -1 || decoded.match(/<[a-zA-Z0-9\-]*:XMLDataContainer)) {
-    //     return true;
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    //   return false;
-    // }
   }
 
   get document(): AutogramDocument {
@@ -82,7 +67,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get identifier() {
-    return this.obj.objectId;
+    return this.obj.namespaceUri;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     if (this.isXmlDataContainer()) {
@@ -91,9 +76,4 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return "application/xml;base64";
   }
 
-  get objTransformationOutputMimeType(): string {
-    return this.objTransformation.search(/xsl:output method="text"/) != -1
-      ? "text/plain"
-      : "text/html";
-  }
 }

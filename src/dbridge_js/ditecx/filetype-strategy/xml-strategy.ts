@@ -36,10 +36,4 @@ export class XadesXmlStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/xml";
   }
-
-  get objTransformationOutputMimeType(): string {
-    return this.objTransformation.search(/xsl:output method="text"/) != -1
-      ? "text/plain"
-      : "text/html";
-  }
 }

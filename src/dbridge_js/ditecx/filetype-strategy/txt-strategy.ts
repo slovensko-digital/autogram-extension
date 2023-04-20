@@ -37,8 +37,4 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
   get payloadMimeType(): PayloadMimeTypeStr {
     return "text/plain;base64";
   }
-
-  get objTransformationOutputMimeType(): string {
-    return null;
-  }
 }

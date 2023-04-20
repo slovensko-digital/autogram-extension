@@ -59,6 +59,7 @@ export class DSigAdapter {
   checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {
     this.stub("checkPDFACompliance", arguments);
     callback.onSuccess();
+    // callback.onError();
   }
   convertToPDFA(sourcePdfBase64, password, reqLevel, callback) {
     this.stub("convertToPDFA", arguments);

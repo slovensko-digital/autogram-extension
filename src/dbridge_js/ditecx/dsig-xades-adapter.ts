@@ -96,6 +96,16 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("addTxtObject", arguments);
+    this.__implementation.addObject(
+      {
+        type: "XadesBpTxt",
+        objectId,
+        objectDescription,
+        objectFormatIdentifier,
+        sourceTxt,
+      },
+      callback
+    );
   }
   addPngObject(
     objectId,
