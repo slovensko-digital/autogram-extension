@@ -2,7 +2,7 @@ import {
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
-import { Document } from "../../../client";
+import { AutogramDocument } from "../../../client";
 import { ObjectXadesPdf } from "../types";
 
 export class XadesPdfStrategy implements ObjectStrategy {
@@ -11,7 +11,7 @@ export class XadesPdfStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): Document {
+  get document(): AutogramDocument {
     return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };
   }
   get objSchema(): string {

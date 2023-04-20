@@ -1,7 +1,7 @@
-import { Document } from "../../../client";
+import { AutogramDocument } from "../../../client";
 
 export interface ObjectStrategy {
-  document: Document;
+  document: AutogramDocument;
   /**
    * Type of returned file from Autogram (Autogram output)
    */
@@ -22,7 +22,7 @@ export interface ObjectStrategy {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EmptyStrategy implements ObjectStrategy {
-  get document(): Document {
+  get document(): AutogramDocument {
     return { content: "", filename: "" };
   }
   get objSchema(): string {
