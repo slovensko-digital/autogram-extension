@@ -10,6 +10,12 @@ import {
 } from "./filetype-strategy";
 import { InputObject, PartialSignerParameters } from "./types";
 export { InputObject, PartialSignerParameters } from "./types";
+
+export const SigningStatus = {
+  new: "new",
+  started: "started",
+  signed: "signed",
+} as const;
 export class SignRequest {
   object: InputObject;
   private objectInfo: ObjectStrategy;
@@ -17,7 +23,7 @@ export class SignRequest {
   public signatureId: string;
   public digestAlgUri: string;
   public signaturePolicyIdentifier: string;
-  public signStarted = false;
+  public signingStatus: ValueOf<typeof SigningStatus> = SigningStatus.new;
 
   // objects = [];
   // get object(): InputObject {
@@ -25,7 +31,7 @@ export class SignRequest {
   // }
 
   public addObject(obj: InputObject): void {
-    if (this.object && !this.signStarted) {
+    if (this.object && this.signingStatus !== SigningStatus.signed) {
       console.error("ERROR: overwriting unsigned object");
     }
     this.object = obj;
@@ -35,15 +41,22 @@ export class SignRequest {
   public signatureParameters(
     params: PartialSignerParameters
   ): SignatureParameters {
+    // const containerXmlns = getProperty(
+    //   params,
+    //   "containerXmlns",
+    //   "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
+    // );
+
+    const containerXmlns =
+      this.object.type === "Xades2Xml" || this.object.type === "XadesXml"
+        ? "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
+        : null;
+
     return {
       identifier: this.objectInfo.identifier,
       level: getProperty(params, "form", "XAdES_BASELINE_B"),
       container: getProperty(params, "container", "ASICE"),
-      containerXmlns: getProperty(
-        params,
-        "containerXmlns",
-        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
-      ),
+      containerXmlns: containerXmlns,
       packaging: getProperty(params, "packaging", "ENVELOPING"),
       digestAlgorithm: getProperty(params, "digestAlgorithm", "SHA256"),
       en319132: getProperty(params, "en319132", false),
@@ -121,3 +134,5 @@ function getProperty<T>(obj: object, propertyName: string, defaultValue: T) {
 // function assertUnreachable(x: never): never {
 //   throw new Error("Didn't expect to get here");
 // }
+
+type ValueOf<T> = T[keyof T];

@@ -8,6 +8,7 @@ import {
   InputObject,
   PartialSignerParameters,
   SignRequest,
+  SigningStatus,
 } from "./sign-request";
 import { Base64 } from "js-base64";
 
@@ -36,6 +37,10 @@ export class DBridgeAutogramImpl {
       requestsOrigin: "*",
     });
 
+    this.resetSignRequest();
+  }
+
+  resetSignRequest() {
     this.signRequest = new SignRequest();
   }
 
@@ -72,16 +77,28 @@ export class DBridgeAutogramImpl {
     signaturePolicyIdentifier: string,
     callback: OnSuccessCallback & OnErrorCallback
   ): Promise<void> {
+    if (this.signRequest.signingStatus !== SigningStatus.new) {
+      console.error("Signing non-new sign request");
+    }
+
     // console.log(this.signatureParameters);
     this.signRequest.signatureId = signatureId;
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
-    this.signRequest.signStarted = true;
+    this.signRequest.signingStatus = SigningStatus.started;
     // this.launch(callback);
     callback.onSuccess();
   }
 
   addObject(obj: InputObject, callback: OnSuccessCallback): void {
+    if (this.signRequest.signingStatus == SigningStatus.signed) {
+      console.warn("Resetting sign request");
+      this.resetSignRequest();
+    }
+
+    if (this.signRequest.signingStatus !== SigningStatus.new) {
+      console.error("Adding object to non-new sign request");
+    }
     console.log(obj);
     this.signRequest.addObject(obj);
     console.log(callback);
@@ -101,7 +118,7 @@ export class DBridgeAutogramImpl {
       )
       .then((signedObject) => {
         TODO("restart SignRequest?");
-        this.signRequest.signStarted = false;
+        this.signRequest.signingStatus = SigningStatus.signed;
         this.signedObject = signedObject;
         callback.onSuccess(
           // TODO skontrolovat ci sa to niekedy moze pouzivat
@@ -121,10 +138,12 @@ export class DBridgeAutogramImpl {
   }
 
   getSignerIdentification(callback: OnSuccessCallback1): void {
+    this.assertSignedRequest();
     callback.onSuccess(this.signedObject?.signedBy);
   }
 
   getOriginalObject(callback: OnSuccessCallback1) {
+    this.assertSignedRequest();
     callback.onSuccess(this.signRequest.object);
   }
 
@@ -132,6 +151,12 @@ export class DBridgeAutogramImpl {
     const fakeVersion =
       '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
     callback.onSuccess(fakeVersion);
+  }
+
+  private assertSignedRequest() {
+    if (this.signRequest.signingStatus !== SigningStatus.signed) {
+      console.error("Signing request not signed");
+    }
   }
 }
 
