@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import { isExtensionEnabled } from "../options/content";
 
 console.log("options");
 
@@ -27,10 +28,9 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
   console.log("restoring options");
-  browser.storage.local.get().then(function (data) {
-    console.log(data);
+  isExtensionEnabled().then((extensionEnabled) => {
     (document.getElementById("extensionEnabled") as HTMLInputElement).checked =
-      data.options.extensionEnabled;
+      extensionEnabled;
   });
 }
 document.addEventListener("DOMContentLoaded", restore_options);
