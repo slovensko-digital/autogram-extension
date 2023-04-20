@@ -1,5 +1,4 @@
 import {
-  FileMimeTypeStr,
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
@@ -43,9 +42,5 @@ export class XadesXmlStrategy implements ObjectStrategy {
     return this.objTransformation.search(/xsl:output method="text"/) != -1
       ? "text/plain"
       : "text/html";
-  }
-
-  get fileMimeType(): FileMimeTypeStr {
-    return "application/xml";
   }
 }

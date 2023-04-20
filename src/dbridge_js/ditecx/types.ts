@@ -100,8 +100,6 @@ export interface FullSignerParameters {
   version: null | string;
   format: "PADES" | "XADES";
   level: "PADES_BASELINE_B" | "XADES_BASELINE_B" | "BASELINE_B";
-  /** eg. application/xml output should be xml */
-  fileMimeType: string;
   container: null | "ASICE" | "ASICS";
   containerFilename: null | string;
   containerXmlns: null | string;

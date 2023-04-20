@@ -1,5 +1,4 @@
 import {
-  FileMimeTypeStr,
   ObjectStrategy,
   PayloadMimeTypeStr,
 } from "./base-strategy";
@@ -41,9 +40,5 @@ export class XadesBpPngStrategy implements ObjectStrategy {
 
   get objTransformationOutputMimeType(): string {
     return null;
-  }
-
-  get fileMimeType(): FileMimeTypeStr {
-    return "image/png";
   }
 }
