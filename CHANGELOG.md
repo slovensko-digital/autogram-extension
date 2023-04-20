@@ -1,3 +1,19 @@
+# v1.4.1 (Thu Apr 20 2023)
+
+#### 🐛 Bug Fix
+
+- fix: bump version (***REMOVED***)
+
+#### ⚠️ Pushed to `master`
+
+- build: fix relase script (***REMOVED***)
+
+#### Authors: 1
+
+- pom (***REMOVED***)
+
+---
+
 # v1.4.0 (Thu Apr 20 2023)
 
 #### 🚀 Enhancement
