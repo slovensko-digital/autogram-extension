@@ -7,7 +7,7 @@
     "start": "npm run webpack:build-dev && run-p webpack:watch webext:run",
     "start:manifest2": "AE_MANIFEST_VERSION=2 npm start",
     "start:manifest3": "AE_MANIFEST_VERSION=3 npm start",
-    "generate-autogram-api-types": "npx openapi-typescript http://localhost:37200/docs/server.yml --output src/autogram-api/lib/autogram-api.ts",
+    "generate-autogram-api-types": "npx openapi-typescript http://localhost:37200/docs/server.yml --output src/autogram-api/lib/autogram-api.generated.ts",
     "lint": "eslint src webpack",
     "release": "./scripts/release.sh",
     "build:dev": "run-s webpack:build-dev webext:build",
