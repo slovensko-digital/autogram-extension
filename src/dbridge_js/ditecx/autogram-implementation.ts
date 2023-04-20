@@ -106,6 +106,8 @@ export class DBridgeAutogramImpl {
             ? Base64.decode(this.signedObject.content)
             : this.signedObject.content
         );
+
+        this.issuer
       })
       .catch((reason) => {
         console.error(reason);
