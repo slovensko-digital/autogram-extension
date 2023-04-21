@@ -48,7 +48,8 @@ export class SignRequest {
     // );
 
     const containerXmlns =
-      this.object.type === "Xades2Xml" || this.object.type === "XadesXml"
+      this.object.type === "Xades2Xml" || this.object.type === "XadesXml" ||
+        this.object.type === "XadesBp2Xml" || this.object.type === "XadesBpXml"
         ? "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
         : null;
 
