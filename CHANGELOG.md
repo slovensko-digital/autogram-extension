@@ -1,3 +1,15 @@
+# v1.4.2 (Wed Apr 26 2023)
+
+#### 🐛 Bug Fix
+
+- default xmlns to xdc in XadesBp [#61](https://github.com/slovensko-digital/signer-switcher-extension/pull/61) ([@celuchmarek](https://github.com/celuchmarek))
+
+#### Authors: 1
+
+- Marek Ceľuch ([@celuchmarek](https://github.com/celuchmarek))
+
+---
+
 # v1.4.1 (Thu Apr 20 2023)
 
 #### 🐛 Bug Fix
