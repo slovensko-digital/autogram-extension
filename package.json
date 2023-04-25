@@ -1,6 +1,6 @@
 {
   "name": "autogram-extension",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Browser extension for Autogram signer",
   "main": "./webpack/manifest.ts",
   "scripts": {
