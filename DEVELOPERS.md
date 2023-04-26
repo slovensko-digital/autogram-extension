@@ -1,8 +1,44 @@
-# Ako by to mohlo fungovat
+#  How to develop
 
-Myslim ze vsetko ohladom dsigneru sa opiera o dbridge_js - takze by malo stacit urobit mock pre dCommon a mohlo by to stacit
+We are using auto-it for releases so use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) commit message convention.
 
-https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dCommon.min.js
+## Install dependencies
+
+```sh
+# install dependencies
+npm install
+```
+
+## Building
+
+```sh
+npm run build
+```
+
+Environment variable `AE_MANIFEST_VERSION` expects value `2` or `3`
+and changes output manifest.json file version.
+
+## Release
+
+```sh
+npm run release
+```
+
+## Developing
+
+```
+npm start
+```
+
+and point your browser to `dist` folder
+
+https://developer.chrome.com/docs/extensions/mv3/getstarted/
+
+There are `start:manifest3` and `start:manifest2` scripts to run selected manifest version
+
+## Hacky pre slovensko.sk
+
+Nahradzujeme `dsigner` nasim adapterom ktory preklada volania na [Autogram](https://github.com/slovensko-digital/autogram)
 
 ## Entry points
 
@@ -88,23 +124,22 @@ API dbridge_js funguje nasledovne:
 - `sign` - vyvola podpisovanie - podpisany dokument nie je rovno odosielany do browseru
 - `getABC` - vypyta si od serveru data ktore potrebuje - tu sa urcuje typ vystupu
 
-
 ## Štruktúra codebase
 
-- `src` samotná aplikácia 
-    - `dbridge_js` - "hlavná časť"
-        - `inject-ditec.ts` - samotne vkladanie objektu
-        - `proxy.ts` - debugovacie interceptovanie/nahravanie pri pouzivani (WIP) (napr. na vyrabanie testov)
-        - `ditecx` - 
-            - `ditecx.ts` - samotny objekt ktory nahradza `window.ditec`
-            - `filetype-strategy` - rozne typy suborov maju rozne data ktore treba premapovat na format pre Autogram
-            - `dsig-*-adapter.ts` - adaptery simulujuce spravania ditec implementacii
-            - ...
-    - `entrypoint` - vstupné skripty pre rôzne kontexty v ktorých beží extension
-        - `content.ts` - časť spúšťajúca sa nad stránkou, vkladá `inject.ts`
-        - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
-        - `popup.ts` - správanie popup-u
-        - ...
-    - `img` - zdrojové obrázky na distribuciu (do store-u)
-    - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
-    - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
+- `src` samotná aplikácia
+  - `dbridge_js` - "hlavná časť"
+    - `inject-ditec.ts` - samotne vkladanie objektu
+    - `proxy.ts` - debugovacie interceptovanie/nahravanie pri pouzivani (WIP) (napr. na vyrabanie testov)
+    - `ditecx` -
+      - `ditecx.ts` - samotny objekt ktory nahradza `window.ditec`
+      - `filetype-strategy` - rozne typy suborov maju rozne data ktore treba premapovat na format pre Autogram
+      - `dsig-*-adapter.ts` - adaptery simulujuce spravania ditec implementacii
+      - ...
+  - `entrypoint` - vstupné skripty pre rôzne kontexty v ktorých beží extension
+    - `content.ts` - časť spúšťajúca sa nad stránkou, vkladá `inject.ts`
+    - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
+    - `popup.ts` - správanie popup-u
+    - ...
+  - `img` - zdrojové obrázky na distribuciu (do store-u)
+  - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
+  - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
