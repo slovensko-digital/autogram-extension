@@ -12,6 +12,7 @@
   "owner": "slovensko-digital",
   "repo": "autogram-extension",
   "author": {
-    "name": "pomali"
+    "name": "pomali",
+    "email": ""
   }
 }
