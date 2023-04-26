@@ -14,15 +14,15 @@
 
 #### 🐛 Bug Fix
 
-- fix: bump version (stanislavparnicky@gmail.com)
+- fix: bump version ([@pomali](https://github.com/pomali))
 
 #### ⚠️ Pushed to `master`
 
-- build: fix relase script (stanislavparnicky@gmail.com)
+- build: fix relase script ([@pomali](https://github.com/pomali))
 
 #### Authors: 1
 
-- pom (stanislavparnicky@gmail.com)
+- pom ([@pomali](https://github.com/pomali))
 
 ---
 
@@ -61,16 +61,16 @@
 
 #### 🐛 Bug Fix
 
-- fix: add skip-release info (stanislavparnicky@gmail.com)
-- fix: move release into script (stanislavparnicky@gmail.com)
+- fix: add skip-release info ([@pomali](https://github.com/pomali))
+- fix: move release into script ([@pomali](https://github.com/pomali))
 
 #### ⚠️ Pushed to `master`
 
-- build: clean before release (stanislavparnicky@gmail.com)
+- build: clean before release ([@pomali](https://github.com/pomali))
 
 #### Authors: 1
 
-- pom (stanislavparnicky@gmail.com)
+- pom ([@pomali](https://github.com/pomali))
 
 ---
 
@@ -82,12 +82,11 @@
 
 #### ⚠️ Pushed to `master`
 
-- 1.3.3 (stanislavparnicky@gmail.com)
+- 1.3.3 ([@pomali](https://github.com/pomali))
 
-#### Authors: 2
+#### Authors: 1
 
 - [@pomali](https://github.com/pomali)
-- pom (stanislavparnicky@gmail.com)
 
 ---
 
@@ -95,17 +94,17 @@
 
 #### 🐛 Bug Fix
 
-- fix: add version updating (stanislavparnicky@gmail.com)
+- fix: add version updating ([@pomali](https://github.com/pomali))
 
 #### ⚠️ Pushed to `master`
 
-- 1.3.1 (stanislavparnicky@gmail.com)
-- 1.3.0 (stanislavparnicky@gmail.com)
-- 1.2.2 (stanislavparnicky@gmail.com)
+- 1.3.1 ([@pomali](https://github.com/pomali))
+- 1.3.0 ([@pomali](https://github.com/pomali))
+- 1.2.2 ([@pomali](https://github.com/pomali))
 
 #### Authors: 1
 
-- pom (stanislavparnicky@gmail.com)
+- pom ([@pomali](https://github.com/pomali))
 
 ---
 

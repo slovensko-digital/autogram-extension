@@ -11,6 +11,7 @@
   ],
   "owner": "slovensko-digital",
   "repo": "autogram-extension",
-  "name": "pomali",
-  "email": "stanislavparnicky@gmail.com"
+  "author": {
+    "name": "pomali"
+  }
 }
