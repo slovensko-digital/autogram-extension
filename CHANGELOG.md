@@ -14,15 +14,15 @@
 
 #### 🐛 Bug Fix
 
-- fix: bump version (***REMOVED***)
+- fix: bump version ([@pomali](https://github.com/pomali))
 
 #### ⚠️ Pushed to `master`
 
-- build: fix relase script (***REMOVED***)
+- build: fix relase script ([@pomali](https://github.com/pomali))
 
 #### Authors: 1
 
-- pom (***REMOVED***)
+- pom ([@pomali](https://github.com/pomali))
 
 ---
 
@@ -61,16 +61,16 @@
 
 #### 🐛 Bug Fix
 
-- fix: add skip-release info (***REMOVED***)
-- fix: move release into script (***REMOVED***)
+- fix: add skip-release info ([@pomali](https://github.com/pomali))
+- fix: move release into script ([@pomali](https://github.com/pomali))
 
 #### ⚠️ Pushed to `master`
 
-- build: clean before release (***REMOVED***)
+- build: clean before release ([@pomali](https://github.com/pomali))
 
 #### Authors: 1
 
-- pom (***REMOVED***)
+- pom ([@pomali](https://github.com/pomali))
 
 ---
 
@@ -82,12 +82,11 @@
 
 #### ⚠️ Pushed to `master`
 
-- 1.3.3 (***REMOVED***)
+- 1.3.3 ([@pomali](https://github.com/pomali))
 
-#### Authors: 2
+#### Authors: 1
 
 - [@pomali](https://github.com/pomali)
-- pom (***REMOVED***)
 
 ---
 
@@ -95,17 +94,17 @@
 
 #### 🐛 Bug Fix
 
-- fix: add version updating (***REMOVED***)
+- fix: add version updating ([@pomali](https://github.com/pomali))
 
 #### ⚠️ Pushed to `master`
 
-- 1.3.1 (***REMOVED***)
-- 1.3.0 (***REMOVED***)
-- 1.2.2 (***REMOVED***)
+- 1.3.1 ([@pomali](https://github.com/pomali))
+- 1.3.0 ([@pomali](https://github.com/pomali))
+- 1.2.2 ([@pomali](https://github.com/pomali))
 
 #### Authors: 1
 
-- pom (***REMOVED***)
+- pom ([@pomali](https://github.com/pomali))
 
 ---
 
