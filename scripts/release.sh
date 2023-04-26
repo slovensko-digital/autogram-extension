@@ -5,6 +5,9 @@ if [ ! -z "$VERSION" ]; then
     # test build
     npm run build:prod
 
+    ## This allows changelog to show github handles instead of email address 
+    git push
+    
     ## Update Changelog
     npx auto changelog
 
