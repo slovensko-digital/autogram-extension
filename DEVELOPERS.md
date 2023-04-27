@@ -88,7 +88,14 @@ reason to do that.
 
 ### Safari
 
-Safari needs xcode project and associated app. We generate such app
+Safari needs xcode project and associated app. We generate such app using 
+
+```
+npm run xcode-generate-safari-web-extension
+```
+
+Run project, it opens app, has button to open Safari settings where you can enable the extension.
+After you open supported page (slovensko.sk) extension icon shows next to url bar, if you click on Safari asks you for permission.
 
 https://developer.apple.com/documentation/safariservices/safari_web_extensions/converting_a_web_extension_for_safari
 

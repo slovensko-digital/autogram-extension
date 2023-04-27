@@ -1,15 +1,15 @@
 //
 //  ViewController.swift
-//  signer-switcher-extension
+//  autogram-extension
 //
-//  Created by pom on 26/01/2022.
+//  Created by pom on 27/04/2023.
 //
 
 import Cocoa
 import SafariServices
 import WebKit
 
-let extensionBundleIdentifier = "com.yourCompany.signer-switcher-extension.Extension"
+let extensionBundleIdentifier = "digital.slovensko.autogram.autogram-extension.Extension"
 
 class ViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHandler {
 
@@ -33,7 +33,11 @@ class ViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHan
             }
 
             DispatchQueue.main.async {
-                webView.evaluateJavaScript("show(\(state.isEnabled)")
+                if #available(macOS 13, *) {
+                    webView.evaluateJavaScript("show(\(state.isEnabled), true)")
+                } else {
+                    webView.evaluateJavaScript("show(\(state.isEnabled), false)")
+                }
             }
         }
     }

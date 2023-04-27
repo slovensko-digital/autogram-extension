@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  signer-switcher-extension
+//  autogram-extension
 //
-//  Created by pom on 26/01/2022.
+//  Created by pom on 27/04/2023.
 //
 
 import Cocoa

@@ -22,7 +22,7 @@
     "clean": "rm -r dist/* web-ext-artifacts/*",
     "webext:build": "web-ext build -s 'dist' -i '*.map.js' --overwrite-dest --filename $npm_package_name-mv$AE_MANIFEST_VERSION-$npm_package_version.zip",
     "webext:run": "web-ext build -s 'dist' --overwrite-dest ",
-    "xcode-generate-safari-web-extension": "xcrun safari-web-extension-converter --macos-only --project-location ./safari/ ./dist/"
+    "xcode-generate-safari-web-extension": "/Applications/Xcode.app/Contents/Developer/usr/bin/safari-web-extension-converter --macos-only --app-name autogram-extension --bundle-identifier digital.slovensko.autogram.extension --project-location ./safari/ ./dist/"
   },
   "author": "pom",
   "license": "EUPL-1.2",
