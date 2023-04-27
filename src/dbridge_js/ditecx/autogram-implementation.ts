@@ -61,9 +61,15 @@ export class DBridgeAutogramImpl {
     } catch (e) {
       console.error(e);
       const url = this.client.getLaunchURL();
+      console.log(`Opening "${url}"`);
       window.open(url);
-      const info = await this.client.waitForStatus("READY", 100, 5);
-      console.log(`Autogram ${info.version} is ready`);
+      try {
+        const info = await this.client.waitForStatus("READY", 100, 5);
+        console.log(`Autogram ${info.version} is ready`);
+      } catch (e) {
+        console.log('waiting for Autogram failed')
+        console.error(e);
+      }
     }
     callback.onSuccess();
   }

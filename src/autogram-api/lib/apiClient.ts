@@ -54,6 +54,7 @@ export function apiClient(options?: ApiClientConfiguration) {
     requestsOrigin: typeof location !== "undefined" ? location.origin : "*",
     secretKey: toHex(getRandomBytes(32)),
     secretInitialNonce: toUint32(getRandomBytes(4)),
+    language: "sk",
   } as const;
   const configuration = { ...configurationDefaults, ...options };
 
@@ -80,16 +81,24 @@ export function apiClient(options?: ApiClientConfiguration) {
      * @returns URL that can be opened by the user.
      */
     getLaunchURL(command: "listen" = "listen") {
-      const origin = encodeURIComponent(configuration.requestsOrigin);
-      const key = encodeURIComponent(configuration.secretKey);
-      const nonce = encodeURIComponent(
-        configuration.secretInitialNonce.toString()
-      );
-      const security = configuration.disableSecurity
-        ? "*"
-        : `${origin}/${key}/${nonce}`;
+      const params = new URLSearchParams();
+      params.set("protocol", configuration.serverProtocol);
+      params.set("port", configuration.serverPort.toString());
+      params.set("host", configuration.serverHost);
+      params.set("origin", configuration.requestsOrigin);
+      if (configuration.language) {
+        params.set("language", configuration.language);
+      }
+      if (!configuration.disableSecurity) {
+        if (configuration.secretKey) {
+          params.set("key", configuration.secretKey);
+        }
+        if (configuration.secretInitialNonce) {
+          params.set("nonce", configuration.secretInitialNonce.toString());
+        }
+      }
 
-      return `${configuration.customProtocol}://${command}/${configuration.serverPort}/${security}`;
+      return `${configuration.customProtocol}://${command}?${params}`;
     },
 
     /**
@@ -301,6 +310,13 @@ export type ApiClientConfiguration = {
    * Defaults to random integer generated on instantiation.
    */
   readonly secretInitialNonce?: number;
+
+  /**
+   *
+   * Language of interface used
+   *
+   */
+  readonly language?: "sk";
 };
 
 /**
