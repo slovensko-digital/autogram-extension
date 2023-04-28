@@ -1,3 +1,15 @@
+# v1.5.1 (Fri Apr 28 2023)
+
+#### 🐛 Bug Fix
+
+- fix: replace `127.0.0.1` with `localhost` ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.0 (Fri Apr 28 2023)
 
 #### 🚀 Enhancement
