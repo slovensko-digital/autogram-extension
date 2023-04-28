@@ -1,3 +1,8 @@
+export type CommonManifest = {
+  [K in Exclude<keyof ManifestV3 & keyof ManifestV2, "manifest_version">]?:
+    | ManifestV3[K]
+    | ManifestV2[K];
+};
 export interface ManifestV2 {
   manifest_version: "2" | 2;
   browser_specific_settings?: {
