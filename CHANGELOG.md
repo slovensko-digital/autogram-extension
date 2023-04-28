@@ -1,3 +1,15 @@
+# v1.5.2 (Fri Apr 28 2023)
+
+#### 🐛 Bug Fix
+
+- fix: move `checkPDFACompliance` to signatureParameters ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.1 (Fri Apr 28 2023)
 
 #### 🐛 Bug Fix
