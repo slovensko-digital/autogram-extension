@@ -25,7 +25,7 @@ export class DBridgeAutogramImpl {
 
   constructor() {
     let serverProtocol: "http" | "https" = "http";
-    let serverHost = "127.0.0.1";
+    let serverHost = "localhost";
 
     if (isSafari()) {
       // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http

@@ -47,7 +47,7 @@ import { components } from "./autogram-api.generated";
 export function apiClient(options?: ApiClientConfiguration) {
   const configurationDefaults = {
     serverProtocol: "http",
-    serverHost: "127.0.0.1",
+    serverHost: "localhost",
     serverPort: 37200,
     customProtocol: "autogram",
     disableSecurity: false,
