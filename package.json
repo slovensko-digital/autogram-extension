@@ -1,7 +1,7 @@
 {
   "name": "autogram-extension",
   "version": "1.4.2",
-  "description": "Browser extension for Autogram signer",
+  "description": "Rozšírenie umožnuje používať podpisovač Autogram od Slovensko.Digital na štátnych portáloch.",
   "main": "./webpack/manifest.ts",
   "scripts": {
     "start": "npm run webpack:build-dev && run-p webpack:watch webext:run",

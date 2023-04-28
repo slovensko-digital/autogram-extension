@@ -1,6 +1,6 @@
 import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
 import { enabledUrls } from "../src/constants";
-import { ManifestV2, ManifestV3 } from "./manifest-types";
+import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,8 +11,8 @@ function generateManifest(
   files: FileDescriptor[],
   entries: Record<string, string[]>
 ): ManifestV3 | ManifestV2 | Record<string, unknown> {
-  const common = {
-    name: packageJson.name,
+  const common: CommonManifest = {
+    name: "Autogram na štátnych weboch",
     version: packageJson.version,
     description: packageJson.description,
     author: "pom",
@@ -29,6 +29,8 @@ function generateManifest(
       open_in_tab: true,
       browser_style: true,
     },
+
+    homepage_url: "https://ekosystem.slovensko.digital/sluzby/autogram",
   };
 
   switch (manifestVersion) {
