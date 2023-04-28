@@ -39,7 +39,7 @@ export interface components {
     };
     Document: {
       /**
-       * @description Filename of the original file to be signed. Is used inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container. 
+       * @description Filename of the original file to be signed. Is used to name the file inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container. 
        * @example document.xml
        */
       filename?: string;
@@ -51,7 +51,7 @@ export interface components {
     };
     SignResponseBody: {
       /**
-       * @description Signed content of the original document - either in plaintext or in Base64 format. 
+       * @description Signed content of the original document in Base64 format. 
        * @example TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvQDSdd57FueSBoYW5kcyBtYWtlIGxpZ2h0IHdvsRWdaAeSBoYW5kcyBtYW==
        */
       content: string;
@@ -67,6 +67,8 @@ export interface components {
       issuedBy: string;
     };
     SignatureParameters: {
+      /** @description Check for PDF/A compliance and show warning if not compliant. */
+      checkPDFACompliance?: boolean;
       /**
        * @description Signature format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container. 
        * @example XAdES_BASELINE_B 
@@ -80,17 +82,18 @@ export interface components {
        */
       container?: "ASiC_S" | "ASiC_E";
       /**
-       * @description XML namespace for the ASiC container. 
-       * @example http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
+       * @description XML namespace for the ASiC container. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only. 
+       * @example http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 
+       * @enum {string}
        */
-      containerXmlns?: string;
+      containerXmlns?: "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
       /**
-       * @description Optional identifier of the document template. 
+       * @description Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1. 
        * @example https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9
        */
       identifier?: string;
       /**
-       * @description Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED. 
+       * @description Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. 
        * @example ENVELOPED 
        * @enum {string}
        */
@@ -130,46 +133,10 @@ export interface components {
        */
       schema?: string;
       /**
-       * @description Optional XML transformation. Format is dictated by `payloadMimeType`. 
+       * @description Optional XML transformation used to . Format is dictated by `payloadMimeType`. 
        * @example <?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>
        */
       transformation?: string;
-    };
-    ErrorBody: {
-      /**
-       * @description Code that can be used to identify the error. 
-       * @example MALFORMED_INPUT 
-       * @enum {string}
-       */
-      code?: "NOT_READY" | "UNSUPPORTED_OPERATION" | "MALFORMED_INPUT" | "UNSUPPORTED_FORMAT" | "SIGNING_FAILED" | "UNEXPECTED_ORIGIN" | "UNEXPECTED_ERROR";
-      /**
-       * @description Mostly human readable error message. 
-       * @example Malformed input body.
-       */
-      message?: string;
-      /**
-       * @description Optional details, likely not human readable, like raw exception message. 
-       * @example Unable to switch to fourth dimension: java.lang.NullPointerException
-       */
-      details?: string;
-    };
-    UserCancelledBody: {
-      /**
-       * @description Code that can be used to identify the error. 
-       * @example USER_CANCELLED 
-       * @enum {string}
-       */
-      code?: "USER_CANCELLED";
-      /**
-       * @description Mostly human readable error message. 
-       * @example User cancelled the signing process.
-       */
-      message?: string;
-      /**
-       * @description Optional details, likely not human readable, like raw exception message. 
-       * @example User cancelled the signing process.
-       */
-      details?: string;
     };
   };
   responses: never;
@@ -192,31 +159,13 @@ export interface operations {
           "application/json": components["schemas"]["Info"];
         };
       };
-      /** @description Request came from an unexpected origin. */
-      403: {
-        content: {
-          "application/json": components["schemas"]["ErrorBody"];
-        };
-      };
-      /** @description Incorrect HTTP method. */
-      405: {
-        content: {
-          "application/json": components["schemas"]["ErrorBody"];
-        };
-      };
-      /** @description Request failed due to some unexpected error. */
-      500: {
-        content: {
-          "application/json": components["schemas"]["ErrorBody"];
-        };
-      };
     };
   };
   /** Sign a single document */
   signDocument: {
     requestBody: {
       content: {
-        "*/*": components["schemas"]["SignRequestBody"];
+        "application/json": components["schemas"]["SignRequestBody"];
       };
     };
     responses: {
@@ -227,39 +176,96 @@ export interface operations {
         };
       };
       /** @description The document was not signed because the user cancelled the signing process. */
-      204: {
-        content: {
-          "application/json": components["schemas"]["UserCancelledBody"];
-        };
-      };
+      204: never;
       /** @description The request body cannot be processed. */
       400: {
         content: {
-          "application/json": components["schemas"]["ErrorBody"];
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error. 
+             * @example MALFORMED_INPUT 
+             * @enum {string}
+             */
+            code?: "MALFORMED_INPUT";
+            /**
+             * @description Human readable error message. 
+             * @example JsonSyntaxException parsing request body.
+             */
+            message?: string;
+            /**
+             * @description Optional details. 
+             * @example JsonSyntaxException: Unexpected token END OF FILE at position 0.
+             */
+            details?: string;
+          };
         };
       };
-      /** @description Request came from an unexpected origin. */
-      403: {
+      /** @description The request body is valid but the document cannot be signed. */
+      422: {
         content: {
-          "application/json": components["schemas"]["ErrorBody"];
-        };
-      };
-      /** @description Incorrect HTTP method. */
-      405: {
-        content: {
-          "application/json": components["schemas"]["ErrorBody"];
-        };
-      };
-      /** @description Server is not ready to process the request. */
-      409: {
-        content: {
-          "application/json": components["schemas"]["ErrorBody"];
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error. 
+             * @example UNPROCESSABLE_INPUT 
+             * @enum {string}
+             */
+            code?: "UNPROCESSABLE_INPUT" | "UNSUPPORTED_SIGNATURE_LEVEL";
+            /**
+             * @description Human readable error message. 
+             * @example IllegalArgumentException parsing request body
+             */
+            message?: string;
+            /**
+             * @description Optional details. 
+             * @example PayloadMimeType must be PDF when using PAdES.
+             */
+            details?: string;
+          };
         };
       };
       /** @description Request failed due to some unexpected error. */
       500: {
         content: {
-          "application/json": components["schemas"]["ErrorBody"];
+          "application/json": {
+            /**
+             * @example INTERNAL_ERROR 
+             * @enum {string}
+             */
+            code?: "INTERNAL_ERROR";
+            /**
+             * @description Human readable error message. 
+             * @example Unexpected exception signing document
+             */
+            message?: string;
+            /**
+             * @description Optional details. 
+             * @example java.lang.NullPointerException: null
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to an error with the signing process. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error. 
+             * @example UNRECOGNIZED_DSS_ERROR 
+             * @enum {string}
+             */
+            code?: "UNRECOGNIZED_DSS_ERROR" | "SIGNING_FAILED";
+            /**
+             * @description Human readable error message. 
+             * @example Unable to sign document
+             */
+            message?: string;
+            /**
+             * @description Optional details. 
+             * @example no such algorithm: PKCS11 for provider
+             */
+            details?: string;
+          };
         };
       };
     };
