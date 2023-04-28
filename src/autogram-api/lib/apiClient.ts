@@ -228,9 +228,9 @@ export function apiClient(options?: ApiClientConfiguration) {
       } as const;
 
       return fetch(url.toString(), init).then((response) => {
-        // if (response.status == 204) {
-        //   throw new UserCancelledSigningException();
-        // }
+        if (response.status == 204) {
+          throw new UserCancelledSigningException();
+        }
         return response.json();
       });
     },
@@ -338,4 +338,4 @@ type AutogramSignRequestBody = components["schemas"]["SignRequestBody"] & {
 };
 export type SignResponseBody = components["schemas"]["SignResponseBody"];
 
-export class UserCancelledSigningException extends Error {}
+export class UserCancelledSigningException {}

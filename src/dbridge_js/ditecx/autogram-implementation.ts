@@ -67,7 +67,7 @@ export class DBridgeAutogramImpl {
         const info = await this.client.waitForStatus("READY", 100, 5);
         console.log(`Autogram ${info.version} is ready`);
       } catch (e) {
-        console.log('waiting for Autogram failed')
+        console.log("waiting for Autogram failed");
         console.error(e);
       }
     }
@@ -144,11 +144,11 @@ export class DBridgeAutogramImpl {
       })
       .catch((reason) => {
         if (reason instanceof UserCancelledSigningException) {
-          console.log(reason);
-          // callback.onError(reason);
+          console.log("User cancelled request");
+        } else {
+          console.error(reason);
+          callback.onError(reason);
         }
-        console.error(reason);
-        callback.onError(reason);
       });
   }
 
