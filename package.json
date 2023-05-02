@@ -1,6 +1,6 @@
 {
   "name": "autogram-extension",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "Rozšírenie umožnuje používať podpisovač Autogram od Slovensko.Digital na štátnych portáloch.",
   "main": "./webpack/manifest.ts",
   "scripts": {
