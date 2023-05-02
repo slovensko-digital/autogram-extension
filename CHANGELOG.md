@@ -1,3 +1,16 @@
+# v1.5.4 (Tue May 02 2023)
+
+#### ⚠️ Pushed to `master`
+
+- update readme ([@pomali](https://github.com/pomali))
+- build: add license to output ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.3 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
