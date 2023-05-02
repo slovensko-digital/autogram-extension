@@ -79,7 +79,7 @@ const config: webpack.Configuration = {
     // new CleanWebpackPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new CopyPlugin({
-      patterns: [{ from: "src/static", to: "./static" }],
+      patterns: [{ from: "src/static", to: "./static" }, {from: 'LICENSE', to: './static'}],
     }),
     // new CopyPlugin({
     //   patterns: [{ from: "src/popup.html", to: "." }],
