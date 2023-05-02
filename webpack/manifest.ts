@@ -43,11 +43,11 @@ function generateManifest(
 
         permissions: [
           "storage",
-          "webRequest",
-          "webNavigation",
-          "scripting", //3
-          "tabs", // 3
-          "activeTab", //3
+          // "webRequest",
+          // "webNavigation",
+          // "scripting", //3
+          // "tabs", // 3
+          // "activeTab", //3
         ],
 
         content_scripts: [
