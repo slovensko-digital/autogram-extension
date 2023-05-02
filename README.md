@@ -1,4 +1,4 @@
-# Rozšíreni Autogram 🇸🇰
+# Rozšírenie Autogram 🇸🇰
 
 Rozšírenie do prehliadačov, nahrádzajúce DSigner za [Autogram](https://github.com/slovensko-digital/autogram) na vybraných štátnych weboch
 
