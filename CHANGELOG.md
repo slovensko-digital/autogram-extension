@@ -1,3 +1,20 @@
+# v1.5.6 (Tue May 02 2023)
+
+#### 🐛 Bug Fix
+
+- fix: change license to english ([@pomali](https://github.com/pomali))
+
+#### ⚠️ Pushed to `master`
+
+- docs: add info about manifest versions ([@pomali](https://github.com/pomali))
+- docs: add info about zip release ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.5 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
