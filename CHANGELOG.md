@@ -1,3 +1,15 @@
+# v1.5.5 (Tue May 02 2023)
+
+#### 🐛 Bug Fix
+
+- fix: remove unused permissions ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.4 (Tue May 02 2023)
 
 #### ⚠️ Pushed to `master`
