@@ -10,6 +10,8 @@ Odporúčame inštalovať cez store Vášho prehliadaču.
 - 🦊 Mozilla Firefox
 - 🐠 Microsoft Edge
 
+Alebo si viete stiahnuť zip z podstránky [Releases](https://github.com/slovensko-digital/autogram-extension/releases) a nainštalovať ručne.
+
 ## Podporované weby
 
 - Slovensko.sk (UPVS - Ústredný portál verejnej správy) https://www.slovensko.sk/, https://schranka.slovensko.sk
