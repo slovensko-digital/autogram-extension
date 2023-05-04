@@ -21,7 +21,11 @@ Ak máte záujem o podporu na iných weboch vytvorte [novú issue](https://githu
 
 # Autogram Extension (en)
 
-Extension
+Browser extension replacing DSigner with [Autogram](https://github.com/slovensko-digital/autogram) as signer on select government websites.
+
+To install use browser extension store or manually using zip from [Releases](https://github.com/slovensko-digital/autogram-extension/releases)
+
+
 
 ## Development
 
