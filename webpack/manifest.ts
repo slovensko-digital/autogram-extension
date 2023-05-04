@@ -23,6 +23,7 @@ function generateManifest(
       "128": "static/logo-128.png",
       "512": "static/logo-512.png",
     },
+    default_locale: "sk",
 
     options_ui: {
       page: "static/options.html",
