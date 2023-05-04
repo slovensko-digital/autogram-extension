@@ -1,3 +1,20 @@
+# v1.5.7 (Thu May 04 2023)
+
+#### 🐛 Bug Fix
+
+- fix: add default_locale and _locales folder ([@pomali](https://github.com/pomali))
+
+#### ⚠️ Pushed to `master`
+
+- Update README.md ([@jsuchal](https://github.com/jsuchal))
+
+#### Authors: 2
+
+- [@pomali](https://github.com/pomali)
+- Jano Suchal ([@jsuchal](https://github.com/jsuchal))
+
+---
+
 # v1.5.6 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
