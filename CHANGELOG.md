@@ -1,3 +1,19 @@
+# v1.5.8 (Sat May 13 2023)
+
+#### 🐛 Bug Fix
+
+- fix: use i18n for manifest name/description ([@pomali](https://github.com/pomali))
+
+#### ⚠️ Pushed to `master`
+
+- Update README.md ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.7 (Thu May 04 2023)
 
 #### 🐛 Bug Fix
