@@ -42,6 +42,10 @@ function generateManifest(
         /* Common properties */
         ...common,
 
+        // https://developer.chrome.com/docs/webstore/i18n/
+        name: "__MSG_appName__",
+        description: "__MSG_appDesc__",
+
         permissions: [
           "storage",
           // "webRequest",
