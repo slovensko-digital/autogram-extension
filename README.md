@@ -6,9 +6,9 @@ Rozšírenie do prehliadačov, nahrádzajúce DSigner za [Autogram](https://gith
 
 Odporúčame inštalovať cez store Vášho prehliadaču.
 
-- 🐶 Google Chrome
-- 🦊 Mozilla Firefox
-- 🐠 Microsoft Edge
+- [🐶 Google Chrome](https://chrome.google.com/webstore/detail/autogram-na-%C5%A1t%C3%A1tnych-webo/lamjcijmpimfpmapeaedanjmfmgjokne)
+- [🦊 Mozilla Firefox](https://addons.mozilla.org/en-US/firefox/addon/autogram-na-%C5%A1t%C3%A1tnych-weboch/)
+- [🐠 Microsoft Edge](https://microsoftedge.microsoft.com/addons/detail/autogram-na-%C5%A1t%C3%A1tnych-webo/comimcpjldggdjlbmpmlkmenjfpglllh)
 
 Alebo si viete stiahnuť zip z podstránky [Releases](https://github.com/slovensko-digital/autogram-extension/releases) a nainštalovať ručne. Použite súbor s manifest-om verzie 3 označený ako `mv3` pre Chrome a manifest-om verzie 2 označený `mv2` pre Firefox.
 
