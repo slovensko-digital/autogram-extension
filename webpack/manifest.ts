@@ -59,6 +59,7 @@ function generateManifest(
           {
             matches: enabledUrls,
             js: entries.content,
+            run_at: "document_start",
           },
         ],
         // background: {

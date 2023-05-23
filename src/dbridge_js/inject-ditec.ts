@@ -2,11 +2,10 @@ import { ditecX } from "./ditecx/ditecx";
 
 type OriginalDitec = object;
 
-const useProxy = false;
+const useProxy = true;
 const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: { ditec?: OriginalDitec }): void {
-  console.log("Start inject");
-  console.log(windowAny.ditec);
+  console.log("Start inject. Original ditec:", windowAny.ditec);
 
   if (windowAny.ditec) {
     if (useProxy) {
@@ -20,5 +19,9 @@ export function inject(windowAny: { ditec?: OriginalDitec }): void {
     }
 
     // windowAny.ditec = wrapWithProxy(ditecX);
+  } else {
+    // TODO: maybe add whitelist
+    console.warn("Creating ditec object");
+    windowAny.ditec = ditecX;
   }
 }
