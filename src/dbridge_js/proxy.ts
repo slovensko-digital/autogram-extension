@@ -19,14 +19,14 @@ const ignoredProps: PropertyKey[] = [
 
 const logger = {
   push(...rest) {
-    // console.log(...rest);
+    console.log(...rest);
     log.push(...rest);
   },
 };
 
 function getSpyHandler(prefix?: string, depth?: number) {
-  const spyHandler = {
-    get(target: object, prop: PropertyKey, receiver?: unknown) {
+  const spyHandler: ProxyHandler<object> = {
+    get(target: object, prop: PropertyKey, receiver?) {
       //   log.push({ target, prefix, prop, receiver });
       //   const wrappedTarget =
       //     typeof target === "function" ? wrapFunction(target) : target;
@@ -42,20 +42,48 @@ function getSpyHandler(prefix?: string, depth?: number) {
       const name = `${prefix}.${prop.toString()}`;
       const reflection = Reflect.get(target, prop, receiver);
 
-      if (typeof reflection == "function")
-        logger.push({
-          type: "get",
-          name,
-          target,
-          prop,
-          receiver,
-        });
+      logger.push({
+        type: "get",
+        name,
+        target,
+        prop,
+        receiver,
+      });
 
-      return depth < 3 &&
+      const returnNestedProxy =
+        depth < 4 &&
         !ignoredProps.includes(prop) &&
-        (typeof reflection == "function" || typeof reflection == "object")
+        (typeof reflection == "function" || typeof reflection == "object");
+
+      return returnNestedProxy
         ? wrapWithProxy(reflection, name, depth + 1)
         : reflection;
+    },
+
+    set(target: object, prop: PropertyKey, value, receiver?) {
+      const name = `${prefix}.${prop.toString()}`;
+      const ignoredNames = ["root.utils.generateGuid"];
+
+      logger.push({
+        type: "set",
+        name,
+        target,
+        prop,
+        value,
+        receiver,
+      });
+
+      if (
+        !Object.prototype.hasOwnProperty.call(target, prop) &&
+        !ignoredNames.includes(name)
+      ) {
+        console.warn(
+          `setting property "${prop.toString()}" on "${prefix}" ${target}`
+        );
+        Reflect.set(target, prop, value, receiver);
+      }
+
+      return true;
     },
 
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -69,18 +97,18 @@ function getSpyHandler(prefix?: string, depth?: number) {
       const name = `${thisArg.__proxy_name}.${target.name}`;
 
       // this causes infinite loop
-      if (
-        argumentList &&
-        argumentList[0] &&
-        argumentList[0]["onSuccess"] &&
-        typeof argumentList[0]["onSuccess"] === "function"
-      ) {
-        const oldOnSuccess = argumentList[0]["onSuccess"];
-        argumentList[0]["onSuccess"] = function (...onSuccessArgs) {
-          logger.push({ type: "callback.onSuccess", name, onSuccessArgs });
-          return oldOnSuccess(...onSuccessArgs);
-        };
-      }
+      // if (
+      //   argumentList &&
+      //   argumentList[0] &&
+      //   argumentList[0]["onSuccess"] &&
+      //   typeof argumentList[0]["onSuccess"] === "function"
+      // ) {
+      //   const oldOnSuccess = argumentList[0]["onSuccess"];
+      //   argumentList[0]["onSuccess"] = function (...onSuccessArgs) {
+      //     logger.push({ type: "callback.onSuccess", name, onSuccessArgs });
+      //     return oldOnSuccess(...onSuccessArgs);
+      //   };
+      // }
 
       logger.push({ type: "apply", name, target, thisArg, argumentList });
       return Reflect.apply(target, thisArg, argumentList);
@@ -94,6 +122,7 @@ export function wrapWithProxy<T extends object>(
   prefix = "root",
   depth = 0
 ): T & { __proxy_log: typeof log } {
+  console.log("wrapWithProxy", { target, prefix, depth });
   if (typeof target !== "object" && typeof target !== "function") {
     // console.log("skipping", typeof target, target);
     return target;
