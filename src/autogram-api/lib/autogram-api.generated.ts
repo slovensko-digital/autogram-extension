@@ -10,8 +10,33 @@ export interface paths {
     get: operations["getInfo"];
   };
   "/sign": {
-    /** Sign a single document */
+    /**
+     * Sign a single document or single document in batch 
+     * @description Sign a single document or single document in batch. 
+     * 
+     * If the `batchId` is provided, the document is signed inside the batch. 
+     * 
+     * If the `batchId` is not provided, the document is signed as a standalone document.
+     */
     post: operations["signDocument"];
+  };
+  "/batch": {
+    /**
+     * Start a batch session 
+     * @description Start a batch session, `batchId` is returned. 
+     * 
+     * Batch session is used to sign multiple documents with the same signature. 
+     * The batch session is identified and authorized by the `batchId`, keep it secret. 
+     * 
+     * After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body. 
+     * When you are done signing documents, you can end the batch session using `DELETE /batch`.
+     */
+    post: operations["startBatch"];
+    /**
+     * End a batch session 
+     * @description End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+     */
+    delete: operations["endBatch"];
   };
 }
 
@@ -26,6 +51,14 @@ export interface components {
       status?: "LOADING" | "READY";
     };
     SignRequestBody: {
+      /**
+       * @description Optional identifier of the batch. 
+       * If not provided, document will be signed as single standalone document.
+       * If provided, document will be signed inside batch.
+       *  
+       * @example 0c62536c-f43f-4302-b8f0-e2ad521c8175
+       */
+      batchId?: string;
       document: components["schemas"]["Document"];
       parameters: components["schemas"]["SignatureParameters"];
       /**
@@ -66,6 +99,31 @@ export interface components {
        */
       issuedBy: string;
     };
+    BatchStartRequestBody: {
+      /**
+       * @description Total number of documents in the batch. Used to calculate the progress of the batch. 
+       * @example 500
+       */
+      totalNumberOfDocuments?: number;
+    };
+    BatchStartResponseBody: {
+      /**
+       * @description Identifier of the batch. Used to identify the batch for signing and ending batch. 
+       * @example 0c62536c-f43f-4302-b8f0-e2ad521c8175
+       */
+      batchId?: string;
+    };
+    BatchEndRequestBody: {
+      /**
+       * @description Identifier of the batch. 
+       * @example 0c62536c-f43f-4302-b8f0-e2ad521c8175
+       */
+      batchId?: string;
+    };
+    BatchEndResponseBody: {
+      /** @enum {string} */
+      status?: "FINISHED" | "NOT_FINISHED";
+    };
     SignatureParameters: {
       /** @description Check for PDF/A compliance and show warning if not compliant. */
       checkPDFACompliance?: boolean;
@@ -105,7 +163,7 @@ export interface components {
        */
       digestAlgorithm?: "SHA256" | "SHA384" | "SHA512";
       /**
-       * @description Optional flag to control whether the signature should be made according to EN 319132. Defaults to true. 
+       * @description Optional flag to control whether the signature should be made according to ETSI EN 319132 for XAdES and ETSI EN 319122 for CAdES and PAdES. Defaults to false. 
        * @example false
        */
       en319132?: boolean;
@@ -137,6 +195,12 @@ export interface components {
        * @example <?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>
        */
       transformation?: string;
+      /**
+       * @description Optional width of the signing document visualization. Defaults to sm. Values are sm (640px), md (768px), lg (1024px), xl (1280px), xxl (1536px). The minimum visualization width is set to 640px. If the preferred visualization width is exceeds width of client's screen, the visualization width is set to the width of the client's screen. 
+       * @example md 
+       * @enum {string}
+       */
+      visualizationWidth?: "sm" | "md" | "lg" | "xl" | "xxl";
     };
   };
   responses: never;
@@ -161,7 +225,14 @@ export interface operations {
       };
     };
   };
-  /** Sign a single document */
+  /**
+   * Sign a single document or single document in batch 
+   * @description Sign a single document or single document in batch. 
+   * 
+   * If the `batchId` is provided, the document is signed inside the batch. 
+   * 
+   * If the `batchId` is not provided, the document is signed as a standalone document.
+   */
   signDocument: {
     requestBody: {
       content: {
@@ -266,6 +337,50 @@ export interface operations {
              */
             details?: string;
           };
+        };
+      };
+    };
+  };
+  /**
+   * Start a batch session 
+   * @description Start a batch session, `batchId` is returned. 
+   * 
+   * Batch session is used to sign multiple documents with the same signature. 
+   * The batch session is identified and authorized by the `batchId`, keep it secret. 
+   * 
+   * After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body. 
+   * When you are done signing documents, you can end the batch session using `DELETE /batch`.
+   */
+  startBatch: {
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["BatchStartRequestBody"];
+      };
+    };
+    responses: {
+      /** @description successful operation */
+      200: {
+        content: {
+          "application/json": components["schemas"]["BatchStartResponseBody"];
+        };
+      };
+    };
+  };
+  /**
+   * End a batch session 
+   * @description End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+   */
+  endBatch: {
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["BatchEndRequestBody"];
+      };
+    };
+    responses: {
+      /** @description successful operation */
+      200: {
+        content: {
+          "application/json": components["schemas"]["BatchEndResponseBody"];
         };
       };
     };
