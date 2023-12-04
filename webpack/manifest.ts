@@ -59,6 +59,7 @@ function generateManifest(
           {
             matches: enabledUrls,
             js: entries.content,
+            all_frames: true,
           },
         ],
         // background: {

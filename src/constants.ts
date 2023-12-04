@@ -5,5 +5,6 @@ export const enabledUrls = [
   "https://schranka.slovensko.sk/*",
   "https://pfseform.financnasprava.sk/*",
   "https://www.financnasprava.sk/*",
+  "https://eformulare.socpoist.sk/*",
   ...(process.env.NODE_ENV !== "production" ? ["http://localhost:3000/*"] : []),
 ];

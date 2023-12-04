@@ -159,6 +159,12 @@ export interface ManifestV3 {
     js?: StringPath[];
     match_about_blank?: boolean;
     match_origin_as_fallback?: boolean;
+
+    all_frames?: boolean;
+    exclude_globs?: string[];
+    exclude_matches?: string[];
+    include_globs?: string[];
+    run_at?: "document_start" | "document_end" | "document_idle";
   }[];
   /**
    *
