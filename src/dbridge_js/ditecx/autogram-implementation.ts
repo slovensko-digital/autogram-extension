@@ -135,6 +135,7 @@ export class DBridgeAutogramImpl {
         this.signerIdentificationListeners = [];
         this.signatureIndex++;
 
+        console.log(callback);
         callback.onSuccess(
           // TODO skontrolovat ci sa to niekedy moze pouzivat
           decodeBase64

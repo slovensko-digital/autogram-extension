@@ -53,7 +53,7 @@ export class DSigAdapter {
   stub(name: string, ...rest: unknown[]): void {
     this.log(name, ...rest);
     // alert(`Stubbed ${this.constructor.name} method: \n\n${name}`);
-    console.warn(`Stubbed ${this.constructor.name} method: \n\n${name}`)
+    console.warn(`Stubbed ${this.constructor.name} method: \n\n${name}`);
   }
 
   checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {
@@ -78,5 +78,18 @@ export class DSigAdapter {
   getSignerIdentification(callback) {
     this.log("getSignerIdentification", arguments);
     this.__implementation.getSignerIdentification(callback);
+  }
+
+  detectSupportedPlatforms(platforms, callback) {
+    console.log({ platforms });
+
+    // callback.onSuccess(["autogram"]);
+    callback.onSuccess(["java"]);
+  }
+
+  deploy(config: { platforms: any }, callback) {
+    console.log("deploy on platforms", config);
+    // callback.onSuccess(instance);
+    callback.onSuccess();
   }
 }

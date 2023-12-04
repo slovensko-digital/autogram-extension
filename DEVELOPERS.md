@@ -150,3 +150,9 @@ API dbridge_js funguje nasledovne:
   - `img` - zdrojové obrázky na distribuciu (do store-u)
   - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
   - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
+
+
+## Stranky na ktorych treba otestovat ci funguju spravne
+
+- https://schranka.slovensko.sk/FormConstructor/Default.aspx
+- https://portal.minv.sk/wps/myportal/domov/co2/podania/pobyt/

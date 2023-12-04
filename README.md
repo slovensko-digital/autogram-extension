@@ -16,6 +16,7 @@ Alebo si viete stiahnuť zip z podstránky [Releases](https://github.com/slovens
 
 - Slovensko.sk (UPVS - Ústredný portál verejnej správy) https://www.slovensko.sk/, https://schranka.slovensko.sk
 - Finančná správa (PFS - Portál finančnej správy) https://www.financnasprava.sk/, https://pfseform.financnasprava.sk/
+- Colné vyhlásenie pre zásielku s nízkou hodnotou https://www.ecm.financnasprava.sk/Formular/Dovozne-CV-tovar-s-nizkou-hodnotou
 
 Ak máte záujem o podporu na iných weboch vytvorte [novú issue](https://github.com/slovensko-digital/autogram-extension/issues/new)
 

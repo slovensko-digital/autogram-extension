@@ -147,7 +147,22 @@ export class DSigXadesAdapter extends DSigAdapter {
     dataEnvelopeDescr,
     callback
   ) {
-    this.stub("sign20", arguments);
+    // this.stub("sign20", arguments);
+    this.log("sign20", arguments, {
+      signatureId,
+      digestAlgUri,
+      signaturePolicyIdentifier,
+      dataEnvelopeId,
+      dataEnvelopeURI,
+      dataEnvelopeDescr,
+    });
+
+    this.__implementation.sign(
+      signatureId,
+      digestAlgUri,
+      signaturePolicyIdentifier,
+      callback
+    );
   }
 
   // ---------------
@@ -160,19 +175,24 @@ export class DSigXadesAdapter extends DSigAdapter {
   setCertificateFilter(filterID, callback) {
     this.stub("", arguments);
   }
+
   getSignedXmlWithEnvelope(callback) {
     this.log("getSignedXmlWithEnvelope", arguments);
     this.__implementation.getSignature(
       {
-        container: null,
-        containerXmlns: null,
-        level: "XAdES_BASELINE_B",
-        packaging: "ENVELOPING",
+        // container: null,
+        // containerXmlns: null,
+        // level: "XAdES_BASELINE_B",
+        // packaging: "ENVELOPING",
+
+        container: "ASiC_E",
+        packaging: "ENVELOPED",
       },
       callback,
       true
     );
   }
+
   getSignedXmlWithEnvelopeBase64(callback) {
     this.log("getSignedXmlWithEnvelopeBase64", arguments);
     this.__implementation.getSignature(
