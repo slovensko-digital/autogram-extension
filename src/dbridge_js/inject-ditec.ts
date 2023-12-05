@@ -41,7 +41,12 @@ function waitForDitec(windowAny: { ditec?: OriginalDitec }) {
 
 export async function inject(windowAny: { ditec?: OriginalDitec }) {
   console.log("Start inject");
-  await waitForDitec(windowAny);
+  try {
+    await waitForDitec(windowAny);
+  } catch (e) {
+    console.error(e);
+    return;
+  }
   console.log(windowAny.ditec)
 
   if (useProxy) {
