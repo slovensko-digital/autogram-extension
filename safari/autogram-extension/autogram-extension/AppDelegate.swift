@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  autogram-extension
 //
-//  Created by pom on 27/04/2023.
+//  Created by pom on 08/12/2023.
 //
 
 import Cocoa
