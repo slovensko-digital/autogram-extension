@@ -5,6 +5,7 @@ import {
 import { AutogramDocument } from "../../../client";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
+import { SignatureParameters } from "../../../autogram-api";
 
 export class XadesBpXmlStrategy implements ObjectStrategy {
   obj: ObjectXadesBpXml;
@@ -33,6 +34,21 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
   get identifier() {
     return this.obj.xdcIdentifier;
   }
+  get schemaIdentifier() {
+    return this.obj.xsdReferenceURI;
+  }
+  get transformationIdentifier() {
+    return this.obj.xslReferenceURI;
+  }
+  get transformationMediaDestinationTypeDescription() {
+    return this.obj.xslMediaDestinationTypeDescription;
+  }
+  get transformationLanguage() {
+    return this.obj.xslXSLTLanguage;
+  }
+  get transformationTargetEnvironment() {
+    return this.obj.xslTargetEnvironment;
+  }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/xml";
   }
@@ -43,6 +59,11 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
   constructor(object: ObjectXadesBp2Xml) {
     this.obj = object;
   }
+  schemaIdentifier: string;
+  transformationIdentifier: string;
+  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationLanguage: string;
+  transformationTargetEnvironment: string;
 
   isXmlDataContainer() {
     return true;

@@ -7,6 +7,11 @@ export interface ObjectStrategy {
   objTransformation: string;
   identifier: SignatureParameters["identifier"];
   formVersion: string;
+  schemaIdentifier: string;
+  transformationIdentifier: string;
+  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationLanguage: string;
+  transformationTargetEnvironment: string;
   /**
    * Type of payload for Autogram (Autogram input)
    */
@@ -30,8 +35,22 @@ class EmptyStrategy implements ObjectStrategy {
   get objectId() {
     return null;
   }
-
   get identifier() {
+    return null;
+  }
+  get schemaIdentifier() {
+    return null;
+  }
+  get transformationIdentifier() {
+    return null;
+  }
+  get transformationMediaDestinationTypeDescription() {
+    return null;
+  }
+  get transformationLanguage() {
+    return null;
+  }
+  get transformationTargetEnvironment() {
     return null;
   }
   get payloadMimeType(): PayloadMimeTypeStr {

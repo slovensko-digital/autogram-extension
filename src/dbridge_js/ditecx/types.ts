@@ -26,7 +26,7 @@ export interface ObjectXadesBpXml {
   xsdReferenceURI;
   xdcUsedXSLT: string;
   xslReferenceURI: string;
-  xslMediaDestinationTypeDescription;
+  xslMediaDestinationTypeDescription: string;
   xslXSLTLanguage: string;
   xslTargetEnvironment: string;
   xdcIncludeRefs: boolean;
