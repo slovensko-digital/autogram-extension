@@ -81,6 +81,11 @@ export class SignRequest {
       transformation: this.objectInfo.objTransformation,
       schema: this.objectInfo.objSchema,
       checkPDFACompliance: true,
+      schemaIdentifier: getNullIfEmpty(this.objectInfo.schemaIdentifier),
+      transformationIdentifier: getNullIfEmpty(this.objectInfo.transformationIdentifier),
+      transformationMediaDestinationTypeDescription: getNullIfEmpty(this.objectInfo.transformationMediaDestinationTypeDescription),
+      transformationLanguage: getNullIfEmpty(this.objectInfo.transformationLanguage),
+      transformationTargetEnvironment: getNullIfEmpty(this.objectInfo.transformationTargetEnvironment),
     };
   }
 
@@ -133,6 +138,10 @@ function getProperty<T>(obj: object, propertyName: string, defaultValue: T) {
   return Object.prototype.hasOwnProperty.call(obj, propertyName)
     ? obj[propertyName]
     : defaultValue;
+}
+
+function getNullIfEmpty(s: string) {
+  return (s != null && s.length > 0) ? s : null;
 }
 
 // function assertUnreachable(x: never): never {
