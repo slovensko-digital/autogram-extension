@@ -8,5 +8,8 @@ export const enabledUrls = [
   "https://cep.financnasprava.sk/*",
   "https://www.cep.financnasprava.sk/*",
   "https://eformulare.socpoist.sk/*",
+  "https://city-account-next.dev.bratislava.sk/*",
+  "https://city-account-next.staging.bratislava.sk/*",
+  "https://konto.bratislava.sk/*",
   ...(process.env.NODE_ENV !== "production" ? ["http://localhost:3000/*"] : []),
 ];

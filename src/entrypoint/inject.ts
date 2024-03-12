@@ -1,6 +1,6 @@
 import { inject } from "../dbridge_js/inject-ditec";
 
-type WindowWithDitec = Window & { ditec?: object };
+type WindowWithDitec = Window & { ditec?: { dSigXadesBpJs?: object } };
 
 const windowAny = window as WindowWithDitec;
 
