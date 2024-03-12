@@ -3,7 +3,6 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
   "/info": {
     /** Retrieve info and the current server status */
@@ -154,6 +153,11 @@ export interface components {
        */
       containerXmlns?: "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
       /**
+       * @description When creating XML Datacontainer, parameter indicates whether to embed XSD and XML or reference them. Practically this should be only used for ORSR EForms in which case (when identifier contains "justice.gov.sk/Forms") this parameter is overridden to true.
+       * @example false
+       */
+      embedUsedSchemas?: boolean;
+      /**
        * @description Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1. Defaults to null. Is ignored with autoLoadEform true.
        * @example https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9
        */
@@ -180,19 +184,37 @@ export interface components {
        * @default INCLUSIVE
        * @enum {string}
        */
-      infoCanonicalization?: "INCLUSIVE" | "EXCLUSIVE" | "INCLUSIVE_WITH_COMMENTS" | "EXCLUSIVE_WITH_COMMENTS" | "INCLUSIVE_11" | "INCLUSIVE_11_WITH_COMMENTS";
+      infoCanonicalization?:
+        | "INCLUSIVE"
+        | "EXCLUSIVE"
+        | "INCLUSIVE_WITH_COMMENTS"
+        | "EXCLUSIVE_WITH_COMMENTS"
+        | "INCLUSIVE_11"
+        | "INCLUSIVE_11_WITH_COMMENTS";
       /**
        * @description Optional properties canonicalization method.
        * @default INCLUSIVE
        * @enum {string}
        */
-      propertiesCanonicalization?: "INCLUSIVE" | "EXCLUSIVE" | "INCLUSIVE_WITH_COMMENTS" | "EXCLUSIVE_WITH_COMMENTS" | "INCLUSIVE_11" | "INCLUSIVE_11_WITH_COMMENTS";
+      propertiesCanonicalization?:
+        | "INCLUSIVE"
+        | "EXCLUSIVE"
+        | "INCLUSIVE_WITH_COMMENTS"
+        | "EXCLUSIVE_WITH_COMMENTS"
+        | "INCLUSIVE_11"
+        | "INCLUSIVE_11_WITH_COMMENTS";
       /**
        * @description Optional key info canonicalization method.
        * @default INCLUSIVE
        * @enum {string}
        */
-      keyInfoCanonicalization?: "INCLUSIVE" | "EXCLUSIVE" | "INCLUSIVE_WITH_COMMENTS" | "EXCLUSIVE_WITH_COMMENTS" | "INCLUSIVE_11" | "INCLUSIVE_11_WITH_COMMENTS";
+      keyInfoCanonicalization?:
+        | "INCLUSIVE"
+        | "EXCLUSIVE"
+        | "INCLUSIVE_WITH_COMMENTS"
+        | "EXCLUSIVE_WITH_COMMENTS"
+        | "INCLUSIVE_11"
+        | "INCLUSIVE_11_WITH_COMMENTS";
       /**
        * @description Optional XML schema used to validate the signing document and to compute digest used in "UsedXSDReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is ignored with autoLoadEform true.
        * @example <?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>
@@ -223,7 +245,7 @@ export interface components {
        * @example HTML
        * @enum {string}
        */
-      transformationMediaDestinationTypeDescription?: string;
+      transformationMediaDestinationTypeDescription?: "XHTML" | "HTML" | "TXT";
       /**
        * @description Optional target environment of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this target. Otherwise transformation must be provided. Null and not used by default.
        * @example example-value
@@ -247,7 +269,6 @@ export interface components {
 export type external = Record<string, never>;
 
 export interface operations {
-
   /** Retrieve info and the current server status */
   getInfo: {
     responses: {
@@ -291,7 +312,15 @@ export interface operations {
              * @example MALFORMED_INPUT
              * @enum {string}
              */
-            code?: "BATCH_CONFLICT" | "BATCH_ENDED" | "BATCH_EXPIRED" | "BATCH_NOT_STARTED" | "EMPTY_BODY" | "MALFORMED_INPUT" | "MULTIPLE_ORIGINAL_DOCUMENTS" | "ORIGINAL_DOCUMENT_NOT_FOUND";
+            code?:
+              | "BATCH_CONFLICT"
+              | "BATCH_ENDED"
+              | "BATCH_EXPIRED"
+              | "BATCH_NOT_STARTED"
+              | "EMPTY_BODY"
+              | "MALFORMED_INPUT"
+              | "MULTIPLE_ORIGINAL_DOCUMENTS"
+              | "ORIGINAL_DOCUMENT_NOT_FOUND";
             /**
              * @description Human readable error message.
              * @example JsonSyntaxException parsing request body.
