@@ -1,3 +1,26 @@
+# v1.6.0 (Fri Dec 08 2023)
+
+#### 🚀 Enhancement
+
+- feat: update safari extension ([@pomali](https://github.com/pomali))
+
+#### 🐛 Bug Fix
+
+- fix: safari blocking popup ([@pomali](https://github.com/pomali))
+- fix: update API types from OpenAPI ([@pomali](https://github.com/pomali))
+
+#### ⚠️ Pushed to `master`
+
+- add (alpha) support for eformulare.socpoist.sk ([@pomali](https://github.com/pomali))
+- update to xcrun ([@pomali](https://github.com/pomali))
+- docs: add links to chrome stores ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v1.5.8 (Sat May 13 2023)
 
 #### 🐛 Bug Fix

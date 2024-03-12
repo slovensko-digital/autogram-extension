@@ -1,16 +1,28 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
+import { version } from "../../package.json";
 
 console.log("content");
 
 isExtensionEnabled().then((enabled) => {
   if (enabled) {
-    console.log("Autogram extension is enabled");
-    insertInjectScript();
+    console.log(`Autogram extension ${version} is enabled`);
+    insertInjectScript(document);
+
+    // TODO: probably this should be conditional, based on the website
+    const iframe = document.getElementById(
+      "workdeskIframe"
+    ) as HTMLIFrameElement;
+    if (iframe) {
+      console.log("workdeskIframe found");
+      insertInjectScript(iframe.contentDocument);
+    } else {
+      console.log("workdeskIframe not found");
+    }
   }
 });
 
-function insertInjectScript() {
+function insertInjectScript(doc: Document) {
   const url = browser.runtime.getURL("inject.bundle.js");
   console.log(url);
 
@@ -25,7 +37,7 @@ function insertInjectScript() {
   function append() {
     console.log(script);
     console.log(script.src);
-    document.head.appendChild(script);
+    doc.head.appendChild(script);
   }
 
   websiteReady().then(append);

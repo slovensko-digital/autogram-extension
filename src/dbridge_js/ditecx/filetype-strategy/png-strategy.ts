@@ -4,12 +4,18 @@ import {
 } from "./base-strategy";
 import { AutogramDocument } from "../../../client";
 import { ObjectXadesBpPng } from "../types";
+import { SignatureParameters } from "../../../autogram-api";
 
 export class XadesBpPngStrategy implements ObjectStrategy {
   obj: ObjectXadesBpPng;
   constructor(object: ObjectXadesBpPng) {
     this.obj = object;
   }
+  schemaIdentifier: string;
+  transformationIdentifier: string;
+  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationLanguage: string;
+  transformationTargetEnvironment: string;
 
   get document(): AutogramDocument {
     return {

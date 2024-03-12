@@ -6,12 +6,18 @@ import {
 import { ObjectXadesBpTxt } from "../types";
 import { Base64 } from "js-base64";
 import { AutogramDocument } from "../../../client";
+import { SignatureParameters } from "../../../autogram-api";
 
 export class XadesBpTxtStrategy implements ObjectStrategy {
   obj: ObjectXadesBpTxt;
   constructor(object: ObjectXadesBpTxt) {
     this.obj = object;
   }
+  schemaIdentifier: string;
+  transformationIdentifier: string;
+  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationLanguage: string;
+  transformationTargetEnvironment: string;
 
   get document(): AutogramDocument {
     return {

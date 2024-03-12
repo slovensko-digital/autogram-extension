@@ -62,7 +62,7 @@ export class DBridgeAutogramImpl {
       console.error(e);
       const url = this.client.getLaunchURL();
       console.log(`Opening "${url}"`);
-      window.open(url);
+      window.location.assign(url);
       try {
         const info = await this.client.waitForStatus("READY", 100, 5);
         console.log(`Autogram ${info.version} is ready`);

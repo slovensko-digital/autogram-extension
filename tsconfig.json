@@ -10,7 +10,8 @@
     "module": "CommonJS",
     "target": "ES5",
     "allowJs": true,
-    "lib": ["ES5", "ES2019", "DOM"]
+    "lib": ["ES5", "ES2019", "DOM"],
+    "resolveJsonModule": true
   },
   "exclude": ["spec"]
 }
