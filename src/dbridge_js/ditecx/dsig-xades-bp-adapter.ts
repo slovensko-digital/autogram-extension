@@ -157,4 +157,10 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       callback
     );
   }
+
+  detectSupportedPlatforms(arg, callback) {
+    this.log("detectSupportedPlatforms", arguments);
+    callback.onSuccess();
+    this.__implementation.getPlatform(callback);
+  }
 }

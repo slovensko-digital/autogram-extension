@@ -23,10 +23,10 @@ export interface ObjectXadesBpXml {
   xdcIdentifier: string;
   xdcVersion: string;
   xdcUsedXSD: string;
-  xsdReferenceURI;
+  xsdReferenceURI: string;
   xdcUsedXSLT: string;
   xslReferenceURI: string;
-  xslMediaDestinationTypeDescription: string;
+  xslMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
   xslXSLTLanguage: string;
   xslTargetEnvironment: string;
   xdcIncludeRefs: boolean;
@@ -97,5 +97,16 @@ export type InputObject =
   | ObjectXadesPdf
   | ObjectXadesBp2Xml;
 
-
 export type PartialSignerParameters = Partial<SignatureParameters>;
+
+export interface OnSuccessCallback {
+  onSuccess: () => void;
+}
+export interface OnSuccessCallback1 {
+  onSuccess: (v) => void;
+  onError?: (v) => void;
+}
+
+export interface OnErrorCallback {
+  onError: (e) => void;
+}

@@ -1,4 +1,4 @@
-const log = [];
+const log: string[] = [];
 
 const ignoredProps: PropertyKey[] = [
   "__implementation",
@@ -51,11 +51,15 @@ function getSpyHandler(prefix?: string, depth?: number) {
           receiver,
         });
 
-      return depth < 3 &&
+      if (
+        depth !== undefined &&
+        depth < 3 &&
         !ignoredProps.includes(prop) &&
         (typeof reflection == "function" || typeof reflection == "object")
-        ? wrapWithProxy(reflection, name, depth + 1)
-        : reflection;
+      ) {
+        return wrapWithProxy(reflection, name, depth + 1);
+      }
+      return reflection;
     },
 
     // eslint-disable-next-line @typescript-eslint/ban-types

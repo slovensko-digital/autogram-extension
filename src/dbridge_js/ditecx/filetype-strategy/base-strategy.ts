@@ -23,35 +23,35 @@ class EmptyStrategy implements ObjectStrategy {
   get document(): AutogramDocument {
     return { content: "", filename: "" };
   }
-  get objSchema(): string {
-    return null;
+  get objSchema(){
+    return '';
   }
-  get objTransformation(): string {
-    return null;
+  get objTransformation(){
+    return '';
   }
   get formVersion() {
-    return null;
+    return '';
   }
   get objectId() {
     return null;
   }
   get identifier() {
-    return null;
+    return '';
   }
   get schemaIdentifier() {
-    return null;
+    return '';
   }
   get transformationIdentifier() {
-    return null;
+    return '';
   }
   get transformationMediaDestinationTypeDescription() {
-    return null;
+    return undefined;
   }
   get transformationLanguage() {
-    return null;
+    return '';
   }
   get transformationTargetEnvironment() {
-    return null;
+    return '';
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";

@@ -20,14 +20,14 @@ export class XadesPdfStrategy implements ObjectStrategy {
   get document(): AutogramDocument {
     return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };
   }
-  get objSchema(): string {
-    return null;
+  get objSchema() {
+    return '';
   }
-  get objTransformation(): string {
-    return null;
+  get objTransformation(){
+    return '';
   }
   get formVersion() {
-    return null;
+    return '';
   }
   get objectId() {
     return this.obj.objectId;

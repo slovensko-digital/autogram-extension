@@ -23,7 +23,6 @@ export class DSigAdapter {
 
   constructor(implementation: DBridgeAutogramImpl) {
     this.__implementation = implementation;
-    // this.__implementation.setAdapter(this);
   }
 
   initialize(callback: { onSuccess: () => void }): void {
@@ -53,7 +52,7 @@ export class DSigAdapter {
   stub(name: string, ...rest: unknown[]): void {
     this.log(name, ...rest);
     // alert(`Stubbed ${this.constructor.name} method: \n\n${name}`);
-    console.warn(`Stubbed ${this.constructor.name} method: \n\n${name}`)
+    console.warn(`Stubbed ${this.constructor.name} method: \n\n${name}`);
   }
 
   checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {

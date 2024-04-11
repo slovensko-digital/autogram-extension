@@ -164,8 +164,8 @@ export class DSigXadesAdapter extends DSigAdapter {
     this.log("getSignedXmlWithEnvelope", arguments);
     this.__implementation.getSignature(
       {
-        container: null,
-        containerXmlns: null,
+        container: undefined,
+        containerXmlns: undefined,
         level: "XAdES_BASELINE_B",
         packaging: "ENVELOPING",
       },

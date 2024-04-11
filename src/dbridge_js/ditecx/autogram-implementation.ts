@@ -1,9 +1,7 @@
 import { SignResponseBody } from "../../autogram-api";
 import { UserCancelledSigningException } from "../../autogram-api/lib/apiClient";
 import { apiClient } from "../../client";
-import { AutogramSwitcherError } from "../../error";
 import { isSafari, TODO } from "../../util";
-import { DSigAdapter } from "./dsig-base-adapter";
 import {
   InputObject,
   PartialSignerParameters,
@@ -18,7 +16,6 @@ export class DBridgeAutogramImpl {
   private signRequest: SignRequest;
   private language = "sk";
   private signedObject: SignResponseBody;
-  private _adapter: DSigAdapter;
 
   private signerIdentificationListeners: (() => void)[];
   private signatureIndex = 1;
@@ -46,11 +43,6 @@ export class DBridgeAutogramImpl {
   resetSignRequest() {
     this.signerIdentificationListeners = [];
     this.signRequest = new SignRequest();
-  }
-
-  setAdapter(adapter: DSigAdapter): void {
-    if (this._adapter) throw new AutogramSwitcherError("Adapter already set");
-    this._adapter = adapter;
   }
 
   async launch(callback: OnSuccessCallback): Promise<void> {
@@ -147,7 +139,7 @@ export class DBridgeAutogramImpl {
           console.log("User cancelled request");
         } else {
           console.error(reason);
-          callback.onError(reason);
+          callback.onError?.(reason);
         }
       });
   }
@@ -167,8 +159,12 @@ export class DBridgeAutogramImpl {
 
   getVersion(callback: OnSuccessCallback1) {
     const fakeVersion =
-      '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
+      '{"name":"D.Signer/XAdES BP Launcher 2","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
     callback.onSuccess(fakeVersion);
+  }
+
+  getPlatform(callback: OnSuccessCallback1){
+    callback.onSuccess(["dLauncher2"]);
   }
 
   private assertSignedRequest() {

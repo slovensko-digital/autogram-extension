@@ -16,6 +16,7 @@ export const SigningStatus = {
   started: "started",
   signed: "signed",
 } as const;
+
 export class SignRequest {
   object: InputObject;
   private objectInfo: ObjectStrategy;
@@ -53,7 +54,7 @@ export class SignRequest {
       this.object.type === "XadesBp2Xml" ||
       this.object.type === "XadesBpXml"
         ? "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
-        : null;
+        : undefined;
 
     return {
       identifier: this.objectInfo.identifier,
@@ -81,11 +82,18 @@ export class SignRequest {
       transformation: this.objectInfo.objTransformation,
       schema: this.objectInfo.objSchema,
       checkPDFACompliance: true,
-      schemaIdentifier: getNullIfEmpty(this.objectInfo.schemaIdentifier),
-      transformationIdentifier: getNullIfEmpty(this.objectInfo.transformationIdentifier),
-      transformationMediaDestinationTypeDescription: getNullIfEmpty(this.objectInfo.transformationMediaDestinationTypeDescription),
-      transformationLanguage: getNullIfEmpty(this.objectInfo.transformationLanguage),
-      transformationTargetEnvironment: getNullIfEmpty(this.objectInfo.transformationTargetEnvironment),
+      schemaIdentifier: getUndefinedIfEmpty(this.objectInfo.schemaIdentifier),
+      transformationIdentifier: getUndefinedIfEmpty(
+        this.objectInfo.transformationIdentifier
+      ),
+      transformationMediaDestinationTypeDescription:
+        this.objectInfo.transformationMediaDestinationTypeDescription,
+      transformationLanguage: getUndefinedIfEmpty(
+        this.objectInfo.transformationLanguage
+      ),
+      transformationTargetEnvironment: getUndefinedIfEmpty(
+        this.objectInfo.transformationTargetEnvironment
+      ),
     };
   }
 
@@ -140,8 +148,12 @@ function getProperty<T>(obj: object, propertyName: string, defaultValue: T) {
     : defaultValue;
 }
 
-function getNullIfEmpty(s: string) {
-  return (s != null && s.length > 0) ? s : null;
+function getNullIfEmpty(s: string | undefined | null) {
+  return s != null && s.length > 0 ? s : null;
+}
+
+function getUndefinedIfEmpty(s: string | undefined | null) {
+  return s != null && s.length > 0 ? s : undefined;
 }
 
 // function assertUnreachable(x: never): never {
