@@ -86,6 +86,11 @@ function generateManifest(
             matches: enabledUrls,
           },
         ],
+
+        // externally_connectable: {
+        //   // chrome only
+        //   matches: enabledUrls,
+        // },
       };
 
     case 2:
@@ -140,11 +145,12 @@ function generateManifest(
           "static/logo.png",
           ...enabledUrls,
         ],
+        // TODO check if this is needed
         externally_connectable: {
           // chrome only
           matches: enabledUrls,
         },
-        // options_page: "static/options.html",
+        options_page: "static/options.html",
         // browser_specific_settings: {
         //   gecko: {
         //     id: "extension@aaa.sk",

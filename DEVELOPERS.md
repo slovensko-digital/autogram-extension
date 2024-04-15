@@ -126,7 +126,7 @@ Web (UPVS/FS) -(js call)-> fake dbridge / rozsirenie -(http)-> autogram
 API dbridge_js funguje nasledovne:
 
 - `deploy` - pripravi kniznicu na platformu na ktorej je spustena (zmaze tie casti ktore na danej platforme nemozu bezat)
-- `launch` - spusti server
+- `launch`/`initialize` - spusti server
 - `addXY` - prida objekt (file) do serveru
 - `sign` - vyvola podpisovanie - podpisany dokument nie je rovno odosielany do browseru
 - `getABC` - vypyta si od serveru data ktore potrebuje - tu sa urcuje typ vystupu

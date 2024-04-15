@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example Document</title>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/config.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dCommon.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dGina.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXades.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXadesBp.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXadesExtender.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dViewer.min.js"></script>
+
+    <script src="index.js"></script>
+    <style>
+      button {
+        margin: 10px;
+        min-width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="display: flex; flex-direction: column">
+      <!-- deploy -->
+      <div>
+        <button onclick="deploy()">deploy</button>
+        <div $="deploy"></div>
+      </div>
+
+      <!-- launch -->
+      <div>
+        <button onclick="launch()">launch</button>
+        <div $="launch"></div>
+      </div>
+
+      <!-- addObject -->
+      <div>
+        <button onclick="addObject()">addObject</button>
+        <div $="addObject"></div>
+      </div>
+
+      <!-- sign -->
+      <div>
+        <button onclick="sign()">sign</button>
+        <div $="sign"></div>
+      </div>
+
+      <!-- getSignerIdentification -->
+      <div>
+        <button onclick="getSignerIdentification()">
+          getSignerIdentification
+        </button>
+        <div $="getSignerIdentification"></div>
+      </div>
+
+      <!-- getSignedXmlWithEnvelopeBase64 -->
+      <div>
+        <button onclick="getSignedXmlWithEnvelopeBase64()">
+          getSignedXmlWithEnvelopeBase64
+        </button>
+        <div $="getSignedXmlWithEnvelopeBase64"></div>
+        <div $="getSignedXmlWithEnvelopeBase64Decoded"></div>
+      </div>
+    </div>
+
+    <div>
+      <div>
+        <button onclick="openPopup()">Open popup</button>
+      </div>
+    </div>
+  </body>
+</html>

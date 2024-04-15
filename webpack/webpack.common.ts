@@ -13,7 +13,7 @@ const config: webpack.Configuration = {
     background: "./src/entrypoint/background.ts",
     content: "./src/entrypoint/content.ts",
     inject: "./src/entrypoint/inject.ts",
-    popup: "./src/entrypoint/popup.tsx",
+    popup: "./src/entrypoint/popup.ts",
     options: "./src/entrypoint/options.ts",
     redirect: "./src/entrypoint/redirect.ts",
   },
