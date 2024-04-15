@@ -17,3 +17,9 @@ declare module "*.module.css" {
   const cssModule: { [key: string]: string };
   export default cssModule;
 }
+
+
+declare module "*.css" {
+  const cssString: string;
+  export default cssString;
+}

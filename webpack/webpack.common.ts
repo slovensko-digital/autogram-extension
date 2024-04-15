@@ -42,10 +42,14 @@ const config: webpack.Configuration = {
             options: {
               importLoaders: 1,
               modules: true,
-              exportType: "array"
+              exportType: "array",
             },
           },
         ],
+      },
+      {
+        test: /\.css$/i,
+        use: ["raw-loader"],
       },
       {
         test: /\.tsx?$/,
@@ -79,7 +83,11 @@ const config: webpack.Configuration = {
     // new CleanWebpackPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new CopyPlugin({
-      patterns: [{ from: "src/static", to: "./static" }, {from: 'LICENSE', to: './static'}, {from: 'src/_locales', to: './_locales'}],
+      patterns: [
+        { from: "src/static", to: "./static" },
+        { from: "LICENSE", to: "./static" },
+        { from: "src/_locales", to: "./_locales" },
+      ],
     }),
     // new CopyPlugin({
     //   patterns: [{ from: "src/popup.html", to: "." }],

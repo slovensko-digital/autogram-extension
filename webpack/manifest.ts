@@ -1,7 +1,8 @@
-import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
+import { ManifestPluginOptions as WMPOptions } from "webpack-manifest-plugin";
 import { enabledUrls } from "../src/constants";
 import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
+import { FileDescriptor } from "webpack-manifest-plugin/dist/helpers";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");

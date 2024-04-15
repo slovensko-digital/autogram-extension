@@ -41,15 +41,6 @@ function insertInjectScript(doc: Document) {
   }
 
   websiteReady().then(append);
-
-  if (document.readyState == "complete") {
-    append();
-  } else {
-    window.addEventListener("load", () => {
-      console.log("window event: load");
-      append();
-    });
-  }
 }
 
 function websiteReady(): Promise<void> {

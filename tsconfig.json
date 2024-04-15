@@ -8,9 +8,9 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "module": "CommonJS",
-    "target": "ES5",
+    "target": "ES6",
     "allowJs": true,
-    "lib": ["ES5", "ES2019", "DOM"],
+    "lib": ["ES5", "ES2019", "DOM", "ESNext"],
     "resolveJsonModule": true
   },
   "exclude": ["spec"]
