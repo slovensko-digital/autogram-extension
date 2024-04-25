@@ -7,6 +7,25 @@
     {
       "type": "pwa-chrome",
       "request": "launch",
+      "name": "Launch Chrome against example-usage",
+      "url": "http://localhost:49675/",
+      "webRoot": "${workspaceFolder}/dist",
+      "pathMapping": { "__webpack_modules__..": "${workspaceFolder}" },
+      "runtimeArgs": ["--load-extension=${workspaceFolder}/dist", "--auto-open-devtools-for-tabs"],
+      "timeout": 100000,
+      "includeDefaultArgs": true,
+      "trace": true,
+      "internalConsoleOptions": "openOnSessionStart",
+      "userDataDir": "${workspaceRoot}/.vscode/chrome",
+      "diagnosticLogging": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./*": "${webRoot}/*"
+      },
+      "preLaunchTask": "npm: example-usage",
+    },
+    {
+      "type": "pwa-chrome",
+      "request": "launch",
       "name": "Launch Chrome against slovensko.sk",
       "url": "https://slovensko.sk/",
       "webRoot": "${workspaceFolder}/dist",

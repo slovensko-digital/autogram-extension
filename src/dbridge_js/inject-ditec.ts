@@ -2,7 +2,7 @@ import { ditecX } from "./ditecx/ditecx";
 
 type OriginalDitec = object;
 
-const useProxy = false;
+const useProxy = true;
 const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: { ditec?: OriginalDitec }): void {
   console.log("Start inject");

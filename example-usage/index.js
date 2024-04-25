@@ -118,25 +118,3 @@ function getSignedXmlWithEnvelopeBase64() {
     },
   });
 }
-
-function openPopup() {
-  postMessage("openPopup", "*");
-  window.dispatchEvent(
-    new CustomEvent("PassToBackground", { detail: "hello" })
-  );
-  try {
-    chrome.runtime.sendMessage("", { message: "openPopup" }, (response) => {
-      console.log("response", response);
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-window.addEventListener("PassToBackground", (event) => {
-  console.log("PassToBackground recieved in page", event);
-});
-
-window.addEventListener("message", (event) => {
-  console.log("message recieved in page", event);
-});

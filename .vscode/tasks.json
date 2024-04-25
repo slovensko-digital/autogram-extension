@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "example-usage",
+			"label": "npm: example-usage",
+			"detail": "serve -p 49675 example-usage",
+			"isBackground": true,
+			"problemMatcher": [
+				{
+				  "pattern": [
+					{
+					  "regexp": ".",
+					  "file": 1,
+					  "location": 2,
+					  "message": 3
+					}
+				  ],
+				  "background": {
+					"activeOnStart": true,
+					"beginsPattern": ".",
+					"endsPattern": ".",
+				  }
+				}
+			  ]
+		}
+	]
+}

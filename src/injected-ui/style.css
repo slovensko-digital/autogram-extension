@@ -1,34 +1,4 @@
-:host {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #87858599;
-  padding: 10px;
-  z-index: 999999;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  flex-direction: column;
-
-  font-family: "Source Sans 3";
-  font-style: normal;
-}
-
-.dialog {
-  /* Neutral/White */
-  background: #ffffff;
-  /* Neutral/N300 */
-  border: 1px solid #e0e0e0;
-  border-radius: 10px 10px 10px 10px;
-
-  max-width: 800px;
-  max-height: 800px;
-  margin-bottom: 100px;
-}
 
 .heading {
   /* Website/Headline 2 */
@@ -66,14 +36,14 @@
   cursor: pointer;
 }
 
-.screen1 {
+.choice-screen {
   display: flex;
   flex-direction: row;
   gap: 20px;
   padding: 0 30px 30px;
 }
 
-.screen1 .tile {
+.choice-screen .tile {
   flex: 1 1;
   display: flex;
   flex-direction: column;
@@ -100,7 +70,7 @@
   cursor: pointer;
 }
 
-.screen1 .tile h2 {
+.choice-screen .tile h2 {
   /* Web - desktop/Link L bold */
   font-weight: 700;
   font-size: 24px;
@@ -117,4 +87,12 @@
   order: 0;
   align-self: stretch;
   flex-grow: 0;
+}
+
+
+.cols {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 0 30px 30px;
 }

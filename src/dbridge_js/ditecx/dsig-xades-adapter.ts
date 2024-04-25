@@ -95,7 +95,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     objectFormatIdentifier,
     callback
   ) {
-    this.stub("addTxtObject", arguments);
+    this.log("addTxtObject", arguments);
     this.__implementation.addObject(
       {
         type: "XadesBpTxt",
