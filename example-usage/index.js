@@ -3,8 +3,8 @@
 
 /**
  * Super small framework for inserting data into the DOM
- * @param {*} selector 
- * @returns 
+ * @param {*} selector
+ * @returns
  */
 function $(selector) {
   const el = document.querySelector(`[\\$="${selector}"]`);
@@ -55,7 +55,7 @@ function launch() {
 
 function addObject() {
   ditec.dSigXadesJs.addTxtObject(
-    "objectId",
+    "objectId.txt",
     "objectDescription",
     "sourceTxt",
     "objectFormatIdentifier",
@@ -117,4 +117,24 @@ function getSignedXmlWithEnvelopeBase64() {
       $("getSignedXmlWithEnvelopeBase64").j = { error };
     },
   });
+}
+
+function openQRCodeUrl() {
+  const urlString = $("qrcodeUrl").el.value;
+
+  const url = new URL(urlString);
+  const guid = url.searchParams.get("guid");
+  const key = url.searchParams.get("key");
+  const integrationJwt = url.searchParams.get("integration");
+  const pushkey = url.searchParams.get("pushkey");
+
+  // fetch("https://autogram.slovensko.digital/api/v1/devices", {
+  //   body: JSON.stringify({
+  //     platform: "example-usage",
+  //     registrationId: "idk32b83ef7-21fe-4120-b8fa-d9f6aba05731",
+  //     displayName: "example-usage",
+  //     publicKey: "obje"
+  //   }),
+  // })
+
 }

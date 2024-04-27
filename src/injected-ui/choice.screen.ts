@@ -39,6 +39,7 @@ export class AutogramChoiceScreen extends AutogramBaseScreen {
   }
 
   signUsingReader() {
+    console.log("signUsingReader");
     this.dispatchEvent(
       new CustomEvent(EVENT_SCREEN.SIGN_READER, {
         bubbles: true,
@@ -48,6 +49,7 @@ export class AutogramChoiceScreen extends AutogramBaseScreen {
   }
 
   signUsingMobile() {
+    console.log("signUsingMobile");
     this.dispatchEvent(
       new CustomEvent(EVENT_SCREEN.SIGN_MOBILE, {
         bubbles: true,

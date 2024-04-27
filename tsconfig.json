@@ -11,7 +11,7 @@
     "target": "ES6",
     "allowJs": true,
     "experimentalDecorators": true,
-    "lib": ["ES5", "ES2019", "DOM", "ESNext"],
+    "lib": ["ES5", "ES2023", "DOM", "ESNext"],
     "resolveJsonModule": true
   },
   "exclude": ["spec"]

@@ -74,6 +74,8 @@ export class DSigXadesBpAdapter extends DSigAdapter {
 
   getSignatureWithASiCEnvelopeBase64(callback) {
     this.log("getSignatureWithASiCEnvelopeBase64", arguments);
+    // eslint-disable-next-line no-debugger
+    debugger;
     this.__implementation.getSignature(
       {
         container: "ASiC_E",

@@ -1,5 +1,6 @@
 import { SignResponseBody } from "../../autogram-api";
 import { UserCancelledSigningException } from "../../autogram-api/lib/apiClient";
+import { AutogramVMobileIntegration } from "../../avm-api/lib/apiClient";
 import { apiClient } from "../../client";
 import { AutogramSwitcherError } from "../../error";
 import { AutogramRoot, createUI, SigningMethod } from "../../injected-ui";
@@ -16,6 +17,7 @@ import { Base64 } from "js-base64";
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 export class DBridgeAutogramImpl {
   private client: ReturnType<typeof apiClient>;
+  private clientMobileIntegration: AutogramVMobileIntegration;
   private signRequest: SignRequest;
   private language = "sk";
   private signedObject: SignResponseBody;
@@ -43,6 +45,8 @@ export class DBridgeAutogramImpl {
       disableSecurity: true,
       requestsOrigin: "*",
     });
+
+    this.clientMobileIntegration = new AutogramVMobileIntegration();
 
     this.resetSignRequest();
   }
@@ -175,40 +179,63 @@ export class DBridgeAutogramImpl {
       });
   }
 
-  getSignatureMobile(
+  async getSignatureMobile(
     parameters: PartialSignerParameters,
     callback: OnSuccessCallback1,
     decodeBase64 = false
-  ): void {
-    this.client
-      .signMobile(
-        this.signRequest.document,
-        this.signRequest.signatureParameters(parameters),
-        this.signRequest.payloadMimeType
-      )
-      .then((signedObject) => {
-        this.signRequest.signingStatus = SigningStatus.signed;
-        this.signedObject = signedObject;
+  ): Promise<void> {
+    console.log("getSignatureMobile");
+    try {
+      const params = this.signRequest.signatureParameters(parameters);
+      const container =
+        params.container == null
+          ? null
+          : params.container == "ASiC_E"
+            ? "ASiC-E"
+            : "ASiC-S";
 
-        this.signerIdentificationListeners.forEach((cb) => cb());
-        this.signerIdentificationListeners = [];
-        this.signatureIndex++;
-
-        callback.onSuccess(
-          // TODO skontrolovat ci sa to niekedy moze pouzivat
-          decodeBase64
-            ? Base64.decode(this.signedObject.content)
-            : this.signedObject.content
-        );
-      })
-      .catch((reason) => {
-        if (reason instanceof UserCancelledSigningException) {
-          console.log("User cancelled request");
-        } else {
-          console.error(reason);
-          callback.onError(reason);
-        }
+      await this.clientMobileIntegration.loadOrRegister();
+      await this.clientMobileIntegration.addDocument({
+        document: this.signRequest.document,
+        parameters: {
+          ...params,
+          container: container,
+        },
+        payloadMimeType: this.signRequest.payloadMimeType,
       });
+      const url = await this.clientMobileIntegration.getQrCodeUrl();
+      console.log({ url });
+      this.ui.showQRCode(url);
+      const signedObject =
+        await this.clientMobileIntegration.waitForSignature();
+      console.log({ signedObject });
+
+      this.signRequest.signingStatus = SigningStatus.signed;
+      this.signedObject = {
+        content: signedObject.content,
+        signedBy: signedObject.signers.at(-1).signedBy,
+        issuedBy: signedObject.signers.at(-1).issuedBy,
+      };
+
+      this.signerIdentificationListeners.forEach((cb) => cb());
+      this.signerIdentificationListeners = [];
+      this.signatureIndex++;
+
+      callback.onSuccess(
+        // TODO skontrolovat ci sa to niekedy moze pouzivat
+        decodeBase64
+          ? Base64.decode(this.signedObject.content)
+          : this.signedObject.content
+      );
+
+      this.ui.hide();
+
+      this.clientMobileIntegration.reset();
+      this.ui.reset();
+    } catch (e) {
+      console.error(e);
+      callback.onError(e);
+    }
   }
 
   getSignerIdentification(callback: OnSuccessCallback1): void {

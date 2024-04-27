@@ -6,3 +6,5 @@ export const EVENT_SCREEN = {
 export const EVENT_CLOSE = "autogram-close";
 
 export const EVENT_SIGN = "autogram-sign";
+
+export const EVENT_SHOW_QR_CODE = "autogram-show-qr-code";

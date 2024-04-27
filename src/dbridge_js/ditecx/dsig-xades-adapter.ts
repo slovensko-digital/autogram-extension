@@ -148,6 +148,12 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("sign20", arguments);
+    // this.__implementation.sign(
+    //   signatureId,
+    //   digestAlgUri,
+    //   signaturePolicyIdentifier,
+    //   callback
+    // );
   }
 
   // ---------------

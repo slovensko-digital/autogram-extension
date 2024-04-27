@@ -58,6 +58,9 @@ export class AutogramRoot extends LitElement {
   @property()
   screen = Screens.choice;
 
+  @property()
+  qrCodeUrl: string | null = null;
+
   render() {
     console.log("render");
     return html`
@@ -67,7 +70,9 @@ export class AutogramRoot extends LitElement {
           : this.screen === Screens.signReader
             ? html`<autogram-sign-reader-screen></autogram-sign-reader-screen>`
             : this.screen === Screens.signMobile
-              ? html`<autogram-sign-mobile-screen></autogram-sign-mobile-screen>`
+              ? html`<autogram-sign-mobile-screen
+                  url=${this.qrCodeUrl}
+                ></autogram-sign-mobile-screen>`
               : ""}
       </div>
     `;
@@ -101,6 +106,7 @@ export class AutogramRoot extends LitElement {
         {
           event: EVENT_SCREEN.SIGN_READER,
           handler: () => {
+            console.log("event", EVENT_SCREEN.SIGN_READER)
             removeHandlers();
             this.screen = Screens.signReader;
             resolve(SigningMethod.reader);
@@ -109,7 +115,8 @@ export class AutogramRoot extends LitElement {
         {
           event: EVENT_SCREEN.SIGN_MOBILE,
           handler: () => {
-            this.screen = Screens.signMobile;
+            console.log("event", EVENT_SCREEN.SIGN_MOBILE)
+            // this.screen = Screens.signMobile;
             removeHandlers();
             resolve(SigningMethod.mobile);
           },
@@ -117,6 +124,7 @@ export class AutogramRoot extends LitElement {
         {
           event: EVENT_CLOSE,
           handler: () => {
+            console.log("event", EVENT_CLOSE)
             this.hide();
             removeHandlers();
             reject(new Error("User cancelled signing"));
@@ -135,12 +143,22 @@ export class AutogramRoot extends LitElement {
     });
   }
 
+  showQRCode(url: string) {
+    this.screen = Screens.signMobile;
+    this.qrCodeUrl = url;
+  }
+
   show() {
     this.style.display = "flex";
   }
 
   hide() {
     this.style.display = "none";
+  }
+
+  reset() {
+    this.screen = Screens.choice;
+    this.qrCodeUrl = null;
   }
 
   addFonts() {

@@ -515,7 +515,7 @@ export interface paths {
     };
   };
   "/device-integrations": {
-    /** Integration retrieves a list of paired devices */
+    /** Device retrieves a list of paired integrations */
     get: {
       responses: {
         /** @description OK */
@@ -542,7 +542,7 @@ export interface paths {
     };
   };
   "/device-integrations/{integration_id}": {
-    /** Integration deletes device from its subscribers */
+    /** Device deletes integration from its paired integrations */
     delete: {
       parameters: {
         path: {
@@ -566,7 +566,7 @@ export interface paths {
     };
   };
   "/integration-devices": {
-    /** Integration retrieves a list of connected devices */
+    /** Integration retrieves a list of paired devices */
     get: {
       responses: {
         /** @description OK */
@@ -579,7 +579,7 @@ export interface paths {
     };
   };
   "/integration-devices/{device_id}": {
-    /** Integration deletes device from its subscribers */
+    /** Integration deletes device from its paired devices */
     delete: {
       parameters: {
         path: {
