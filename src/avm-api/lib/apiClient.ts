@@ -253,7 +253,7 @@ export class AutogramVMobileIntegration {
     this.documentKey = await this.exportRawBase64(documentKey);
   }
 
-  async waitForSignature() {
+  async waitForSignature(abortController?: AbortController) {
     if (!this.documentGuid || !this.documentKey || !this.documentLastModified) {
       console.log({
         guid: this.documentGuid,
@@ -262,7 +262,9 @@ export class AutogramVMobileIntegration {
       })
       throw new Error("Document guid, key or last-modified missing");
     }
-    while (true) {
+    console.log({abortController, wait})
+
+    while (!abortController.signal.aborted) {
       const doc = await this.apiClient.getDocument(
         { guid: this.documentGuid },
         this.documentKey,
@@ -273,7 +275,9 @@ export class AutogramVMobileIntegration {
       } else if (doc.status === "pending") {
         console.log("Document pending");
       }
+      console.log("wait1");
       await wait(1000);
+      console.log("wait2");
     }
   }
 

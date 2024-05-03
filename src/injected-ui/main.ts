@@ -61,6 +61,8 @@ export class AutogramRoot extends LitElement {
   @property()
   qrCodeUrl: string | null = null;
 
+  abortController: AbortController | null = null;
+
   render() {
     console.log("render");
     return html`
@@ -78,13 +80,21 @@ export class AutogramRoot extends LitElement {
     `;
   }
 
+  closeEventHander = () => {
+    console.log("EVENT_CLOSE");
+    this.reset();
+    this.hide();
+  };
+
   connectedCallback(): void {
+    console.log("connectedCallback");
     super.connectedCallback();
     this.addFonts();
 
-    // this.addEventListener(EVENT_CLOSE, () => {
-    //   this.hide();
-    // });
+    this.shadowRoot.addEventListener(EVENT_CLOSE, this.closeEventHander, {
+      capture: true,
+      passive: true,
+    });
 
     // this.addEventListener(EVENT_SCREEN.SIGN_READER, () => {
     //   this.screen = Screens.signReader;
@@ -97,6 +107,13 @@ export class AutogramRoot extends LitElement {
     // });
   }
 
+  disconnectedCallback(): void {
+    console.log("disconnectedCallback");
+    super.disconnectedCallback();
+    // remove event listeners?
+    this.shadowRoot.removeEventListener(EVENT_CLOSE, this.closeEventHander);
+  }
+
   async startSigning() {
     this.screen = Screens.choice;
     this.show();
@@ -106,7 +123,7 @@ export class AutogramRoot extends LitElement {
         {
           event: EVENT_SCREEN.SIGN_READER,
           handler: () => {
-            console.log("event", EVENT_SCREEN.SIGN_READER)
+            console.log("event", EVENT_SCREEN.SIGN_READER);
             removeHandlers();
             this.screen = Screens.signReader;
             resolve(SigningMethod.reader);
@@ -115,7 +132,7 @@ export class AutogramRoot extends LitElement {
         {
           event: EVENT_SCREEN.SIGN_MOBILE,
           handler: () => {
-            console.log("event", EVENT_SCREEN.SIGN_MOBILE)
+            console.log("event", EVENT_SCREEN.SIGN_MOBILE);
             // this.screen = Screens.signMobile;
             removeHandlers();
             resolve(SigningMethod.mobile);
@@ -124,28 +141,31 @@ export class AutogramRoot extends LitElement {
         {
           event: EVENT_CLOSE,
           handler: () => {
-            console.log("event", EVENT_CLOSE)
-            this.hide();
+            console.log("event", EVENT_CLOSE);
             removeHandlers();
             reject(new Error("User cancelled signing"));
           },
         },
       ];
       const removeHandlers = () => {
+        console.log("removeHandlers");
         eventHandlers.forEach(({ event, handler }) => {
-          this.removeEventListener(event, handler);
+          this.shadowRoot.removeEventListener(event, handler);
         });
       };
 
+      console.log("startSiginig inside promise");
+
       eventHandlers.forEach(({ event, handler }) => {
-        this.addEventListener(event, handler);
+        this.shadowRoot?.addEventListener(event, handler);
       });
     });
   }
 
-  showQRCode(url: string) {
+  showQRCode(url: string, abortController: AbortController) {
     this.screen = Screens.signMobile;
     this.qrCodeUrl = url;
+    this.abortController = abortController;
   }
 
   show() {
@@ -157,8 +177,13 @@ export class AutogramRoot extends LitElement {
   }
 
   reset() {
+    console.log("reset");
     this.screen = Screens.choice;
     this.qrCodeUrl = null;
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+    this.abortController = null;
   }
 
   addFonts() {

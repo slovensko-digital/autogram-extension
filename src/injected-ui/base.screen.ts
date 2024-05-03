@@ -5,7 +5,6 @@ import { closeSvg } from "./svg";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { EVENT_CLOSE } from "./events";
 
-
 export class AutogramBaseScreen extends LitElement {
   static styles = unsafeCSS(styleCss);
   render() {
@@ -17,8 +16,7 @@ export class AutogramBaseScreen extends LitElement {
         </button>
       </div>
       <div class="main">
-        <div class="screen">
-        </div>
+        <div class="screen"></div>
       </div>
     `;
   }

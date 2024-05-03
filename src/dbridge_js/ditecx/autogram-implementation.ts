@@ -184,7 +184,7 @@ export class DBridgeAutogramImpl {
     callback: OnSuccessCallback1,
     decodeBase64 = false
   ): Promise<void> {
-    console.log("getSignatureMobile");
+    console.log("getSignatureMobile", decodeBase64);
     try {
       const params = this.signRequest.signatureParameters(parameters);
       const container =
@@ -205,9 +205,10 @@ export class DBridgeAutogramImpl {
       });
       const url = await this.clientMobileIntegration.getQrCodeUrl();
       console.log({ url });
-      this.ui.showQRCode(url);
+      const abortController = new AbortController();
+      this.ui.showQRCode(url, abortController);
       const signedObject =
-        await this.clientMobileIntegration.waitForSignature();
+        await this.clientMobileIntegration.waitForSignature(abortController);
       console.log({ signedObject });
 
       this.signRequest.signingStatus = SigningStatus.signed;

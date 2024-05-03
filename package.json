@@ -74,11 +74,14 @@
     "@types/webextension-polyfill": "^0.8.2",
     "bwip-js": "^4.3.2",
     "cross-fetch": "^3.1.5",
+    "crypto-browserify": "^3.12.0",
     "idb-keyval": "^6.2.1",
     "isomorphic-webcrypto": "^2.3.8",
     "jest-environment-jsdom": "^29.7.0",
     "js-base64": "^3.7.2",
     "lit": "^3.1.2",
+    "stream-browserify": "^3.0.0",
+    "vm-browserify": "^1.1.2",
     "webextension-polyfill": "^0.8.0",
     "zod": "^3.23.3"
   }
