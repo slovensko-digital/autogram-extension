@@ -259,10 +259,9 @@ export class AutogramVMobileIntegration {
         guid: this.documentGuid,
         key: this.documentKey,
         lastModified: this.documentLastModified,
-      })
+      });
       throw new Error("Document guid, key or last-modified missing");
     }
-    console.log({abortController, wait})
 
     while (!abortController.signal.aborted) {
       const doc = await this.apiClient.getDocument(

@@ -67,7 +67,7 @@ export interface paths {
   "/documents/{guid}": {
     /**
      * External system requests signed document at the end of the process.
-     * @description This endpoint is also designed for polling with the `If-Modified-Since` header (`TODO`).
+     * @description This endpoint is also designed for polling with the `If-Modified-Since` header.
      */
     get: {
       parameters: {
@@ -84,7 +84,7 @@ export interface paths {
         /** @description Requested document with an array of its signers */
         200: {
           headers: {
-            /** @description `TODO` Datetime of the last-modified attribute of the requeste document. */
+            /** @description Datetime of the last-modified attribute of the requeste document. */
             "Last-Modified"?: string;
           };
           content: {
@@ -258,6 +258,44 @@ export interface paths {
           content: {
             "application/json": components["schemas"]["BadGatewayErrorResponseBody"];
           };
+        };
+      };
+    };
+  };
+  "/documents/{guid}/parameters": {
+    /** Client app gets the signature parameters of the doucment */
+    get: {
+      parameters: {
+        header: {
+          Accept: string;
+        };
+        path: {
+          /** @example bfde97b4-ee27-47bc-97e2-5164ed96a92a */
+          guid: string;
+        };
+      };
+      responses: {
+        /** @description OK */
+        200: {
+          content: {
+            "application/json": components["schemas"]["SigningParameters"];
+          };
+        };
+        /** @description EncryptionKey not provided */
+        401: {
+          content: {
+            "application/json": components["schemas"]["EncryptionKeyNotProvidedErrorResponseBody"];
+          };
+        };
+        /** @description EncryptionKey mismatch */
+        403: {
+          content: {
+            "application/json": components["schemas"]["EncryptionKeyMismatchErrorResponseBody"];
+          };
+        };
+        /** @description Not found */
+        404: {
+          content: never;
         };
       };
     };
@@ -903,6 +941,20 @@ export interface components {
        * @example ZXhhbXBsZSBzdHJpbmcgaW4gYmFzZTY0Cg==
        */
       content: string;
+    };
+    SignatureLevelResponse: {
+      /**
+       * @description Signature level.
+       * @example XAdES_BASELINE_B
+       * @enum {string}
+       */
+      level?:
+        | "PAdES_BASELINE_B"
+        | "PAdES_BASELINE_T"
+        | "XAdES_BASELINE_B"
+        | "XAdES_BASELINE_T"
+        | "CAdES_BASELINE_B"
+        | "CAdES_BASELINE_T";
     };
     /**
      * @description Signing parameters same as in the Autogram API

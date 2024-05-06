@@ -1,14 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare let ditec: any;
+
 /**
  * Super small framework for inserting data into the DOM
  * @param {*} selector
  * @returns
  */
-function $(selector) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function $(selector: string): { el: HTMLElement; w: any; j: any } {
   const el = document.querySelector(`[\\$="${selector}"]`);
   const obj = { el };
+  if (!el) {
+    throw new Error(`Element with selector ${selector} not found`);
+  }
   Object.defineProperty(obj, "w", {
     get: () => el,
     set: (value) => {
@@ -21,7 +28,8 @@ function $(selector) {
       el.innerHTML = JSON.stringify(value);
     },
   });
-  return obj;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return obj as any;
 }
 
 function deploy() {
@@ -119,22 +127,9 @@ function getSignedXmlWithEnvelopeBase64() {
   });
 }
 
-function openQRCodeUrl() {
-  const urlString = $("qrcodeUrl").el.value;
-
-  const url = new URL(urlString);
-  const guid = url.searchParams.get("guid");
-  const key = url.searchParams.get("key");
-  const integrationJwt = url.searchParams.get("integration");
-  const pushkey = url.searchParams.get("pushkey");
-
-  // fetch("https://autogram.slovensko.digital/api/v1/devices", {
-  //   body: JSON.stringify({
-  //     platform: "example-usage",
-  //     registrationId: "idk32b83ef7-21fe-4120-b8fa-d9f6aba05731",
-  //     displayName: "example-usage",
-  //     publicKey: "obje"
-  //   }),
-  // })
-
-}
+globalThis["deploy"] = deploy;
+globalThis["launch"] = launch;
+globalThis["addObject"] = addObject;
+globalThis["sign"] = sign;
+globalThis["getSignerIdentification"] = getSignerIdentification;
+globalThis["getSignedXmlWithEnvelopeBase64"] = getSignedXmlWithEnvelopeBase64;
