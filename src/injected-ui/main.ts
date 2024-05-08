@@ -91,7 +91,7 @@ export class AutogramRoot extends LitElement {
     super.connectedCallback();
     this.addFonts();
 
-    this.shadowRoot.addEventListener(EVENT_CLOSE, this.closeEventHander, {
+    this.shadowRoot?.addEventListener(EVENT_CLOSE, this.closeEventHander, {
       capture: true,
       passive: true,
     });
@@ -111,7 +111,7 @@ export class AutogramRoot extends LitElement {
     console.log("disconnectedCallback");
     super.disconnectedCallback();
     // remove event listeners?
-    this.shadowRoot.removeEventListener(EVENT_CLOSE, this.closeEventHander);
+    this.shadowRoot?.removeEventListener(EVENT_CLOSE, this.closeEventHander);
   }
 
   async startSigning() {
@@ -150,7 +150,7 @@ export class AutogramRoot extends LitElement {
       const removeHandlers = () => {
         console.log("removeHandlers");
         eventHandlers.forEach(({ event, handler }) => {
-          this.shadowRoot.removeEventListener(event, handler);
+          this.shadowRoot?.removeEventListener(event, handler);
         });
       };
 

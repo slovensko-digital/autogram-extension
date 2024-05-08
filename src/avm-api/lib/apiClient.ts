@@ -1,63 +1,43 @@
-import { paths } from "./avm-api.generated";
-import fetch from "cross-fetch";
-import z from "zod";
-import { get as idbGet, set as idbSet } from "idb-keyval";
+// import fetch from "cross-fetch";
 import { SignJWT } from "jose";
+import z from "zod";
+import { paths } from "./avm-api.generated";
+import { Base64 } from "js-base64";
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  return window.btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+export interface AvmIntegrationDocument {
+  guid: string | null;
+  encryptionKey: string | null;
+  lastModified: string | null;
 }
 
-function randomUUID() {
-  return globalThis.crypto.randomUUID();
-}
+/**
+ * Stateful integration with Autogram v mobile
+ */
+export class AutogramVMobileIntegration
+  implements AutogramVMobileIntegrationInterface
+{
+  private apiClient: AutogramVMobileIntegrationApiClient;
 
-async function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+  private keyPair: CryptoKeyPair | null = null;
+  private pushKey: CryptoKey | null = null;
+  private integrationGuid: string | null = null;
 
-export class AutogramVMobileIntegration {
-  apiClient: AutogramVMobileIntegrationApiClient;
-
-  keyPair: CryptoKeyPair | null = null;
-  pushKey: CryptoKey | null = null;
-  integrationGuid: string | null = null;
-
-  subtleCrypto: SubtleCrypto | null = null;
-
-  documentGuid: string | null = null;
-  documentKey: string | null = null;
-  documentLastModified: string | null = null;
-
-  constructor() {
-    this.apiClient = new AutogramVMobileIntegrationApiClient();
-  }
-
-  async loadSubtleCrypto() {
-    // We are doing this because of testing in jest jsdom
-    if (!this.subtleCrypto) {
-      const browserSubtle = globalThis.crypto.subtle;
-      if (browserSubtle) {
-        this.subtleCrypto = browserSubtle;
-        return;
-      }
-
-      try {
-        const crypto = await import("crypto");
-        // @ts-expect-error crypto
-        this.subtleCrypto = crypto.webcrypto.subtle;
-        return;
-      } catch (e) {
-        throw new Error("SubtleCrypto not available");
-      }
+  private _subtleCrypto: SubtleCrypto | null = null;
+  private get subtleCrypto() {
+    if (!this._subtleCrypto) {
+      throw new Error("SubtleCrypto not available");
     }
+    return this._subtleCrypto;
   }
 
-  exportRawBase64(key: CryptoKey): Promise<string> {
-    return this.subtleCrypto.exportKey("raw", key).then(arrayBufferToBase64);
+  private db: DBInterface;
+
+  public constructor(db: DBInterface) {
+    this.apiClient = new AutogramVMobileIntegrationApiClient();
+    this.db = db;
   }
 
-  async loadOrRegister() {
+  public async loadOrRegister() {
     this.loadSubtleCrypto();
     // load
     this.keyPair = await this.getKeyPairFromDb();
@@ -76,30 +56,13 @@ export class AutogramVMobileIntegration {
     });
   }
 
-  async getIntegrationBearerToken() {
-    return new SignJWT({
-      aud: "device",
-      sub: this.integrationGuid,
-      exp: Math.floor(Date.now() / 1000) + 60,
-    })
-      .setProtectedHeader({ alg: "ES256" })
-      .setJti(randomUUID())
-      .setSubject(this.integrationGuid)
-      .setAudience("device")
-      .setExpirationTime("24h")
-      .sign(this.keyPair.privateKey);
-  }
-
-  async getQrCodeUrl() {
+  public async getQrCodeUrl(doc: AvmIntegrationDocument) {
     if (!this.integrationGuid) {
       throw new Error("Integration guid missing");
     }
 
-    if (!this.documentGuid || !this.documentKey) {
-      console.log({
-        guid: this.documentGuid,
-        key: this.documentKey,
-      });
+    if (!doc.guid || !doc.encryptionKey) {
+      console.log(doc);
       throw new Error("Document guid or key missing");
     }
 
@@ -107,14 +70,14 @@ export class AutogramVMobileIntegration {
     console.log("Integration JWT", integration);
 
     return this.apiClient.qrCodeUrl({
-      guid: this.documentGuid,
-      key: this.documentKey,
+      guid: doc.guid,
+      key: doc.encryptionKey,
       pushkey: await this.getPushKeyStr(),
       integration: integration,
     });
   }
 
-  async register() {
+  private async register() {
     if (this.keyPair && this.pushKey && this.integrationGuid) {
       throw new Error("Already registered.");
     }
@@ -142,7 +105,97 @@ export class AutogramVMobileIntegration {
     console.log("Integration registered", res);
   }
 
-  async generateKeys() {
+  public async addDocument(
+    document: DocumentToSign
+  ): Promise<AvmIntegrationDocument> {
+    const encryptionKey = await this.initDocumentKey();
+    const res = await this.apiClient.postDocuments(
+      document,
+      await this.getIntegrationBearerToken(),
+      encryptionKey
+    );
+    return {
+      guid: res.guid,
+      encryptionKey: encryptionKey,
+      lastModified: res.lastModified,
+    };
+  }
+
+  public async waitForSignature(
+    doc: AvmIntegrationDocument,
+    abortController: AbortController
+  ): Promise<SignedDocument> {
+    if (!doc.guid || !doc.encryptionKey || !doc.lastModified) {
+      console.log(doc);
+      throw new Error("Document guid, key or last-modified missing");
+    }
+
+    while (!abortController.signal.aborted) {
+      const documentResult = await this.apiClient.getDocument(
+        { guid: doc.guid },
+        doc.encryptionKey,
+        // doc.lastModified
+      );
+      console.log(documentResult)
+      if (documentResult.status === "signed") {
+        return documentResult.document;
+      } else if (documentResult.status === "pending") {
+        console.log("Document pending");
+      }
+      console.log("wait1");
+      await wait(1000);
+      console.log("wait2");
+    }
+    throw new Error("Aborted");
+  }
+
+  // private methods
+
+  private async loadSubtleCrypto() {
+    // We are doing this because of testing in jest jsdom
+    if (!this._subtleCrypto) {
+      const browserSubtle = globalThis.crypto.subtle;
+      if (browserSubtle) {
+        this._subtleCrypto = browserSubtle;
+        return;
+      }
+
+      try {
+        const crypto = await import("crypto");
+        // @ts-expect-error crypto
+        this._subtleCrypto = crypto.webcrypto.subtle;
+        return;
+      } catch (e) {
+        throw new Error("SubtleCrypto not available");
+      }
+    }
+  }
+
+  private async getIntegrationBearerToken() {
+    if (!this.keyPair) {
+      throw new Error("Key pair missing");
+    }
+    if (!this.integrationGuid) {
+      throw new Error("Integration guid missing");
+    }
+    return new SignJWT({
+      aud: "device",
+      sub: this.integrationGuid,
+      exp: Math.floor(Date.now() / 1000) + 60,
+    })
+      .setProtectedHeader({ alg: "ES256" })
+      .setJti(randomUUID())
+      .setSubject(this.integrationGuid)
+      .setAudience("device")
+      .setExpirationTime("24h")
+      .sign(this.keyPair.privateKey);
+  }
+
+  private exportRawBase64(key: CryptoKey): Promise<string> {
+    return this.subtleCrypto.exportKey("raw", key).then(arrayBufferToBase64);
+  }
+
+  private async generateKeys() {
     console.log("Generating keys");
     // ES256
     const keyPair = await this.subtleCrypto.generateKey(
@@ -174,11 +227,11 @@ export class AutogramVMobileIntegration {
   }
 
   private async saveKeyPair(keyPair: CryptoKeyPair) {
-    return idbSet("keyPair", keyPair); // TODO: toto je zle, lebo zapisujeme v kontexte webu, nie rozsirenia
+    return this.db.set("keyPair", keyPair); // TODO: toto je zle, lebo zapisujeme v kontexte webu, nie rozsirenia
   }
 
   private async getKeyPairFromDb(): Promise<CryptoKeyPair | null> {
-    return idbGet("keyPair").then((keyPair) => {
+    return this.db.get("keyPair").then((keyPair) => {
       if (keyPair) {
         return keyPair;
       }
@@ -187,11 +240,11 @@ export class AutogramVMobileIntegration {
   }
 
   private async savePushKey(pushKey: CryptoKey) {
-    return idbSet("pushKey", pushKey);
+    return this.db.set("pushKey", pushKey);
   }
 
   private async getPushKeyFromDb(): Promise<CryptoKey | null> {
-    return idbGet("pushKey").then((pushKey) => {
+    return this.db.get("pushKey").then((pushKey) => {
       if (pushKey) {
         return pushKey;
       }
@@ -200,11 +253,11 @@ export class AutogramVMobileIntegration {
   }
 
   private async saveIntegrationGuid(guid: string) {
-    return idbSet("integrationGuid", guid);
+    return this.db.set("integrationGuid", guid);
   }
 
   private async getIntegrationGuidFromDb(): Promise<string | null> {
-    return idbGet("integrationGuid").then((guid) => {
+    return this.db.get("integrationGuid").then((guid) => {
       if (guid) {
         return guid;
       }
@@ -212,7 +265,7 @@ export class AutogramVMobileIntegration {
     });
   }
 
-  async getPublicKeyStr() {
+  private async getPublicKeyStr() {
     if (!this.keyPair) {
       throw new Error("Key pair missing");
     }
@@ -221,27 +274,14 @@ export class AutogramVMobileIntegration {
       .then(arrayBufferToBase64);
   }
 
-  async getPushKeyStr() {
+  private async getPushKeyStr() {
     if (!this.pushKey) {
       throw new Error("Push key missing");
     }
     return this.exportRawBase64(this.pushKey);
   }
 
-  async addDocument(
-    document: paths["/documents"]["post"]["requestBody"]["content"]["application/json"]
-  ) {
-    await this.initDocumentKey();
-    const res = await this.apiClient.postDocuments(
-      document,
-      await this.getIntegrationBearerToken(),
-      this.documentKey
-    );
-    this.documentGuid = res.guid;
-    this.documentLastModified = res.lastModified;
-  }
-
-  async initDocumentKey() {
+  private async initDocumentKey() {
     const documentKey = await this.subtleCrypto.generateKey(
       {
         name: "AES-GCM",
@@ -250,43 +290,30 @@ export class AutogramVMobileIntegration {
       true,
       ["encrypt", "decrypt"]
     );
-    this.documentKey = await this.exportRawBase64(documentKey);
-  }
-
-  async waitForSignature(abortController?: AbortController) {
-    if (!this.documentGuid || !this.documentKey || !this.documentLastModified) {
-      console.log({
-        guid: this.documentGuid,
-        key: this.documentKey,
-        lastModified: this.documentLastModified,
-      });
-      throw new Error("Document guid, key or last-modified missing");
-    }
-
-    while (!abortController.signal.aborted) {
-      const doc = await this.apiClient.getDocument(
-        { guid: this.documentGuid },
-        this.documentKey,
-        this.documentLastModified
-      );
-      if (doc.status === "signed") {
-        return doc.document;
-      } else if (doc.status === "pending") {
-        console.log("Document pending");
-      }
-      console.log("wait1");
-      await wait(1000);
-      console.log("wait2");
-    }
-  }
-
-  reset() {
-    this.documentGuid = null;
-    this.documentKey = null;
-    this.documentLastModified = null;
+    return await this.exportRawBase64(documentKey);
   }
 }
 
+export interface AutogramVMobileIntegrationInterface {
+  loadOrRegister(): Promise<void>;
+  getQrCodeUrl(doc: AvmIntegrationDocument): Promise<string>;
+  addDocument(documentToSign: DocumentToSign): Promise<AvmIntegrationDocument>;
+  waitForSignature(
+    doc: AvmIntegrationDocument,
+    abortController?: AbortController
+  ): Promise<SignedDocument>;
+}
+
+export interface AutogramVMobileIntegrationInterfaceStateful {
+  loadOrRegister(): Promise<void>;
+  getQrCodeUrl(): Promise<string>;
+  addDocument(documentToSign: DocumentToSign): Promise<void>;
+  waitForSignature(abortController?: AbortController): Promise<SignedDocument>;
+}
+
+/**
+ * Client for the Autogram v mobile server API
+ */
 export class AutogramVMobileIntegrationApiClient {
   baseUrl: string;
   constructor() {
@@ -295,7 +322,9 @@ export class AutogramVMobileIntegrationApiClient {
 
   _registerIntegration = "/integrations" as const;
   registerIntegration(
-    data: paths[typeof this._registerIntegration]["post"]["requestBody"]["content"]["application/json"]
+    data: NonNullable<
+      paths[typeof this._registerIntegration]["post"]["requestBody"]
+    >["content"]["application/json"]
   ): Promise<z.infer<typeof PostIntegrationResponse>> {
     const requestBody = JSON.stringify(data);
     const url = this.baseUrl + this._registerIntegration;
@@ -335,7 +364,9 @@ export class AutogramVMobileIntegrationApiClient {
 
   _documents = "/documents" as const;
   async postDocuments(
-    data: paths[typeof this._documents]["post"]["requestBody"]["content"]["application/json"],
+    data: NonNullable<
+      paths[typeof this._documents]["post"]["requestBody"]
+    >["content"]["application/json"],
     bearerToken: string,
     documentEncryptionKey: string
   ) {
@@ -408,7 +439,9 @@ export class AutogramVMobileIntegrationApiClient {
 
   _signRequest = "/sign-request" as const;
   signRequest(
-    data: paths[typeof this._signRequest]["post"]["requestBody"]["content"]["application/json"],
+    data: NonNullable<
+      paths[typeof this._signRequest]["post"]["requestBody"]
+    >["content"]["application/json"],
     bearerToken: string
   ) {
     return fetch(this.baseUrl + this._signRequest, {
@@ -472,11 +505,40 @@ export const GetDocumentsResponse = z.object({
     .optional(),
 });
 
+// Types
+
+export interface DBInterface {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  set: (key: IDBValidKey, value: any) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get<T = any>(key: IDBValidKey): Promise<T | undefined>;
+}
+
+export type DocumentToSign = NonNullable<
+  paths["/documents"]["post"]["requestBody"]
+>["content"]["application/json"];
+
+export type SignedDocument = z.infer<typeof GetDocumentsResponse>;
 type GetDocumentResult =
   | {
       status: "pending";
     }
   | {
       status: "signed";
-      document: z.infer<typeof GetDocumentsResponse>;
+      document: SignedDocument;
     };
+
+// Helper functions
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  return Base64.fromUint8Array(new Uint8Array(buffer));
+  // return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+}
+
+export function randomUUID() {
+  return globalThis.crypto.randomUUID();
+}
+
+async function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

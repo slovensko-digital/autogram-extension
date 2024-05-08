@@ -7,6 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
+    "strictNullChecks": true,
     "module": "CommonJS",
     "target": "ES6",
     "allowJs": true,

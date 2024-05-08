@@ -21,13 +21,13 @@ export class XadesPdfStrategy implements ObjectStrategy {
     return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };
   }
   get objSchema(): string {
-    return null;
+    return "";
   }
   get objTransformation(): string {
-    return null;
+    return "";
   }
   get formVersion() {
-    return null;
+    return "";
   }
   get objectId() {
     return this.obj.objectId;

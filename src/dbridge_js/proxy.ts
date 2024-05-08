@@ -1,4 +1,4 @@
-const log = [];
+const log: unknown[] = [];
 
 const ignoredProps: PropertyKey[] = [
   "__implementation",
@@ -51,7 +51,8 @@ function getSpyHandler(prefix?: string, depth?: number) {
           receiver,
         });
 
-      return depth < 3 &&
+      return depth != undefined &&
+        depth < 3 &&
         !ignoredProps.includes(prop) &&
         (typeof reflection == "function" || typeof reflection == "object")
         ? wrapWithProxy(reflection, name, depth + 1)

@@ -22,6 +22,9 @@ export class AutogramVMobileSimulation {
     const pushkey = url.searchParams.get("pushkey");
 
     console.log({ guid, key: encryptionKey, integrationJwt, pushkey });
+    if (!guid || !encryptionKey) {
+      throw new Error("Invalid URL");
+    }
     this.guid = guid;
     this.encryptionKey = encryptionKey;
   }
@@ -107,7 +110,9 @@ export class AutogramVMobileClientApiClient {
   _postDocumentDataToSign = "/documents/{guid}/datatosign" as const;
   postDocumentDataToSign(
     params: paths[typeof this._postDocumentDataToSign]["post"]["parameters"]["path"],
-    data: paths[typeof this._postDocumentDataToSign]["post"]["requestBody"]["content"]["application/json"],
+    data: NonNullable<
+      paths[typeof this._postDocumentDataToSign]["post"]["requestBody"]
+    >["content"]["application/json"],
     documentEncryptionKey: string
   ) {
     return fetch(
@@ -130,7 +135,9 @@ export class AutogramVMobileClientApiClient {
   _postDocumentSign = "/documents/{guid}/sign" as const;
   postDocumentSign(
     params: paths[typeof this._postDocumentSign]["post"]["parameters"]["path"],
-    data: paths[typeof this._postDocumentSign]["post"]["requestBody"]["content"]["application/json"],
+    data: NonNullable<
+      paths[typeof this._postDocumentSign]["post"]["requestBody"]
+    >["content"]["application/json"],
     documentEncryptionKey: string
   ) {
     return fetch(

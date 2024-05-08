@@ -32,7 +32,7 @@ function generateManifest(
       browser_style: true,
     },
 
-    homepage_url: "https://ekosystem.slovensko.digital/sluzby/autogram",
+    homepage_url: "https://sluzby.slovensko.digital/autogram/",
   };
 
   switch (manifestVersion) {
@@ -49,6 +49,7 @@ function generateManifest(
 
         permissions: [
           "storage",
+          "declarativeContent",
           // "webRequest",
           // "webNavigation",
           // "scripting", //3
@@ -63,9 +64,9 @@ function generateManifest(
             all_frames: true,
           },
         ],
-        // background: {
-        //   service_worker: entries.background,
-        // },
+        background: {
+          service_worker: entries.background[0],
+        },
         action: {
           default_icon: {
             "16": "static/logo-16.png",

@@ -15,7 +15,7 @@ export interface ObjectStrategy {
   /**
    * Type of payload for Autogram (Autogram input)
    */
-  payloadMimeType:  `${string}/${string}${";base64" | ""}`;
+  payloadMimeType: `${string}/${string}${";base64" | ""}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -24,34 +24,34 @@ class EmptyStrategy implements ObjectStrategy {
     return { content: "", filename: "" };
   }
   get objSchema(): string {
-    return null;
+    return "";
   }
   get objTransformation(): string {
-    return null;
+    return "";
   }
   get formVersion() {
-    return null;
+    return "";
   }
   get objectId() {
-    return null;
+    return "";
   }
   get identifier() {
-    return null;
+    return "";
   }
   get schemaIdentifier() {
-    return null;
+    return "";
   }
   get transformationIdentifier() {
-    return null;
+    return "";
   }
   get transformationMediaDestinationTypeDescription() {
-    return null;
+    return undefined;
   }
   get transformationLanguage() {
-    return null;
+    return "";
   }
   get transformationTargetEnvironment() {
-    return null;
+    return "";
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";

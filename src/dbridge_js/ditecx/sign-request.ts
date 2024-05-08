@@ -59,7 +59,7 @@ export class SignRequest {
       identifier: this.objectInfo.identifier,
       level: getProperty(params, "form", "XAdES_BASELINE_B"),
       container: getProperty(params, "container", "ASICE"),
-      containerXmlns: containerXmlns,
+      containerXmlns: containerXmlns ?? undefined,
       packaging: getProperty(params, "packaging", "ENVELOPING"),
       digestAlgorithm: getProperty(params, "digestAlgorithm", "SHA256"),
       en319132: getProperty(params, "en319132", false),
@@ -148,8 +148,10 @@ function getProperty<T>(obj: object, propertyName: string, defaultValue: T) {
     : defaultValue;
 }
 
-function getNullIfEmpty<A extends { length: number }>(s: A): A | null {
-  return s != null && s.length > 0 ? s : null;
+function getNullIfEmpty<A extends { length: number }>(
+  s: A | undefined
+): A | undefined {
+  return s != null && s != null && s.length > 0 ? s : undefined;
 }
 
 // function assertUnreachable(x: never): never {

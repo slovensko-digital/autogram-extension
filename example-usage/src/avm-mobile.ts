@@ -1,4 +1,5 @@
 import { AutogramVMobileSimulation } from "../../src/avm-api/lib/apiClient-mobile";
+import { $ } from "./ui";
 
 const avmClient = new AutogramVMobileSimulation();
 

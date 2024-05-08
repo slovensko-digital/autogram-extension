@@ -86,7 +86,11 @@ const config: webpack.Configuration = {
   },
   plugins: [
     // new CleanWebpackPlugin(),
-    new ForkTsCheckerWebpackPlugin(),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        memoryLimit: 4096,
+      },
+    }),
     new CopyPlugin({
       patterns: [
         { from: "src/static", to: "./static" },

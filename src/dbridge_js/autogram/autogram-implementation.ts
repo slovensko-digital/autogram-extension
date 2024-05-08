@@ -1,33 +1,41 @@
+import { Base64 } from "js-base64";
 import { SignResponseBody } from "../../autogram-api";
 import { UserCancelledSigningException } from "../../autogram-api/lib/apiClient";
-import { AutogramVMobileIntegration } from "../../avm-api/lib/apiClient";
 import { apiClient } from "../../client";
-import { AutogramSwitcherError } from "../../error";
 import { AutogramRoot, createUI, SigningMethod } from "../../injected-ui";
 import { isSafari, TODO } from "../../util";
-import { DSigAdapter } from "./dsig-base-adapter";
 import {
   InputObject,
   PartialSignerParameters,
-  SignRequest,
   SigningStatus,
-} from "./sign-request";
-import { Base64 } from "js-base64";
+  SignRequest,
+} from "../ditecx/sign-request";
+
+import {
+  ImplementationInterface,
+  OnErrorCallback,
+  OnSuccessCallback,
+  OnSuccessCallback1,
+} from "../ditecx/implementation";
+import { AvmChannelWeb } from "./avm-channel";
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
-export class DBridgeAutogramImpl {
+
+/**
+ *
+ */
+export class DBridgeAutogramImpl implements ImplementationInterface {
   private client: ReturnType<typeof apiClient>;
-  private clientMobileIntegration: AutogramVMobileIntegration;
+  private clientMobileIntegration: AvmChannelWeb;
   private signRequest: SignRequest;
   private language = "sk";
   private signedObject: SignResponseBody;
-  private _adapter: DSigAdapter;
 
   private signerIdentificationListeners: (() => void)[];
   private signatureIndex = 1;
   private ui: AutogramRoot;
 
-  constructor() {
+  public constructor() {
     let serverProtocol: "http" | "https" = "http";
     let serverHost = "localhost";
 
@@ -46,50 +54,24 @@ export class DBridgeAutogramImpl {
       requestsOrigin: "*",
     });
 
-    this.clientMobileIntegration = new AutogramVMobileIntegration();
+    this.clientMobileIntegration = new AvmChannelWeb();
+    this.clientMobileIntegration.init();
 
     this.resetSignRequest();
   }
 
-  resetSignRequest() {
-    this.signerIdentificationListeners = [];
-    this.signRequest = new SignRequest();
-  }
-
-  setAdapter(adapter: DSigAdapter): void {
-    if (this._adapter) throw new AutogramSwitcherError("Adapter already set");
-    this._adapter = adapter;
-  }
-
-  async launch(callback: OnSuccessCallback): Promise<void> {
-    try {
-      const info = await this.client.info();
-      if (info.status != "READY") throw new Error("Wait for server");
-      console.log(`Autogram ${info.version} is ready`);
-    } catch (e) {
-      console.error(e);
-      const url = this.client.getLaunchURL();
-      console.log(`Opening "${url}"`);
-      window.location.assign(url);
-      try {
-        const info = await this.client.waitForStatus("READY", 100, 5);
-        console.log(`Autogram ${info.version} is ready`);
-      } catch (e) {
-        console.log("waiting for Autogram failed");
-        console.error(e);
-      }
-    }
+  public async launch(callback: OnSuccessCallback): Promise<void> {
     callback.onSuccess();
   }
 
-  setLanguage(language: string) {
+  public setLanguage(language: string) {
     TODO("Language can be set only on server start");
     if (AVAILABLE_LANGUAGES.includes(language)) {
       this.language = language;
     }
   }
 
-  async sign(
+  public async sign(
     signatureId: string,
     digestAlgUri: string,
     signaturePolicyIdentifier: string,
@@ -108,7 +90,7 @@ export class DBridgeAutogramImpl {
     callback.onSuccess();
   }
 
-  addObject(obj: InputObject, callback: OnSuccessCallback): void {
+  public addObject(obj: InputObject, callback: OnSuccessCallback): void {
     if (this.signRequest.signingStatus == SigningStatus.signed) {
       console.warn("Resetting sign request");
       this.resetSignRequest();
@@ -123,21 +105,61 @@ export class DBridgeAutogramImpl {
     callback.onSuccess();
   }
 
-  async getSignature(
+  public async getSignature(
     parameters: PartialSignerParameters,
     callback: OnSuccessCallback1,
     decodeBase64 = false
   ): Promise<void> {
     const signingMethod = await this.ui.startSigning();
-    console.log({ signingMethod });
-
     if (signingMethod === SigningMethod.reader) {
+      await this.launchDesktop();
       return this.getSignatureDesktop(parameters, callback, decodeBase64);
     } else if (signingMethod === SigningMethod.mobile) {
       return this.getSignatureMobile(parameters, callback, decodeBase64);
     } else {
       console.log("Invalid signing method");
       throw new Error("Invalid signing method");
+    }
+  }
+
+  public getSignerIdentification(callback: OnSuccessCallback1): void {
+    this.assertSignedRequest();
+    callback.onSuccess(`CN=(Používateľ Autogramu #${this.signatureIndex})`);
+    this.signerIdentificationListeners.push(() => {
+      // callback.onSuccess(this.signedObject?.signedBy);
+    });
+  }
+
+  public getOriginalObject(callback: OnSuccessCallback1) {
+    this.assertSignedRequest();
+    callback.onSuccess(this.signRequest.object);
+  }
+
+  public getVersion(callback: OnSuccessCallback1) {
+    const fakeVersion =
+      '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
+    callback.onSuccess(fakeVersion);
+  }
+
+  // Private methods
+
+  private async launchDesktop() {
+    try {
+      const info = await this.client.info();
+      if (info.status != "READY") throw new Error("Wait for server");
+      console.log(`Autogram ${info.version} is ready`);
+    } catch (e) {
+      console.error(e);
+      const url = this.client.getLaunchURL();
+      console.log(`Opening "${url}"`);
+      window.location.assign(url);
+      try {
+        const info = await this.client.waitForStatus("READY", 100, 5);
+        console.log(`Autogram ${info.version} is ready`);
+      } catch (e) {
+        console.log("waiting for Autogram failed");
+        console.error(e);
+      }
     }
   }
 
@@ -162,6 +184,9 @@ export class DBridgeAutogramImpl {
         this.signerIdentificationListeners = [];
         this.signatureIndex++;
 
+        this.ui.hide();
+        this.ui.reset();
+
         callback.onSuccess(
           // TODO skontrolovat ci sa to niekedy moze pouzivat
           decodeBase64
@@ -174,17 +199,16 @@ export class DBridgeAutogramImpl {
           console.log("User cancelled request");
         } else {
           console.error(reason);
-          callback.onError(reason);
+          if (callback.onError) callback.onError(reason);
         }
       });
   }
 
-  async getSignatureMobile(
+  private async getSignatureMobile(
     parameters: PartialSignerParameters,
     callback: OnSuccessCallback1,
     decodeBase64 = false
   ): Promise<void> {
-    console.log("getSignatureMobile", decodeBase64);
     try {
       const params = this.signRequest.signatureParameters(parameters);
       const container =
@@ -199,7 +223,7 @@ export class DBridgeAutogramImpl {
         document: this.signRequest.document,
         parameters: {
           ...params,
-          container: container,
+          container: container ?? undefined,
         },
         payloadMimeType: this.signRequest.payloadMimeType,
       });
@@ -210,12 +234,16 @@ export class DBridgeAutogramImpl {
       const signedObject =
         await this.clientMobileIntegration.waitForSignature(abortController);
       console.log({ signedObject });
+      if (signedObject === null || signedObject === undefined) {
+        throw new Error("Signing cancelled");
+      }
 
       this.signRequest.signingStatus = SigningStatus.signed;
       this.signedObject = {
         content: signedObject.content,
-        signedBy: signedObject.signers.at(-1).signedBy,
-        issuedBy: signedObject.signers.at(-1).issuedBy,
+        signedBy:
+          signedObject.signers?.at(-1)?.signedBy ?? "Používateľ Autogramu",
+        issuedBy: signedObject.signers?.at(-1)?.issuedBy ?? "(neznámy)",
       };
 
       this.signerIdentificationListeners.forEach((cb) => cb());
@@ -223,7 +251,6 @@ export class DBridgeAutogramImpl {
       this.signatureIndex++;
 
       callback.onSuccess(
-        // TODO skontrolovat ci sa to niekedy moze pouzivat
         decodeBase64
           ? Base64.decode(this.signedObject.content)
           : this.signedObject.content
@@ -235,27 +262,13 @@ export class DBridgeAutogramImpl {
       this.ui.reset();
     } catch (e) {
       console.error(e);
-      callback.onError(e);
+      if (callback.onError) callback.onError(e);
     }
   }
 
-  getSignerIdentification(callback: OnSuccessCallback1): void {
-    this.assertSignedRequest();
-    callback.onSuccess(`CN=(Používateľ Autogramu #${this.signatureIndex})`);
-    this.signerIdentificationListeners.push(() => {
-      // callback.onSuccess(this.signedObject?.signedBy);
-    });
-  }
-
-  getOriginalObject(callback: OnSuccessCallback1) {
-    this.assertSignedRequest();
-    callback.onSuccess(this.signRequest.object);
-  }
-
-  getVersion(callback: OnSuccessCallback1) {
-    const fakeVersion =
-      '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
-    callback.onSuccess(fakeVersion);
+  private resetSignRequest() {
+    this.signerIdentificationListeners = [];
+    this.signRequest = new SignRequest();
   }
 
   private assertSignedRequest() {
@@ -263,18 +276,6 @@ export class DBridgeAutogramImpl {
       console.error("Signing request not signed");
     }
   }
-}
-
-interface OnSuccessCallback {
-  onSuccess: () => void;
-}
-interface OnSuccessCallback1 {
-  onSuccess: (v) => void;
-  onError?: (v) => void;
-}
-
-interface OnErrorCallback {
-  onError: (e) => void;
 }
 
 /**

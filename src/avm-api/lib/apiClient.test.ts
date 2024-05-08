@@ -2,8 +2,6 @@
  * @jest-environment jsdom
  */
 
-
-
 // import crypto from "crypto";
 // Object.defineProperty(global.self, "crypto", {
 //   value: {
@@ -12,8 +10,11 @@
 //   },
 // });
 
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from "util";
 Object.assign(global, { TextDecoder, TextEncoder });
+// add fetch
+import fetch from "cross-fetch";
+Object.assign(global, { fetch });
 
 import "core-js/stable/structured-clone";
 import "fake-indexeddb/auto";
@@ -21,7 +22,7 @@ import {
   AutogramVMobileIntegration,
   AutogramVMobileIntegrationApiClient,
 } from "./apiClient";
-
+import { get, set } from "idb-keyval";
 
 describe("avm api client", () => {
   let apiClient: AutogramVMobileIntegrationApiClient =
@@ -42,7 +43,10 @@ describe("avm api client", () => {
 
 describe("avm integration: integration tests", () => {
   test("load or register", async () => {
-    const apiClient = new AutogramVMobileIntegration();
+    const apiClient = new AutogramVMobileIntegration({
+      get,
+      set,
+    });
     await apiClient.loadOrRegister();
   });
 });

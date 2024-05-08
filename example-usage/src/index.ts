@@ -1,36 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-undef */
+import { $, visualizeDocument } from "./ui";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let ditec: any;
-
-/**
- * Super small framework for inserting data into the DOM
- * @param {*} selector
- * @returns
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function $(selector: string): { el: HTMLElement; w: any; j: any } {
-  const el = document.querySelector(`[\\$="${selector}"]`);
-  const obj = { el };
-  if (!el) {
-    throw new Error(`Element with selector ${selector} not found`);
-  }
-  Object.defineProperty(obj, "w", {
-    get: () => el,
-    set: (value) => {
-      el.innerHTML = value;
-    },
-  });
-
-  Object.defineProperty(obj, "j", {
-    set: (value) => {
-      el.innerHTML = JSON.stringify(value);
-    },
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return obj as any;
-}
 
 function deploy() {
   ditec.dSigXadesBpJs.deploy(
@@ -117,9 +88,12 @@ function getSignedXmlWithEnvelopeBase64() {
         ...rest
       );
       $("getSignedXmlWithEnvelopeBase64").j = { signedXmlWithEnvelopeBase64 };
-      $("getSignedXmlWithEnvelopeBase64Decoded").j = {
-        signedXmlWithEnvelope: atob(signedXmlWithEnvelopeBase64),
-      };
+      $("getSignedXmlWithEnvelopeBase64Decoded").el.appendChild(
+        visualizeDocument({
+          content: signedXmlWithEnvelopeBase64,
+          mimeType: "application/vnd.etsi.asic-e+zip",
+        })
+      );
     },
     onError: (error) => {
       $("getSignedXmlWithEnvelopeBase64").j = { error };

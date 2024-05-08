@@ -1,19 +1,40 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
 import { version } from "../../package.json";
+import { ContentChannelPassthrough } from "../dbridge_js/autogram/avm-channel";
 
 console.log("content");
 
 isExtensionEnabled().then((enabled) => {
   if (enabled) {
     console.log(`Autogram extension ${version} is enabled`);
+
+    const messagePassthrough = new ContentChannelPassthrough();
+    messagePassthrough.initEventListener();
+
+    // window.addEventListener("autogram-send-message", () => {
+    //   chrome.runtime.sendMessage({ greeting: "hello" }, (response) => {
+    //     console.log("message response", response);
+    //   });
+    // });
+    // chrome.runtime.onMessage.addListener(
+    //   function (request, sender, sendResponse) {
+    //     console.log(
+    //       sender.tab
+    //         ? "from a content script:" + sender.tab.url
+    //         : "from the extension"
+    //     );
+    //     if (request.greeting === "hello") sendResponse({ farewell: "goodbye" });
+    //   }
+    // );
+
     insertInjectScript(document);
 
     // TODO: probably this should be conditional, based on the website
     const iframe = document.getElementById(
       "workdeskIframe"
     ) as HTMLIFrameElement;
-    if (iframe) {
+    if (iframe && iframe.contentDocument) {
       console.log("workdeskIframe found");
       insertInjectScript(iframe.contentDocument);
     } else {
