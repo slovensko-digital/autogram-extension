@@ -36,9 +36,20 @@ export class AvmWorker {
             console.log("background response", response);
             port.postMessage(response);
           },
-          (error) => {
+          (error: Error) => {
             console.error("background error", error);
-            port.postMessage({ id: data.id, error });
+            // only serializable objects can be passed to postMessage
+            port.postMessage({
+              id: data.id,
+              error: JSON.parse(
+                JSON.stringify({
+                  message: error.message,
+                  name: error.name,
+                  cause: error.cause,
+                  error: error,
+                })
+              ),
+            });
           }
         );
       };
@@ -103,7 +114,7 @@ export class AvmWorker {
       if (!abortController) {
         throw new Error("AbortController not found");
       }
-      abortController.abort();
+      abortController.abort("Aborted");
     },
 
     reset: async (args: unknown, senderId: SenderId) => {
