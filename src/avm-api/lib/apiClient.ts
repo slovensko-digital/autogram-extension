@@ -134,7 +134,7 @@ export class AutogramVMobileIntegration
       const documentResult = await this.apiClient.getDocument(
         { guid: doc.guid },
         doc.encryptionKey,
-        // doc.lastModified
+        doc.lastModified
       );
       console.log(documentResult)
       if (documentResult.status === "signed") {
