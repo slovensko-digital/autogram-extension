@@ -132,14 +132,15 @@ export class WebChannelCaller {
  * Class used in content script used for communication between web page and background script
  */
 export class ContentChannelPassthrough {
+  port = chrome.runtime.connect({ name: "autogram-extension" });
   initEventListener() {
     window.addEventListener(EVENT_SEND_MESSAGE, (evt: CustomEvent) => {
       const data = ZChannelMessage.parse(evt.detail);
       console.log("content send message", data);
-      chrome.runtime.sendMessage(data);
+      this.port.postMessage(data);
     });
 
-    chrome.runtime.onMessage.addListener((message) => {
+    this.port.onMessage.addListener((message) => {
       console.log("content message", message);
       const data = ZChannelResponse.parse(message);
       console.log("content response", data);

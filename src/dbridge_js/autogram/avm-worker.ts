@@ -16,29 +16,37 @@ export class AvmWorker {
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
-    chrome.runtime.onMessage.addListener((request, sender) => {
-      console.log("background message", request);
-      const senderId = getSenderId(sender);
-      const data = ZChannelMessage.parse(request);
-      console.log("background data", data);
-      const tabId = sender.tab?.id;
-      if (!tabId) {
-        throw new Error("Tab ID not found");
-      }
-      this.methods[data.method](data.args, senderId).then(
-        (result) => {
-          const response = {
-            id: data.id,
-            result: result ?? {},
-          };
-          console.log("background response", response);
-          chrome.tabs.sendMessage(tabId, response);
-        },
-        (error) => {
-          console.error("background error", error);
-          chrome.tabs.sendMessage(tabId, { id: data.id, error });
+    chrome.runtime.onConnect.addListener((port) => {
+      console.log("Connected .....");
+      const handleMessage = (request) => {
+        const sender = port.sender;
+        if (!sender) {
+          throw new Error("Sender not found");
         }
-      );
+        console.log("background message", request);
+        const senderId = getSenderId(sender);
+        const data = ZChannelMessage.parse(request);
+        console.log("background data", data);
+        this.methods[data.method](data.args, senderId).then(
+          (result) => {
+            const response = {
+              id: data.id,
+              result: result ?? {},
+            };
+            console.log("background response", response);
+            port.postMessage(response);
+          },
+          (error) => {
+            console.error("background error", error);
+            port.postMessage({ id: data.id, error });
+          }
+        );
+      };
+      // port.onDisconnect.addListener(() => {
+      //   console.log("Disconnected .....");
+      //   port.onMessage.removeListener(handleMessage);
+      // });
+      port.onMessage.addListener(handleMessage);
     });
     //   browser.runtime.onMessage.addListener((message) => {
     //     console.log("background message", message);
@@ -82,9 +90,12 @@ export class AvmWorker {
       }
       const abortController = new AbortController();
       this.abortControllers.set(senderId, abortController);
-      const res = await this.apiClient.waitForSignature(document, abortController);
+      const res = await this.apiClient.waitForSignature(
+        document,
+        abortController
+      );
       console.log("res", res);
-      return res
+      return res;
     },
 
     abortWaitForSignature: async (args: unknown, senderId: SenderId) => {
