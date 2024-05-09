@@ -121,7 +121,9 @@ export class WebChannelCaller {
       composed: true,
     });
     window.dispatchEvent(evt);
-    const withResolvers = Promise.withResolvers<unknown>();
+    const withResolvers: PromiseWithResolvers<unknown> = Promise.withResolvers
+      ? Promise.withResolvers<unknown>()
+      : promiseWithResolversPolyfill<unknown>();
 
     this.responsePromises.set(id, withResolvers);
     return withResolvers.promise;
@@ -177,3 +179,18 @@ const ZWaitForSignatureResponse = GetDocumentsResponse;
 export type WaitForSignatureResponse = z.infer<
   typeof ZWaitForSignatureResponse
 >;
+
+function promiseWithResolversPolyfill<T>() {
+  let resolve: (value: T) => void = () => {
+      console.log("too soon");
+    },
+    reject: (reason?: unknown) => void = () => {
+      console.log("too soon");
+    };
+  const promise = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
+
+  return { promise, resolve, reject };
+}
