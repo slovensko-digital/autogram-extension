@@ -18,8 +18,17 @@ export class AutogramVMobileIntegration
 {
   private apiClient: AutogramVMobileIntegrationApiClient;
 
+  /**
+   * Key pair for encrypting documents sent to the server
+   */
   private keyPair: CryptoKeyPair | null = null;
+  /**
+   * Key for encrypting push notification data
+   */
   private pushKey: CryptoKey | null = null;
+  /**
+   * GUID of the integration - assigned by server
+   */
   private integrationGuid: string | null = null;
 
   private _subtleCrypto: SubtleCrypto | null = null;
@@ -108,6 +117,7 @@ export class AutogramVMobileIntegration
   public async addDocument(
     document: DocumentToSign
   ): Promise<AvmIntegrationDocument> {
+    // TODO zatial funguje iba pre jeden dokument
     const encryptionKey = await this.initDocumentKey();
     const res = await this.apiClient.postDocuments(
       document,
@@ -130,13 +140,18 @@ export class AutogramVMobileIntegration
       throw new Error("Document guid, key or last-modified missing");
     }
 
+    this.apiClient.signRequest(
+      { documentGuid: doc.guid, documentEncryptionKey: doc.encryptionKey },
+      await this.getIntegrationBearerToken()
+    );
+
     while (!abortController.signal.aborted) {
       const documentResult = await this.apiClient.getDocument(
         { guid: doc.guid },
         doc.encryptionKey,
         doc.lastModified
       );
-      console.log(documentResult)
+      console.log(documentResult);
       if (documentResult.status === "signed") {
         return documentResult.document;
       } else if (documentResult.status === "pending") {

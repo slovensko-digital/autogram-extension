@@ -43,6 +43,7 @@ export class AvmChannelWeb
   async waitForSignature(
     abortController?: AbortController
   ): Promise<SignedDocument> {
+    /* transform abortController signal to message because abort handler can't cross execution contexts */
     const abortHandler = () => {
       this.channel.sendMessage({
         method: "abortWaitForSignature",

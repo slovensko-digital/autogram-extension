@@ -124,10 +124,15 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   public getSignerIdentification(callback: OnSuccessCallback1): void {
     this.assertSignedRequest();
-    callback.onSuccess(`CN=(Používateľ Autogramu #${this.signatureIndex})`);
-    this.signerIdentificationListeners.push(() => {
-      // callback.onSuccess(this.signedObject?.signedBy);
-    });
+    if (this.signedObject?.signedBy) {
+      callback.onSuccess(this.signedObject?.signedBy);
+    } else {
+      callback.onSuccess(`CN=(Používateľ Autogramu #${this.signatureIndex})`);
+    }
+    // TODO skontrolovat ci preco nepouzivame takto riesene (asi si to pyta pred vypytanim si podpisu - kedze dsig podporuje taky flow)
+    // this.signerIdentificationListeners.push(() => {
+    // callback.onSuccess(this.signedObject?.signedBy);
+    // });
   }
 
   public getOriginalObject(callback: OnSuccessCallback1) {
