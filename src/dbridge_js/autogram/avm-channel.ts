@@ -121,7 +121,7 @@ export class WebChannelCaller {
 
   /**
    * Send message to background script
-   * 
+   *
    * injected script --(CustomEvent)--> content script --(chrome.runtime.Port)--> background script
    */
   public async sendMessage(data: Omit<ChannelMessage, "id">): Promise<unknown> {
@@ -153,7 +153,27 @@ export class ContentChannelPassthrough {
   }
 
   private initPort() {
+    console.log("initPort");
     this.port = chrome.runtime.connect({ name: "autogram-extension" });
+    this.port.onDisconnect.addListener((p) => {
+      console.log("Port Disconnected .....", {
+        p,
+        lastError: chrome.runtime.lastError,
+      });
+    });
+    this.hello();
+    // Stupid solution to keep the port alive and the worker active
+    setInterval(() => {
+      this.hello();
+    }, 10000);
+  }
+
+  hello() {
+    this.port.postMessage({
+      id: "hello",
+      method: "hello",
+      args: null,
+    });
   }
 
   initEventListener() {

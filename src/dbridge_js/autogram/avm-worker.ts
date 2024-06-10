@@ -27,6 +27,10 @@ export class AvmWorker {
         const senderId = getSenderId(sender);
         const data = ZChannelMessage.parse(request);
         console.log("background data", data);
+        // just to start the worker
+        if (data.method === "hello") {
+          return;
+        }
         this.methods[data.method](data.args, senderId).then(
           (result) => {
             const response = {
@@ -53,10 +57,10 @@ export class AvmWorker {
           }
         );
       };
-      // port.onDisconnect.addListener(() => {
-      //   console.log("Disconnected .....");
+      port.onDisconnect.addListener((p) => {
+        console.log("Disconnected .....", {port, p, lastError: chrome.runtime.lastError});
       //   port.onMessage.removeListener(handleMessage);
-      // });
+      });
       port.onMessage.addListener(handleMessage);
     });
     //   browser.runtime.onMessage.addListener((message) => {
