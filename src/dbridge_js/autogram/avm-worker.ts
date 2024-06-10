@@ -12,12 +12,12 @@ export class AvmWorker {
     get,
     set,
   });
-  private documents = new Map<SenderId, AvmIntegrationDocument>();
+  private documentRefs = new Map<SenderId, AvmIntegrationDocument>();
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
     chrome.runtime.onConnect.addListener((port) => {
-      console.log("Connected .....");
+      console.log("Connected .....", port);
       const handleMessage = (request) => {
         const sender = port.sender;
         if (!sender) {
@@ -80,7 +80,7 @@ export class AvmWorker {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      const doc = this.documents.get(senderId);
+      const doc = this.documentRefs.get(senderId);
       if (!doc) {
         throw new Error("Document not found");
       }
@@ -88,23 +88,34 @@ export class AvmWorker {
     },
     addDocument: async (args: unknown, senderId: SenderId): Promise<void> => {
       const { documentToSign } = ZAddDocumentArgs.parse(args);
-      const document = await this.apiClient.addDocument(
+      const documentRef = await this.apiClient.addDocument(
         documentToSign as unknown as DocumentToSign
       );
-      this.documents.set(senderId, document);
+      this.documentRefs.set(senderId, documentRef);
     },
 
     waitForSignature: async (args: unknown, senderId: SenderId) => {
-      const document = this.documents.get(senderId);
-      if (!document) {
+      const documentRef = this.documentRefs.get(senderId);
+      if (!documentRef) {
         throw new Error("Document not found");
       }
+      // TODO abort when tab is closed
       const abortController = new AbortController();
       this.abortControllers.set(senderId, abortController);
+      const timeout = setTimeout(
+        () => {
+          abortController.abort("Timeout");
+        },
+        1000 * 60 * 30 // 30 minutes
+      );
+      abortController.signal.addEventListener("abort", () => {
+        clearTimeout(timeout);
+      });
       const res = await this.apiClient.waitForSignature(
-        document,
+        documentRef,
         abortController
       );
+      clearTimeout(timeout);
       console.log("res", res);
       return res;
     },
@@ -121,7 +132,7 @@ export class AvmWorker {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      this.documents.delete(senderId);
+      this.documentRefs.delete(senderId);
     },
   };
 }
@@ -158,7 +169,7 @@ const ZDocumentToSign = z.object({
       transformationTargetEnvironment: z.string().optional().nullable(),
     })
     .optional(),
-  payloadMimeTypeme: z.string().optional(),
+  payloadMimeType: z.string().optional(),
 });
 
 const ZAddDocumentArgs = z.object({

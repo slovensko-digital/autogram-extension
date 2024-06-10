@@ -1,7 +1,7 @@
 import path from "path";
 import * as webpack from "webpack";
 // import { CleanWebpackPlugin } from "clean-webpack-plugin";
-import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+// import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import ESLintPlugin from "eslint-webpack-plugin";
@@ -86,11 +86,11 @@ const config: webpack.Configuration = {
   },
   plugins: [
     // new CleanWebpackPlugin(),
-    new ForkTsCheckerWebpackPlugin({
-      typescript: {
-        memoryLimit: 4096,
-      },
-    }),
+    // new ForkTsCheckerWebpackPlugin({
+    //   typescript: {
+    //     memoryLimit: 4096,
+    //   },
+    // }),
     new CopyPlugin({
       patterns: [
         { from: "src/static", to: "./static" },

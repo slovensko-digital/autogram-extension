@@ -3,8 +3,8 @@ import { AutogramDocument } from "../../../client";
 
 export interface ObjectStrategy {
   document: AutogramDocument;
-  objSchema: string;
-  objTransformation: string;
+  objSchema: string | undefined;
+  objTransformation: string | undefined;
   identifier: SignatureParameters["identifier"];
   formVersion: string;
   schemaIdentifier: string;
@@ -23,11 +23,11 @@ class EmptyStrategy implements ObjectStrategy {
   get document(): AutogramDocument {
     return { content: "", filename: "" };
   }
-  get objSchema(): string {
-    return "";
+  get objSchema(): string | undefined {
+    return undefined;
   }
-  get objTransformation(): string {
-    return "";
+  get objTransformation(): string | undefined {
+    return undefined;
   }
   get formVersion() {
     return "";

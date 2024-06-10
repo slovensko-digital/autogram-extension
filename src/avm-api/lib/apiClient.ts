@@ -75,7 +75,7 @@ export class AutogramVMobileIntegration
       throw new Error("Document guid or key missing");
     }
 
-    const integration = await this.getIntegrationBearerToken();
+    const integration = await this.getIntegrationBearerToken(true);
     console.log("Integration JWT", integration);
 
     return this.apiClient.qrCodeUrl({
@@ -119,6 +119,7 @@ export class AutogramVMobileIntegration
   ): Promise<AvmIntegrationDocument> {
     // TODO zatial funguje iba pre jeden dokument
     const encryptionKey = await this.initDocumentKey();
+    console.log("Sending document", document)
     const res = await this.apiClient.postDocuments(
       document,
       await this.getIntegrationBearerToken(),
@@ -132,34 +133,32 @@ export class AutogramVMobileIntegration
   }
 
   public async waitForSignature(
-    doc: AvmIntegrationDocument,
+    documentRef: AvmIntegrationDocument,
     abortController: AbortController
   ): Promise<SignedDocument> {
-    if (!doc.guid || !doc.encryptionKey || !doc.lastModified) {
-      console.log(doc);
+    if (!documentRef.guid || !documentRef.encryptionKey || !documentRef.lastModified) {
+      console.log(documentRef);
       throw new Error("Document guid, key or last-modified missing");
     }
 
     this.apiClient.signRequest(
-      { documentGuid: doc.guid, documentEncryptionKey: doc.encryptionKey },
+      { documentGuid: documentRef.guid, documentEncryptionKey: documentRef.encryptionKey },
       await this.getIntegrationBearerToken()
     );
 
     while (!abortController.signal.aborted) {
       const documentResult = await this.apiClient.getDocument(
-        { guid: doc.guid },
-        doc.encryptionKey,
-        doc.lastModified
+        { guid: documentRef.guid },
+        documentRef.encryptionKey,
+        documentRef.lastModified
       );
       console.log(documentResult);
       if (documentResult.status === "signed") {
         return documentResult.document;
       } else if (documentResult.status === "pending") {
-        console.log("Document pending");
+        // wait
       }
-      console.log("wait1");
       await wait(1000);
-      console.log("wait2");
     }
     throw new Error("Aborted");
   }
@@ -186,24 +185,28 @@ export class AutogramVMobileIntegration
     }
   }
 
-  private async getIntegrationBearerToken() {
+  private async getIntegrationBearerToken(withDevice = false) {
     if (!this.keyPair) {
       throw new Error("Key pair missing");
     }
     if (!this.integrationGuid) {
       throw new Error("Integration guid missing");
     }
-    return new SignJWT({
-      aud: "device",
-      sub: this.integrationGuid,
-      exp: Math.floor(Date.now() / 1000) + 60,
+    let jwt = new SignJWT({
+      // aud: "device",
+      // sub: this.integrationGuid,
+      // exp: Math.floor(Date.now() / 1000) + 60,
     })
       .setProtectedHeader({ alg: "ES256" })
       .setJti(randomUUID())
-      .setSubject(this.integrationGuid)
-      .setAudience("device")
-      .setExpirationTime("24h")
-      .sign(this.keyPair.privateKey);
+      .setSubject(this.integrationGuid);
+
+    if (withDevice) {
+      jwt = jwt.setAudience("device");
+    }
+
+    jwt = jwt.setExpirationTime("5min");
+    return jwt.sign(this.keyPair.privateKey);
   }
 
   private exportRawBase64(key: CryptoKey): Promise<string> {

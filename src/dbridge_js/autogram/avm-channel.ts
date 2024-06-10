@@ -90,6 +90,13 @@ export class WebChannelCaller {
     );
   }
 
+  /**
+   * Event handler for response messages, to recieve response messages from background script
+   *
+   * saves response promise  to responsePromises map
+   *
+   * constructed as property because of this
+   */
   private responseEventHandler = (evt: CustomEvent) => {
     console.log("web message response", evt.detail);
 
@@ -112,6 +119,11 @@ export class WebChannelCaller {
     this.responsePromises.delete(data.id);
   };
 
+  /**
+   * Send message to background script
+   * 
+   * injected script --(CustomEvent)--> content script --(chrome.runtime.Port)--> background script
+   */
   public async sendMessage(data: Omit<ChannelMessage, "id">): Promise<unknown> {
     const id = randomUUID();
     const detail = { ...data, id };
@@ -135,12 +147,34 @@ export class WebChannelCaller {
  * Class used in content script used for communication between web page and background script
  */
 export class ContentChannelPassthrough {
-  port = chrome.runtime.connect({ name: "autogram-extension" });
+  port: chrome.runtime.Port;
+  constructor() {
+    this.initPort();
+  }
+
+  private initPort() {
+    this.port = chrome.runtime.connect({ name: "autogram-extension" });
+  }
+
   initEventListener() {
     window.addEventListener(EVENT_SEND_MESSAGE, (evt: CustomEvent) => {
       const data = ZChannelMessage.parse(evt.detail);
       console.log("content send message", data);
-      this.port.postMessage(data);
+      try {
+        this.port.postMessage(data);
+      } catch (e) {
+        console.error("Error sending message", e);
+        if (
+          e instanceof Error &&
+          (e.message === "Extension context invalidated." ||
+            e.message === "Attempting to use a disconnected port object")
+        ) {
+          this.initPort();
+          this.port.postMessage(data);
+        }
+        // eslint-disable-next-line no-debugger
+        debugger;
+      }
     });
 
     this.port.onMessage.addListener((message) => {
