@@ -1,3 +1,5 @@
+import { Base64 } from "js-base64";
+
 import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 
 import { ObjectXadesBpTxt } from "../types";
@@ -17,7 +19,7 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
 
   get document(): AutogramDocument {
     return {
-      content: this.obj.sourceTxt,
+      content: Base64.encode(this.obj.sourceTxt),
       filename: this.obj.objectId,
     };
   }
