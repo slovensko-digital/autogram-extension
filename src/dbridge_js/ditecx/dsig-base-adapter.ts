@@ -83,4 +83,11 @@ export class DSigAdapter {
     this.log("getSignerIdentification", arguments);
     this.__implementation.getSignerIdentification(callback);
   }
+
+  detectSupportedPlatforms(platforms, callback) {
+    console.log({ platforms });
+
+    // callback.onSuccess(["autogram"]);
+    callback.onSuccess(["java"]);
+  }
 }
