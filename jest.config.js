@@ -19,6 +19,9 @@ const config = {
     ],
   },
   transformIgnorePatterns: ["<rootDir>/node_modules/(?!jose)"],
+  // moduleNameMapper: {
+  //   "\\.(css|less)$": "identity-obj-proxy",
+  // },
 };
 
 module.exports = config;

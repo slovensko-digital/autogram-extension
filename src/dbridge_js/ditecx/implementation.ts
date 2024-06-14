@@ -23,8 +23,8 @@ export interface ImplementationInterface {
 export interface OnSuccessCallback {
   onSuccess: () => void;
 }
-export interface OnSuccessCallback1 {
-  onSuccess: (v) => void;
+export interface OnSuccessCallback1<T = unknown> {
+  onSuccess: (v: T) => void;
   onError?: (v) => void;
 }
 

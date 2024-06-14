@@ -7,7 +7,19 @@ import CopyPlugin from "copy-webpack-plugin";
 import ESLintPlugin from "eslint-webpack-plugin";
 import "webpack-dev-server";
 import { manifestOptions } from "./manifest";
+import { manifestVersion } from "./manifest-version";
 
+let commitHash;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  commitHash = require("child_process")
+    .execSync("git describe --always --dirty")
+    .toString()
+    .trim();
+} catch (e) {
+  commitHash = "unknown";
+  console.error("Failed to get commit hash", e);
+}
 const config: webpack.Configuration = {
   entry: {
     background: "./src/entrypoint/background.ts",
@@ -91,6 +103,11 @@ const config: webpack.Configuration = {
     //     memoryLimit: 4096,
     //   },
     // }),
+
+    new webpack.DefinePlugin({
+      '__COMMIT_HASH__': JSON.stringify(commitHash),
+      '__MANIFEST_VERSION__': JSON.stringify(manifestVersion),
+    }),
     new CopyPlugin({
       patterns: [
         { from: "src/static", to: "./static" },

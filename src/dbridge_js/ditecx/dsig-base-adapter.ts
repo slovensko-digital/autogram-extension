@@ -11,6 +11,10 @@ import { ImplementationInterface } from "./implementation";
  * internally uses __implementation to call methods on the actual implementation
  */
 export class DSigAdapter {
+  /** used on financnasprava.sk to determine if they call detectSupportedPlatforms()+deploy() */
+  _ready = true; // TODO: check why it was removed, 
+
+  // Constants
   SHA1 = "http://www.w3.org/2000/09/xmldsig#sha1";
   SHA256 = "http://www.w3.org/2001/04/xmlenc#sha256";
   SHA384 = "http://www.w3.org/2001/04/xmldsig-more#sha384";

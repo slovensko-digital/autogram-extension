@@ -18,7 +18,6 @@ declare module "*.module.css" {
   export default cssModule;
 }
 
-
 declare module "*.css" {
   const cssString: string;
   export default cssString;
