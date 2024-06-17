@@ -49,7 +49,7 @@ function generateManifest(
 
         permissions: [
           "storage",
-          "declarativeContent",
+          // "declarativeContent",
           // "webRequest",
           // "webNavigation",
           // "scripting", //3

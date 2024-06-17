@@ -1,4 +1,3 @@
-import path from "path";
 import * as webpack from "webpack";
 import { merge } from "webpack-merge";
 import common from "./webpack.common";
