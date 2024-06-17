@@ -24,6 +24,9 @@ and changes output manifest.json file version.
 npm run release
 ```
 
+- have GH_TOKEN set in `.env` file (with `repo` scope)
+- version is computed from last tag and commits since last tag
+
 ## Developing
 
 ```
