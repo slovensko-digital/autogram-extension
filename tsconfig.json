@@ -13,7 +13,9 @@
     "allowJs": true,
     "experimentalDecorators": true,
     "lib": ["ES5", "ES2023", "DOM", "ESNext"],
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true
   },
   "exclude": ["spec"]
 }

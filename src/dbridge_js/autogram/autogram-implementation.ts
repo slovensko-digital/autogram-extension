@@ -112,7 +112,9 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   ): Promise<void> {
     const signingMethod = await this.ui.startSigning();
     if (signingMethod === SigningMethod.reader) {
-      await this.launchDesktop();
+      const abortController = new AbortController();
+      this.ui.desktopSigning(abortController);
+      await this.launchDesktop(abortController);
       return this.getSignatureDesktop(parameters, callback, decodeBase64);
     } else if (signingMethod === SigningMethod.mobile) {
       return this.getSignatureMobile(parameters, callback, decodeBase64);
@@ -148,7 +150,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   // Private methods
 
-  private async launchDesktop() {
+  private async launchDesktop(abortController?: AbortController) {
     try {
       const info = await this.client.info();
       if (info.status != "READY") throw new Error("Wait for server");
@@ -159,7 +161,12 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
       console.log(`Opening "${url}"`);
       window.location.assign(url);
       try {
-        const info = await this.client.waitForStatus("READY", 100, 5);
+        const info = await this.client.waitForStatus(
+          "READY",
+          100,
+          5,
+          abortController
+        );
         console.log(`Autogram ${info.version} is ready`);
       } catch (e) {
         console.log("waiting for Autogram failed");

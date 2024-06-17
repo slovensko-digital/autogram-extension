@@ -22,7 +22,7 @@ export class AutogramChoiceScreen extends AutogramBaseScreen {
           <button class="tile" @click="${this.signUsingReader}">
             ${unsafeSVG(computerSvg)}
             <h2>Podpísať čítačkou</h2>
-            <div>Podpíšte jednoducho a právne závezne cez <b>Autogram</b>.</div>
+            <div>Podpíšte jednoducho a právne záväzne cez <b>Autogram</b>.</div>
           </button>
 
           <button class="tile" @click="${this.signUsingMobile}">

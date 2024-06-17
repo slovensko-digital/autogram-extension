@@ -16,7 +16,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         </button>
       </div>
       <div class="main">
-        Podpisovanie pokračuje v desktopovej aplikácii Autogram.
+        <p>Podpisovanie pokračuje v desktopovej aplikácii Autogram.</p>
       </div>
     `;
   }

@@ -24,7 +24,8 @@
     "webext:build": "web-ext build -s 'dist' -i '*.map.js' --overwrite-dest --filename $npm_package_name-mv$AE_MANIFEST_VERSION-$npm_package_version.zip",
     "webext:run": "web-ext build -s 'dist' --overwrite-dest ",
     "xcode-generate-safari-web-extension": "/Applications/Xcode.app/Contents/Developer/usr/bin/safari-web-extension-converter --macos-only --app-name autogram-extension --bundle-identifier digital.slovensko.autogram.extension --project-location ./safari/ ./dist/",
-    "example-usage": "cd example-usage && vite --port 49675"
+    "example-usage": "cd example-usage && vite --port 49675",
+    "typecheck": "tsc --noEmit"
   },
   "author": "pom",
   "license": "EUPL-1.2",

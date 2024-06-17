@@ -123,7 +123,7 @@ export class AutogramRoot extends LitElement {
           handler: () => {
             console.log("event", EVENT_SCREEN.SIGN_READER);
             removeHandlers();
-            this.screen = Screens.signReader;
+            // this.screen = Screens.signReader;
             resolve(SigningMethod.reader);
           },
         },
@@ -158,6 +158,11 @@ export class AutogramRoot extends LitElement {
         this.shadowRoot?.addEventListener(event, handler);
       });
     });
+  }
+
+  desktopSigning(abortController: AbortController){
+    this.screen = Screens.signReader;
+    this.abortController = abortController;
   }
 
   showQRCode(url: string, abortController: AbortController) {
