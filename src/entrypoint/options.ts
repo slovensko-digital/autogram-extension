@@ -17,10 +17,12 @@ function save_options() {
     .then(function () {
       // Update status to let user know options were saved.
       const status = document.getElementById("status");
-      status.textContent = "Options saved.";
-      setTimeout(function () {
-        status.textContent = "";
-      }, 750);
+      if (status) {
+        status.textContent = "Options saved.";
+        setTimeout(function () {
+          status.textContent = "";
+        }, 750);
+      }
     });
 }
 
@@ -34,4 +36,4 @@ function restore_options() {
   });
 }
 document.addEventListener("DOMContentLoaded", restore_options);
-document.getElementById("save").addEventListener("click", save_options);
+document.getElementById("save")?.addEventListener("click", save_options);

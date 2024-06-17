@@ -1,7 +1,8 @@
-import { Options as WMPOptions, FileDescriptor } from "webpack-manifest-plugin";
+import { ManifestPluginOptions as WMPOptions } from "webpack-manifest-plugin";
 import { enabledUrls } from "../src/constants";
 import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
+import { FileDescriptor } from "webpack-manifest-plugin/dist/helpers";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
@@ -31,7 +32,7 @@ function generateManifest(
       browser_style: true,
     },
 
-    homepage_url: "https://ekosystem.slovensko.digital/sluzby/autogram",
+    homepage_url: "https://sluzby.slovensko.digital/autogram/",
   };
 
   switch (manifestVersion) {
@@ -48,6 +49,7 @@ function generateManifest(
 
         permissions: [
           "storage",
+          "declarativeContent",
           // "webRequest",
           // "webNavigation",
           // "scripting", //3
@@ -62,9 +64,9 @@ function generateManifest(
             all_frames: true,
           },
         ],
-        // background: {
-        //   service_worker: entries.background,
-        // },
+        background: {
+          service_worker: entries.background[0],
+        },
         action: {
           default_icon: {
             "16": "static/logo-16.png",
@@ -73,7 +75,7 @@ function generateManifest(
             "128": "static/logo-128.png",
             "512": "static/logo-512.png",
           },
-          default_popup: "static/popup.html",
+          // default_popup: "static/popup.html",
         },
         options_page: "static/options.html",
         web_accessible_resources: [
@@ -86,6 +88,11 @@ function generateManifest(
             matches: enabledUrls,
           },
         ],
+
+        // externally_connectable: {
+        //   // chrome only
+        //   matches: enabledUrls,
+        // },
       };
 
     case 2:
@@ -117,11 +124,12 @@ function generateManifest(
 
         background: {
           scripts: entries.background,
+          persistent: true,
         },
 
         permissions: [
           "storage",
-          "declarativeContent", // chrome only
+          // "declarativeContent", // chrome only - does not work in firefox
           ...enabledUrls,
         ],
         content_scripts: [
@@ -140,11 +148,12 @@ function generateManifest(
           "static/logo.png",
           ...enabledUrls,
         ],
+        // TODO check if this is needed
         externally_connectable: {
           // chrome only
           matches: enabledUrls,
         },
-        // options_page: "static/options.html",
+        options_page: "static/options.html",
         // browser_specific_settings: {
         //   gecko: {
         //     id: "extension@aaa.sk",

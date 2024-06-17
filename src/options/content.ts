@@ -6,3 +6,9 @@ export async function isExtensionEnabled(): Promise<boolean> {
   console.log(data);
   return data.options.extensionEnabled;
 }
+
+export async function setSigningMethod(signingMethod: string): Promise<void> {
+  const options = await browser.storage.local.get(defaultOptionsStorage)
+  options.signingMethod = signingMethod;
+  await browser.storage.local.set({options  });
+}

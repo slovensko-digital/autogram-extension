@@ -3,10 +3,13 @@
 
 import { DSigXadesBpAdapter } from "./dsig-xades-bp-adapter";
 import { DSigXadesAdapter } from "./dsig-xades-adapter";
-import { DBridgeAutogramImpl } from "./autogram-implementation";
+import { DBridgeAutogramImpl } from "../autogram/autogram-implementation";
 
 const implementation = new DBridgeAutogramImpl();
 
+/**
+ * Object with same interface as `window.ditec` object used by dSigner
+ */
 export const ditecX = {
   isAutogram: true,
   config: {

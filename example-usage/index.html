@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example Document</title>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/config.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dCommon.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dGina.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXades.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXadesBp.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXadesExtender.min.js"></script>
+    <script src="https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dViewer.min.js"></script>
+
+    <style>
+      button {
+        margin: 10px;
+        min-width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Example Usage</h1>
+    <div $="duration">0</div>
+    Gov website with ditec signer:
+    <div style="display: flex; flex-direction: column; border: 1px blue solid">
+      <!-- deploy -->
+      <div>
+        <button onclick="deploy()">deploy</button>
+        <div $="deploy"></div>
+      </div>
+
+      <!-- launch -->
+      <div>
+        <button onclick="launch()">launch</button>
+        <div $="launch"></div>
+      </div>
+
+      <!-- addObject -->
+      <div>
+        <button onclick="addObject()">addObject</button>
+        <div $="addObject"></div>
+      </div>
+
+      <!-- sign -->
+      <div>
+        <button onclick="sign()">sign</button>
+        <div $="sign"></div>
+      </div>
+
+      <!-- getSignerIdentification -->
+      <div>
+        <button onclick="getSignerIdentification()">
+          getSignerIdentification
+        </button>
+        <div $="getSignerIdentification"></div>
+      </div>
+
+      <!-- getSignedXmlWithEnvelopeBase64 -->
+      <div>
+        <button onclick="getSignedXmlWithEnvelopeBase64()">
+          getSignedXmlWithEnvelopeBase64
+        </button>
+        <div $="getSignedXmlWithEnvelopeBase64"></div>
+        <div $="getSignedXmlWithEnvelopeBase64Decoded"></div>
+      </div>
+    </div>
+    
+    <hr />
+
+    Full usage:
+    <button onclick="fullUsage()">fullUsage</button>
+
+    <hr />
+    Mobile App:
+    <div
+      style="
+        border: 1px red solid;
+        padding: 1em;
+        display: flex;
+        flex-direction: column;
+      "
+    >
+      <input
+        type="text"
+        $="qrCodeUrl"
+        value="https://autogram.slovensko.digital/api/v1/qr-code?guid=4f4075b7-1095-46c3-9553-5db8407aca13&key=TI72nLRygaTfBh8npSNREL6P2rQqQIJrpfpaAHWSBrw%3D&integration=eyJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkZXZpY2UiLCJzdWIiOiIxOGQ5NDY5Zi0yMGM5LTRkMDYtOGZiNi03NDU0ZGE5MDk2NzciLCJleHAiOjE3MTUwMzUxNDEsImp0aSI6IjRlZTc3MzlhLWZhNjQtNDlhNi04MTk1LWQzYTA4Mzc3MzMxMyJ9.a_qNYWgrx_cEuLDLWBl-KbT_Awbm8xMVE-QjKB0vvYquO9ac6AHFssfupV8CT2Vx4FR8yFIdL2oQ_txzOu5kPw"
+      />
+      <button onclick="openQRCodeUrl()">openQRCodeUrl</button>
+      <div>
+        Document visualization:
+        <div $="qrCodeUrlResult"></div>
+      </div>
+      <div>
+        note: This won't work with current Autogram API
+        <button onclick="signWithQRCode()">signWithQRCode</button>
+      </div>
+    </div>
+    <script type="module" src="/src/index.ts"></script>
+    <script type="module" src="/src/avm-mobile.ts"></script>
+  </body>
+</html>

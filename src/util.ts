@@ -3,7 +3,6 @@ export function TODO(...rest: unknown[]): void {
   console.debug("TODO:", rest, arguments);
 }
 
-
-export function isSafari(): boolean{
+export function isSafari(): boolean {
   return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 }

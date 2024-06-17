@@ -1,7 +1,4 @@
-import {
-  ObjectStrategy,
-  PayloadMimeTypeStr,
-} from "./base-strategy";
+import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { AutogramDocument } from "../../../client";
 import { ObjectXadesPdf } from "../types";
 import { SignatureParameters } from "../../../autogram-api";
@@ -20,14 +17,14 @@ export class XadesPdfStrategy implements ObjectStrategy {
   get document(): AutogramDocument {
     return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };
   }
-  get objSchema(): string {
-    return null;
+  get objSchema(): string | undefined {
+    return undefined;
   }
-  get objTransformation(): string {
-    return null;
+  get objTransformation(): string | undefined {
+    return undefined;
   }
   get formVersion() {
-    return null;
+    return "";
   }
   get objectId() {
     return this.obj.objectId;

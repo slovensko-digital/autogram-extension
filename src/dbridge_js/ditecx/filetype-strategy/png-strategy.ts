@@ -23,14 +23,14 @@ export class XadesBpPngStrategy implements ObjectStrategy {
       filename: this.obj.objectId,
     };
   }
-  get objSchema(): string {
-    return null;
+  get objSchema(): string | undefined {
+    return undefined;
   }
-  get objTransformation(): string {
-    return null;
+  get objTransformation(): string | undefined {
+    return undefined;
   }
   get formVersion() {
-    return null;
+    return "";
   }
   get objectId() {
     return this.obj.objectId;

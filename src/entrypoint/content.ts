@@ -1,19 +1,23 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
 import { version } from "../../package.json";
+import { ContentChannelPassthrough } from "../dbridge_js/autogram/avm-channel";
 
 console.log("content");
 
 isExtensionEnabled().then((enabled) => {
   if (enabled) {
     console.log(`Autogram extension ${version} is enabled`);
+
+    const messagePassthrough = new ContentChannelPassthrough();
+    messagePassthrough.initEventListener();
     insertInjectScript(document);
 
     // TODO: probably this should be conditional, based on the website
     const iframe = document.getElementById(
       "workdeskIframe"
     ) as HTMLIFrameElement;
-    if (iframe) {
+    if (iframe && iframe.contentDocument) {
       console.log("workdeskIframe found");
       insertInjectScript(iframe.contentDocument);
     } else {
@@ -41,15 +45,6 @@ function insertInjectScript(doc: Document) {
   }
 
   websiteReady().then(append);
-
-  if (document.readyState == "complete") {
-    append();
-  } else {
-    window.addEventListener("load", () => {
-      console.log("window event: load");
-      append();
-    });
-  }
 }
 
 function websiteReady(): Promise<void> {

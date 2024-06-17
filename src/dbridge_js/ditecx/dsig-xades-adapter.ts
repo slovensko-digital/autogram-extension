@@ -95,7 +95,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     objectFormatIdentifier,
     callback
   ) {
-    this.stub("addTxtObject", arguments);
+    this.log("addTxtObject", arguments);
     this.__implementation.addObject(
       {
         type: "XadesBpTxt",
@@ -148,6 +148,12 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("sign20", arguments);
+    // this.__implementation.sign(
+    //   signatureId,
+    //   digestAlgUri,
+    //   signaturePolicyIdentifier,
+    //   callback
+    // );
   }
 
   // ---------------
@@ -164,8 +170,8 @@ export class DSigXadesAdapter extends DSigAdapter {
     this.log("getSignedXmlWithEnvelope", arguments);
     this.__implementation.getSignature(
       {
-        container: null,
-        containerXmlns: null,
+        container: undefined,
+        containerXmlns: undefined,
         level: "XAdES_BASELINE_B",
         packaging: "ENVELOPING",
       },

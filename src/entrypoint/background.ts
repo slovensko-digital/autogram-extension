@@ -1,36 +1,37 @@
-import { enabledUrls } from "../constants";
+import { AvmWorker } from "../dbridge_js/autogram/avm-worker";
 import browser from "webextension-polyfill";
-import { setDefaultOptions } from "../options/background";
 
 console.log("background");
-function isChrome() {
-  return true;
-}
 
-if (isChrome()) {
-  browser.runtime.onInstalled.addListener(() => {
-    setDefaultOptions();
-  });
-  declarativeContentRules();
-}
+// browser.runtime.sendMessage({ bgRuntimeEvent: "init" });
 
-function declarativeContentRules() {
-  const ruleOnEnabledPagesActivatePageAction = {
-    conditions: [
-      ...enabledUrls.map((url) => {
-        return new chrome.declarativeContent.PageStateMatcher({
-          pageUrl: { urlMatches: url },
-        });
-      }),
-    ],
-    actions: [new chrome.declarativeContent.ShowPageAction()],
-  };
+browser.runtime.onStartup.addListener(() => {
+  console.log(`onStartup()`);
+  // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
+});
 
-  chrome.runtime.onInstalled.addListener(function () {
-    chrome.declarativeContent.onPageChanged.removeRules(undefined, function () {
-      chrome.declarativeContent.onPageChanged.addRules([
-        ruleOnEnabledPagesActivatePageAction,
-      ]);
-    });
-  });
-}
+// if (chrome.runtime.onSuspend) {
+//   chrome.runtime.onSuspend.addListener(() => {
+//     console.log(`onSuspend()`);
+//     browser.runtime.sendMessage({ bgRuntimeEvent: "onSuspend" });
+//   });
+// }
+// if (chrome.runtime.onRestartRequired) {
+//   chrome.runtime.onRestartRequired.addListener(() => {
+//     console.log(`onRestartRequired()`);
+//     browser.runtime.sendMessage({ bgRuntimeEvent: "onRestartRequired" });
+//   });
+// }
+
+browser.runtime.onInstalled.addListener(() => {
+  console.log(`onInstalled()`);
+  // browser.runtime.sendMessage({ bgRuntimeEvent: "onInstalled" });
+});
+
+browser.runtime.onUpdateAvailable.addListener(() => {
+  console.log(`onUpdateAvailable()`);
+  // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
+});
+
+const avmWorker = new AvmWorker();
+avmWorker.initListener();

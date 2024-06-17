@@ -3,8 +3,8 @@ import { AutogramDocument } from "../../../client";
 
 export interface ObjectStrategy {
   document: AutogramDocument;
-  objSchema: string;
-  objTransformation: string;
+  objSchema: string | undefined;
+  objTransformation: string | undefined;
   identifier: SignatureParameters["identifier"];
   formVersion: string;
   schemaIdentifier: string;
@@ -15,7 +15,7 @@ export interface ObjectStrategy {
   /**
    * Type of payload for Autogram (Autogram input)
    */
-  payloadMimeType:  `${string}/${string}${";base64" | ""}`;
+  payloadMimeType: `${string}/${string}${";base64" | ""}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -23,35 +23,35 @@ class EmptyStrategy implements ObjectStrategy {
   get document(): AutogramDocument {
     return { content: "", filename: "" };
   }
-  get objSchema(): string {
-    return null;
+  get objSchema(): string | undefined {
+    return undefined;
   }
-  get objTransformation(): string {
-    return null;
+  get objTransformation(): string | undefined {
+    return undefined;
   }
   get formVersion() {
-    return null;
+    return "";
   }
   get objectId() {
-    return null;
+    return "";
   }
   get identifier() {
-    return null;
+    return "";
   }
   get schemaIdentifier() {
-    return null;
+    return "";
   }
   get transformationIdentifier() {
-    return null;
+    return "";
   }
   get transformationMediaDestinationTypeDescription() {
-    return null;
+    return undefined;
   }
   get transformationLanguage() {
-    return null;
+    return "";
   }
   get transformationTargetEnvironment() {
-    return null;
+    return "";
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";

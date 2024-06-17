@@ -141,33 +141,52 @@ export function apiClient(options?: ApiClientConfiguration) {
     waitForStatus(
       status: ServerInfo["status"],
       timeout = 60,
-      delay = 4
+      delay = 4,
+      abortController?: AbortController
     ): Promise<ServerInfo> {
       const url = new URL("info", serverUrl);
-      const init = { cache: "no-store" } as const;
 
       // eslint-disable-next-line no-async-promise-executor
       return new Promise(async (resolve, reject) => {
-        let controller: AbortController;
+        let requestAbortController: AbortController;
         let lastResponse: ServerInfo;
         let lastError: Error = new Error("No request ever finished");
         let finished = false;
 
+        if (abortController) {
+          abortController.signal.addEventListener("abort", () => {
+            if (!requestAbortController.signal.aborted)
+              requestAbortController.abort();
+            finished = true;
+            reject(new Error("Aborted"));
+          });
+        }
+
         const overallTimeout = setTimeout(() => {
-          if (!controller.signal.aborted) controller.abort();
+          if (!requestAbortController.signal.aborted)
+            requestAbortController.abort();
           finished = true;
           reject(lastError);
         }, timeout * 1000);
 
         // _eslint-disable-next-line functional/no-loop-statement
         while (!finished) {
-          controller = new AbortController();
-          const requestTimeout = setTimeout(() => {
-            if (!controller.signal.aborted) controller.abort();
-          }, (delay + 1) * 1000);
+          requestAbortController = new AbortController();
+          const requestTimeout = setTimeout(
+            () => {
+              if (!requestAbortController.signal.aborted)
+                requestAbortController.abort();
+            },
+            (delay + 1) * 1000
+          );
 
           try {
-            lastResponse = await (await fetch(url.toString(), init)).json();
+            lastResponse = await (
+              await fetch(url.toString(), {
+                cache: "no-store",
+                signal: requestAbortController.signal,
+              })
+            ).json();
             if (lastResponse.status === status) {
               finished = true;
               clearTimeout(overallTimeout);

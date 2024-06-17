@@ -5,7 +5,26 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "pwa-chrome",
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Chrome against example-usage",
+      "url": "http://localhost:49675/",
+      "webRoot": "${workspaceFolder}/dist",
+      "pathMapping": { "__webpack_modules__..": "${workspaceFolder}" },
+      "runtimeArgs": ["--load-extension=${workspaceFolder}/dist", "--auto-open-devtools-for-tabs"],
+      "timeout": 100000,
+      "includeDefaultArgs": true,
+      "trace": true,
+      "internalConsoleOptions": "openOnSessionStart",
+      "userDataDir": "${workspaceRoot}/.vscode/chrome",
+      "diagnosticLogging": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./*": "${webRoot}/*"
+      },
+      "preLaunchTask": "npm: example-usage",
+    },
+    {
+      "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against slovensko.sk",
       "url": "https://slovensko.sk/",
@@ -40,6 +59,33 @@
           "path": "${workspaceFolder}/src"
         }
       ]
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Launch Firefox against example-usage",
+      "url": "http://localhost:49675/",
+      "addonPath": "${workspaceFolder}/dist/",
+      "reAttach": true,
+      "internalConsoleOptions": "openOnSessionStart",
+
+      // "reloadOnChange": {
+      //   "watch": "${workspaceFolder}/dist/*",
+      //   "ignore": "**/node_modules/**"
+      // },
+      "log": {
+        "consoleLevel": {
+          "PathConversion": "Debug",
+          "default": "Error"
+        }
+      },
+      "pathMappings": [
+        {
+          "url": "webpack://autogram-extension/src",
+          "path": "${workspaceFolder}/src"
+        }
+      ]
     }
+    
   ]
 }

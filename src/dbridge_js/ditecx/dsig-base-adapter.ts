@@ -1,11 +1,20 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { DBridgeAutogramImpl } from "./autogram-implementation";
+import { ImplementationInterface } from "./implementation";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/**
+ * Base Class that has same interface as DSig* objects used by dSigner
+ * (eg. dSigXadesAdapter, dSigXadesBpAdapter)
+ *
+ * internally uses __implementation to call methods on the actual implementation
+ */
 export class DSigAdapter {
-  _ready = true;
+  /** used on financnasprava.sk to determine if they call detectSupportedPlatforms()+deploy() */
+  _ready = true; // TODO: check why it was removed, 
+
+  // Constants
   SHA1 = "http://www.w3.org/2000/09/xmldsig#sha1";
   SHA256 = "http://www.w3.org/2001/04/xmlenc#sha256";
   SHA384 = "http://www.w3.org/2001/04/xmldsig-more#sha384";
@@ -19,11 +28,10 @@ export class DSigAdapter {
   PDF_CONFORMANCE_LEVEL_NONE = 2;
   ERROR_SIGNING_CANCELLED = 1;
 
-  __implementation: DBridgeAutogramImpl;
+  protected __implementation: ImplementationInterface;
 
-  constructor(implementation: DBridgeAutogramImpl) {
+  constructor(implementation: ImplementationInterface) {
     this.__implementation = implementation;
-    // this.__implementation.setAdapter(this);
   }
 
   initialize(callback: { onSuccess: () => void }): void {
@@ -53,7 +61,7 @@ export class DSigAdapter {
   stub(name: string, ...rest: unknown[]): void {
     this.log(name, ...rest);
     // alert(`Stubbed ${this.constructor.name} method: \n\n${name}`);
-    console.warn(`Stubbed ${this.constructor.name} method: \n\n${name}`)
+    console.warn(`Stubbed ${this.constructor.name} method: \n\n${name}`);
   }
 
   checkPDFACompliance(sourcePdfBase64, password, reqLevel, callback) {
@@ -78,5 +86,12 @@ export class DSigAdapter {
   getSignerIdentification(callback) {
     this.log("getSignerIdentification", arguments);
     this.__implementation.getSignerIdentification(callback);
+  }
+
+  detectSupportedPlatforms(platforms, callback) {
+    console.log({ platforms });
+
+    // callback.onSuccess(["autogram"]);
+    callback.onSuccess(["java"]);
   }
 }
