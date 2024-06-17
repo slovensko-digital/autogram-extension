@@ -148,12 +148,13 @@ export class WebChannelCaller {
  */
 export class ContentChannelPassthrough {
   port: chrome.runtime.Port; // We use chrome.runtime here because `import browser from "webextension-polyfill"` is not working in web (page) script
+  helloInterval: number | NodeJS.Timeout | null;
   constructor() {
     this.initPort();
   }
 
   private initPort() {
-    console.log("initPort");
+    console.log("initPort", new Date());
     this.port = chrome.runtime.connect({ name: "autogram-extension" });
     this.port.onDisconnect.addListener((p) => {
       console.log("Port Disconnected .....", {
@@ -161,15 +162,34 @@ export class ContentChannelPassthrough {
         lastError: chrome.runtime.lastError,
       });
     });
+    if (this.helloInterval) {
+      clearInterval(this.helloInterval as number);
+    }
     this.hello();
     // Stupid solution to keep the port alive and the worker active
-    setInterval(() => {
+    this.helloInterval = setInterval(() => {
       this.hello();
     }, 10000);
   }
 
+  postMessage(message: ChannelMessage) {
+    try {
+      this.port.postMessage(message);
+    } catch (e) {
+      console.error("Error sending message", e);
+      if (
+        e instanceof Error &&
+        (e.message === "Extension context invalidated." ||
+          e.message === "Attempting to use a disconnected port object")
+      ) {
+        this.initPort();
+        this.port.postMessage(message);
+      }
+    }
+  }
+
   hello() {
-    this.port.postMessage({
+    this.postMessage({
       id: "hello",
       method: "hello",
       args: null,
@@ -180,21 +200,7 @@ export class ContentChannelPassthrough {
     window.addEventListener(EVENT_SEND_MESSAGE, (evt: CustomEvent) => {
       const data = ZChannelMessage.parse(evt.detail);
       console.log("content send message", data);
-      try {
-        this.port.postMessage(data);
-      } catch (e) {
-        console.error("Error sending message", e);
-        if (
-          e instanceof Error &&
-          (e.message === "Extension context invalidated." ||
-            e.message === "Attempting to use a disconnected port object")
-        ) {
-          this.initPort();
-          this.port.postMessage(data);
-        }
-        // eslint-disable-next-line no-debugger
-        debugger;
-      }
+      this.postMessage(data);
     });
 
     this.port.onMessage.addListener((message) => {

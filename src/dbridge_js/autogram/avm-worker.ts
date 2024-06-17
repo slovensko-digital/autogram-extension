@@ -115,7 +115,7 @@ export class AvmWorker {
         () => {
           abortController.abort("Timeout");
         },
-        1000 * 60 * 30 // 30 minutes
+        1000 * 60 * 60 * 2 // 2 hours
       );
       abortController.signal.addEventListener("abort", () => {
         clearTimeout(timeout);
