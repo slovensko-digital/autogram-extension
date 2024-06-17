@@ -1,3 +1,27 @@
+# v2.0.0 (Mon Jun 17 2024)
+
+#### 💥 Breaking Change
+
+- feat!: Autogram v Mobile readme ([@pomali](https://github.com/pomali))
+
+#### 🐛 Bug Fix
+
+- AVM support [#89](https://github.com/slovensko-digital/autogram-extension/pull/89) ([@pomali](https://github.com/pomali))
+- Update autogram-api with batch signing types [#72](https://github.com/slovensko-digital/autogram-extension/pull/72) ([@pomali](https://github.com/pomali))
+- Use explicit reference uris [#81](https://github.com/slovensko-digital/autogram-extension/pull/81) ([@celuchmarek](https://github.com/celuchmarek))
+
+#### ⚠️ Pushed to `master`
+
+- bump auto version ([@pomali](https://github.com/pomali))
+- try to fix release ([@pomali](https://github.com/pomali))
+
+#### Authors: 2
+
+- [@pomali](https://github.com/pomali)
+- Marek Ceľuch ([@celuchmarek](https://github.com/celuchmarek))
+
+---
+
 # v1.6.0 (Fri Dec 08 2023)
 
 #### 🚀 Enhancement
