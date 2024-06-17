@@ -1,3 +1,15 @@
+# v2.0.2 (Mon Jun 17 2024)
+
+#### 🐛 Bug Fix
+
+- fix: remove declarativeContent ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v2.0.1 (Mon Jun 17 2024)
 
 #### 🐛 Bug Fix
