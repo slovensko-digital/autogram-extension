@@ -1,3 +1,19 @@
+# v2.0.1 (Mon Jun 17 2024)
+
+#### 🐛 Bug Fix
+
+- fix: link to autogram v mobile ([@pomali](https://github.com/pomali))
+
+#### ⚠️ Pushed to `master`
+
+- add notes about releasing ([@pomali](https://github.com/pomali))
+
+#### Authors: 1
+
+- [@pomali](https://github.com/pomali)
+
+---
+
 # v2.0.0 (Mon Jun 17 2024)
 
 #### 💥 Breaking Change
