@@ -46,7 +46,7 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
       <div class="main">
         <div class="cols">
           <div class="col">
-          <p>Dokumenty nachádzajúce sa vo vašom počítači, či v informačnom systéme môžete podpisovať aj mobilom. Potrebujete na to aplikáciu <a href="#todo">Autogram v mobile</a>.</p>
+          <p>Dokumenty nachádzajúce sa vo vašom počítači, či v informačnom systéme môžete podpisovať aj mobilom. Potrebujete na to aplikáciu <a href="https://sluzby.slovensko.digital/autogram-v-mobile/">Autogram v mobile</a>.</p>
           <ol>
             <li>Naskenujte QR kód mobilom.</li>
             <li>Podpíšte dokument mobilom pomocou aplikácie Autogram v mobile.</li>
