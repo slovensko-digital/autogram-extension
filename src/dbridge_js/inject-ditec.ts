@@ -7,7 +7,7 @@ declare global {
   const __COMMIT_HASH__: string;
 }
 
-const useProxy = true;
+const useProxy = false;
 const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: { ditec?: OriginalDitec }): void {
   console.log("Start inject", { 

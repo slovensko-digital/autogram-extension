@@ -176,14 +176,16 @@ export class ContentChannelPassthrough {
     try {
       this.port.postMessage(message);
     } catch (e) {
-      console.error("Error sending message", e);
       if (
         e instanceof Error &&
         (e.message === "Extension context invalidated." ||
           e.message === "Attempting to use a disconnected port object")
       ) {
+        console.log("Port disconnected, reinit", e);
         this.initPort();
         this.port.postMessage(message);
+      } else {
+        console.error("Error sending message", e);
       }
     }
   }
