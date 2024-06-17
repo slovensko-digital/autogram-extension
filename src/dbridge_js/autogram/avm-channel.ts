@@ -147,7 +147,7 @@ export class WebChannelCaller {
  * Class used in content script used for communication between web page and background script
  */
 export class ContentChannelPassthrough {
-  port: chrome.runtime.Port;
+  port: chrome.runtime.Port; // We use chrome.runtime here because `import browser from "webextension-polyfill"` is not working in web (page) script
   constructor() {
     this.initPort();
   }
@@ -201,8 +201,16 @@ export class ContentChannelPassthrough {
       console.log("content message", message);
       const data = ZChannelResponse.parse(message);
       console.log("content response", data);
+
+      let detail = data;
+      if (typeof cloneInto != "undefined") {
+        detail = cloneInto(data, window, {
+          cloneFunctions: true,
+        }) as ChannelMessage;
+      }
+
       const evt = new CustomEvent(EVENT_MESSAGE_RESPONSE, {
-        detail: data,
+        detail: detail,
         bubbles: true,
         composed: true,
       });
@@ -248,4 +256,18 @@ function promiseWithResolversPolyfill<T>() {
   });
 
   return { promise, resolve, reject };
+}
+
+declare global {
+  /**
+   * used in firefox extension to allow sending detail over extension interface
+   *
+   * https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent#Firing_from_privileged_code_to_non-privileged_code
+   *
+   * https://stackoverflow.com/a/46081249/3782248
+   *
+   */
+  const cloneInto:
+    | undefined
+    | ((obj: unknown, window: Window, opts?: unknown) => unknown);
 }

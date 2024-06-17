@@ -129,7 +129,7 @@ function generateManifest(
 
         permissions: [
           "storage",
-          "declarativeContent", // chrome only
+          // "declarativeContent", // chrome only - does not work in firefox
           ...enabledUrls,
         ],
         content_scripts: [

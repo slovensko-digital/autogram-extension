@@ -6,6 +6,7 @@ import {
 } from "../../avm-api/lib/apiClient";
 import { ZChannelMessage } from "./avm-channel";
 import { get, set } from "idb-keyval";
+import browser from "webextension-polyfill";
 
 export class AvmWorker {
   private apiClient = new AutogramVMobileIntegration({
@@ -16,7 +17,7 @@ export class AvmWorker {
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
-    chrome.runtime.onConnect.addListener((port) => {
+    browser.runtime.onConnect.addListener((port) => {
       console.log("Connected .....", port);
       const handleMessage = (request) => {
         const sender = port.sender;
@@ -35,9 +36,9 @@ export class AvmWorker {
           (result) => {
             const response = {
               id: data.id,
-              result: result ?? {},
+              result: result ?? null,
             };
-            console.log("background response", response);
+            console.log("background response", response, JSON.stringify(response), typeof response?.result);
             port.postMessage(response);
           },
           (error: Error) => {
@@ -58,8 +59,12 @@ export class AvmWorker {
         );
       };
       port.onDisconnect.addListener((p) => {
-        console.log("Disconnected .....", {port, p, lastError: chrome.runtime.lastError});
-      //   port.onMessage.removeListener(handleMessage);
+        console.log("Disconnected .....", {
+          port,
+          p,
+          lastError: browser.runtime.lastError,
+        });
+        //   port.onMessage.removeListener(handleMessage);
       });
       port.onMessage.addListener(handleMessage);
     });
@@ -182,6 +187,6 @@ const ZAddDocumentArgs = z.object({
 
 type SenderId = string;
 
-function getSenderId(sender: chrome.runtime.MessageSender): SenderId {
+function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
   return `${sender.tab?.id?.toString()}|${sender.frameId?.toString()}`;
 }

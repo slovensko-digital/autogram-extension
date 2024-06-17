@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against example-usage",
       "url": "http://localhost:49675/",
@@ -24,7 +24,7 @@
       "preLaunchTask": "npm: example-usage",
     },
     {
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against slovensko.sk",
       "url": "https://slovensko.sk/",
@@ -59,6 +59,33 @@
           "path": "${workspaceFolder}/src"
         }
       ]
+    },
+    {
+      "type": "firefox",
+      "request": "launch",
+      "name": "Launch Firefox against example-usage",
+      "url": "http://localhost:49675/",
+      "addonPath": "${workspaceFolder}/dist/",
+      "reAttach": true,
+      "internalConsoleOptions": "openOnSessionStart",
+
+      // "reloadOnChange": {
+      //   "watch": "${workspaceFolder}/dist/*",
+      //   "ignore": "**/node_modules/**"
+      // },
+      "log": {
+        "consoleLevel": {
+          "PathConversion": "Debug",
+          "default": "Error"
+        }
+      },
+      "pathMappings": [
+        {
+          "url": "webpack://autogram-extension/src",
+          "path": "${workspaceFolder}/src"
+        }
+      ]
     }
+    
   ]
 }

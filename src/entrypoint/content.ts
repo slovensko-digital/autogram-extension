@@ -11,23 +11,6 @@ isExtensionEnabled().then((enabled) => {
 
     const messagePassthrough = new ContentChannelPassthrough();
     messagePassthrough.initEventListener();
-
-    // window.addEventListener("autogram-send-message", () => {
-    //   chrome.runtime.sendMessage({ greeting: "hello" }, (response) => {
-    //     console.log("message response", response);
-    //   });
-    // });
-    // chrome.runtime.onMessage.addListener(
-    //   function (request, sender, sendResponse) {
-    //     console.log(
-    //       sender.tab
-    //         ? "from a content script:" + sender.tab.url
-    //         : "from the extension"
-    //     );
-    //     if (request.greeting === "hello") sendResponse({ farewell: "goodbye" });
-    //   }
-    // );
-
     insertInjectScript(document);
 
     // TODO: probably this should be conditional, based on the website
