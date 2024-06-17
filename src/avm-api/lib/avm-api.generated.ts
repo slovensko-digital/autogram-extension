@@ -658,9 +658,13 @@ export interface paths {
   };
   "/qr-code": {
     /**
-     * @description Example: `https://autogram.slovensko.digital/api/v1/qr-code?guid=e7e95411-66a1-d401-e063-0a64dbb6b796&key=EeESAfZQh9OTf5qZhHZtgaDJpYtxZD6TIOQJzRgRFgQ%3D&pushkey=R%2FrfN%2Bz129w1H2iftbr1GOKXdC3OxSJU9PZeHs%2BW7ts%3D&integration=eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI3OGQ5MWRlNy0xY2MyLTQwZTQtOWE3MS0zODU4YjRmMDMxOWQiLCJleHAiOjE3MTI5MDk3MjAsImp0aSI6IjAwZTAxN2Y1LTI4MTAtNDkyNS04ODRlLWNiN2FhZDAzZDFhNiIsImF1ZCI6ImRldmljZSJ9.7Op6W2BvbX2_mgj9dkz1IiolEsQ1Z2a0AzpS5bj4pcG3CJ4Z8j9W3RQE95wrAj3t6nmd9JaGZSlCJNSV_myyLQ`
+     * URL format used by Autogram extenision and Autogram v mobile app
+     * @description This QR code / URL is a standard used by Autogram browser extension and Autogram v mobile application. Server doesn't really care if potential other integrations / applications use the same format or not.
      *
-     * */
+     * Example: `https://autogram.slovensko.digital/api/v1/qr-code?guid=e7e95411-66a1-d401-e063-0a64dbb6b796&key=EeESAfZQh9OTf5qZhHZtgaDJpYtxZD6TIOQJzRgRFgQ%3D&integration=eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI3OGQ5MWRlNy0xY2MyLTQwZTQtOWE3MS0zODU4YjRmMDMxOWQiLCJleHAiOjE3MTI5MDk3MjAsImp0aSI6IjAwZTAxN2Y1LTI4MTAtNDkyNS04ODRlLWNiN2FhZDAzZDFhNiIsImF1ZCI6ImRldmljZSJ9.7Op6W2BvbX2_mgj9dkz1IiolEsQ1Z2a0AzpS5bj4pcG3CJ4Z8j9W3RQE95wrAj3t6nmd9JaGZSlCJNSV_myyLQ`
+     *
+     * <img src="data:image/png;base64, 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JEyPHj169OjRO8t5YRLoOaFNrb09PNbppekW7u2+8L3TVunRo0ePHj16sWe17yEUtWqBaO867mW1rVj1vqF32NksH6NHjx49evToXRahJsy9tlbPOATAw5Lc3pl7fpe/2N+jR48ePXr0frRe3f9eOKu5rD5qSnwvfeoG65Nr8LyPqvTo0aNHjx6980fvPnVmqVas9qmkmx7iTZuxdPCebxI9evTo0aNH73f/X6n3Nwr8lfCadU/WU0fwZuyqNEnp0aNHjx49er/7GE04sZAq66HW2lUV3Uton4nSh41TevTo0aNHj977A3weNLqZjK4+dci6ftvLczqcE5/Gs+rVoUePHj169Ohd6N0UeT54qNeVt1AFvPm9qcNYz4UePXr06NGjF1tYtQE3/bUORd909aa226R82Aw8bD3So0ePHj169GLKquWyPYyGE3sTv87aaXulrPp8+prQo0ePHj169JaQFLpcU71oL4iFp+yh9ebIp2sSkuZUM6NHjx49evToxXxZQ+bzqp258B2n0S2i1+LcVFXcO4L06NGjR48evVhmqgPBobL1HBT3Le3h8RDzZuc1UJ729+jRo0ePHr2v05uOt9ap9rmeWtSqsfmD+bf2Aaf24TZ7RY8ePXr06NE7ktrnhELAuumL7R8L51kTeK3f7YNL9OjRo0ePHr2lt7VP7hweTC2XTXeltuxCB6++2lQUzJVBevTo0aNH79v16stMouEA9z0c1r1qwt03vdfv9ktEjx49evTo0Vs2t9NMlyPE3BrxDnuSh5XB2svbO6D06NGjR48evdvMOSWqfU6oDjOFnDc15cLFum5qHoZlevTo0aNHj968DqtE0+nsjcTaWKtR8PmX98+GgmK+mfTo0aNHj9636+1BbEqGU4PwBjhUrGoY3VuUtbZW35QePXr06NGjF1t7h4d1U1ur537Y7pvy5eGV3fuFNW7So0ePHj169JbkNX37YXftcCZo/+X6lXufcq+KhS3Qo0ePHj169Ga9vXw0dc2m87z+6c0lmup8U1+RHj169OjRo/dhvXrke0lpuhc1sE3FtOfTCDfk+Yum16VHjx49evTozf29m/JRaHrdDDjVaDn1FafreTiFNV1AevTo0aNHj9585HWEqX42RLLDlthnenT7PFGQr4NL9OjRo0ePHj3rv7bo0bPoWfToWfQsehY9ehY9i55Fj55Fz6JHz6Jn0bPo/dz1Px4NXyy79PLkAAAAAElFTkSuQmCC" width="300px" height="300px"/>
+     */
     get: {
       parameters: {
         query: {
@@ -675,11 +679,6 @@ export interface paths {
            */
           key: string;
           /**
-           * @description AES256 key in Base64 for push notification content
-           * @example R/rfN+z129w1H2iftbr1GOKXdC3OxSJU9PZeHs+W7ts=
-           */
-          pushkey?: string;
-          /**
            * @description JWT of source integration. Can be used to pair device with the integration. Must contain `aud: "device"` claim
            * @example eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI3OGQ5MWRlNy0xY2MyLTQwZTQtOWE3MS0zODU4YjRmMDMxOWQiLCJleHAiOjE3MTI5MDk3MjAsImp0aSI6IjAwZTAxN2Y1LTI4MTAtNDkyNS04ODRlLWNiN2FhZDAzZDFhNiIsImF1ZCI6ImRldmljZSJ9.7Op6W2BvbX2_mgj9dkz1IiolEsQ1Z2a0AzpS5bj4pcG3CJ4Z8j9W3RQE95wrAj3t6nmd9JaGZSlCJNSV_myyLQ
            */
@@ -687,8 +686,8 @@ export interface paths {
         };
       };
       responses: {
-        /** @description OK */
-        200: {
+        /** @description Redirect to app download page. The QR code / url should be open through Autogram v mobile app and parameters should be parsed and used for document signing or integration pairing. */
+        302: {
           content: never;
         };
       };
@@ -730,11 +729,6 @@ export interface components {
        * -----END PUBLIC KEY-----
        */
       publicKey: string;
-      /**
-       * @description Integration's AES256 key in Base64 form that shall be used to encrypt notificaiton messages sent to device
-       * @example R/rfN+z129w1H2iftbr1GOKXdC3OxSJU9PZeHs+W7ts=
-       */
-      pushkey: string;
     };
     PostIntegrationResponse: {
       /**
@@ -766,6 +760,11 @@ export interface components {
        * -----END PUBLIC KEY-----
        */
       publicKey: string;
+      /**
+       * @description Device's AES256 key in Base64 form that shall be used to encrypt notificaiton messages sent to the device
+       * @example R/rfN+z129w1H2iftbr1GOKXdC3OxSJU9PZeHs+W7ts=
+       */
+      pushkey: string;
     };
     PostDeviceResponse: {
       /**

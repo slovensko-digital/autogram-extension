@@ -34,7 +34,6 @@ describe("avm api client", () => {
     apiClient.qrCodeUrl({
       guid: "e7e95411-66a1-d401-e063-0a64dbb6b796",
       key: "EeESAfZQh9OTf5qZhHZtgaDJpYtxZD6TIOQJzRgRFgQ=",
-      pushkey: "R/rfN+z129w1H2iftbr1GOKXdC3OxSJU9PZeHs+W7ts=",
       integration:
         "eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiI3OGQ5MWRlNy0xY2MyLTQwZTQtOWE3MS0zODU4YjRmMDMxOWQiLCJleHAiOjE3MTI5MDk3MjAsImp0aSI6IjAwZTAxN2Y1LTI4MTAtNDkyNS04ODRlLWNiN2FhZDAzZDFhNiIsImF1ZCI6ImRldmljZSJ9.7Op6W2BvbX2_mgj9dkz1IiolEsQ1Z2a0AzpS5bj4pcG3CJ4Z8j9W3RQE95wrAj3t6nmd9JaGZSlCJNSV_myyLQ",
     });

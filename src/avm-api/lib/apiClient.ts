@@ -23,10 +23,6 @@ export class AutogramVMobileIntegration
    */
   private keyPair: CryptoKeyPair | null = null;
   /**
-   * Key for encrypting push notification data
-   */
-  private pushKey: CryptoKey | null = null;
-  /**
    * GUID of the integration - assigned by server
    */
   private integrationGuid: string | null = null;
@@ -50,17 +46,16 @@ export class AutogramVMobileIntegration
     this.loadSubtleCrypto();
     // load
     this.keyPair = await this.getKeyPairFromDb();
-    this.pushKey = await this.getPushKeyFromDb();
-    this.integrationGuid = await this.getIntegrationGuidFromDb();
-    console.log(this.keyPair, this.pushKey);
 
-    if (!this.keyPair || !this.pushKey || !this.integrationGuid) {
+    this.integrationGuid = await this.getIntegrationGuidFromDb();
+    console.log(this.keyPair);
+
+    if (!this.keyPair || !this.integrationGuid) {
       await this.register();
     }
 
     console.log("keys init", {
       public: await this.getPublicKeyStr(),
-      push: await this.getPushKeyStr(),
       guid: this.integrationGuid,
     });
   }
@@ -81,22 +76,20 @@ export class AutogramVMobileIntegration
     return this.apiClient.qrCodeUrl({
       guid: doc.guid,
       key: doc.encryptionKey,
-      pushkey: await this.getPushKeyStr(),
       integration: integration,
     });
   }
 
   private async register() {
-    if (this.keyPair && this.pushKey && this.integrationGuid) {
+    if (this.keyPair && this.integrationGuid) {
       throw new Error("Already registered.");
     }
 
     await this.generateKeys();
 
     const publicKey = await this.getPublicKeyStr();
-    const pushKey = await this.getPushKeyStr();
 
-    console.log("Registering integration", publicKey, pushKey);
+    console.log("Registering integration", publicKey);
 
     const res = await this.apiClient.registerIntegration({
       platform: "extension",
@@ -105,7 +98,6 @@ export class AutogramVMobileIntegration
         "-----BEGIN PUBLIC KEY-----\n" +
         publicKey +
         "\n-----END PUBLIC KEY-----",
-      pushkey: pushKey,
     });
 
     this.integrationGuid = res.guid;
@@ -227,21 +219,7 @@ export class AutogramVMobileIntegration
     console.log("Key pair generated", keyPair);
     await this.saveKeyPair(keyPair);
     this.keyPair = keyPair;
-
-    // AES256
-    const pushKey = await this.subtleCrypto.generateKey(
-      {
-        name: "AES-GCM",
-        length: 256,
-      },
-      true,
-      ["encrypt", "decrypt"]
-    );
-    console.log("Push key generated", pushKey);
-    await this.savePushKey(pushKey);
-    this.pushKey = pushKey;
-
-    console.log("Keys generated", this.keyPair, this.pushKey);
+    console.log("Keys generated", this.keyPair);
   }
 
   private async saveKeyPair(keyPair: CryptoKeyPair) {
@@ -252,19 +230,6 @@ export class AutogramVMobileIntegration
     return this.db.get("keyPair").then((keyPair) => {
       if (keyPair) {
         return keyPair;
-      }
-      return null;
-    });
-  }
-
-  private async savePushKey(pushKey: CryptoKey) {
-    return this.db.set("pushKey", pushKey);
-  }
-
-  private async getPushKeyFromDb(): Promise<CryptoKey | null> {
-    return this.db.get("pushKey").then((pushKey) => {
-      if (pushKey) {
-        return pushKey;
       }
       return null;
     });
@@ -292,12 +257,6 @@ export class AutogramVMobileIntegration
       .then(arrayBufferToBase64);
   }
 
-  private async getPushKeyStr() {
-    if (!this.pushKey) {
-      throw new Error("Push key missing");
-    }
-    return this.exportRawBase64(this.pushKey);
-  }
 
   private async initDocumentKey() {
     const documentKey = await this.subtleCrypto.generateKey(

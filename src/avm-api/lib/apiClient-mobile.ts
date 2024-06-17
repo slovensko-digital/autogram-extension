@@ -7,9 +7,6 @@ export class AutogramVMobileSimulation {
   guid: string;
   encryptionKey: string;
 
-  // integrationJwt: string;
-  // pushkey: string;
-
   constructor() {
     this.apiClient = new AutogramVMobileClientApiClient();
   }
@@ -19,9 +16,8 @@ export class AutogramVMobileSimulation {
     const guid = url.searchParams.get("guid");
     const encryptionKey = url.searchParams.get("key");
     const integrationJwt = url.searchParams.get("integration");
-    const pushkey = url.searchParams.get("pushkey");
 
-    console.log({ guid, key: encryptionKey, integrationJwt, pushkey });
+    console.log({ guid, key: encryptionKey, integrationJwt });
     if (!guid || !encryptionKey) {
       throw new Error("Invalid URL");
     }
