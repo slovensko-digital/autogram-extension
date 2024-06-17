@@ -134,6 +134,8 @@ API dbridge_js funguje nasledovne:
 ## Štruktúra codebase
 
 - `src` samotná aplikácia
+  - `autogram-api` - klientska kniznica pre komunikaciu s Autogramom (Desktop)
+  - `avm-api` - klientska kniznica pre komunikaciu s Autogram v Mobile (AVM)
   - `dbridge_js` - "hlavná časť"
     - `inject-ditec.ts` - samotne vkladanie objektu
     - `proxy.ts` - debugovacie interceptovanie/nahravanie pri pouzivani (WIP) (napr. na vyrabanie testov)
@@ -147,6 +149,10 @@ API dbridge_js funguje nasledovne:
     - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
     - `popup.ts` - správanie popup-u
     - ...
+  - `injected-ui` - UI komponenty vkladané do stránky
   - `img` - zdrojové obrázky na distribuciu (do store-u)
   - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
   - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
+- `example-usage` - sample aplikacia pouzivajuca dbrige_js (dsigner), kde sa da vyskusat funkcionalita extension-u
+- `scripts` - pomocné skripty
+- `webpack` - konfigurácie webpacku pre rôzne prostredia
