@@ -28,10 +28,10 @@ browser.runtime.onInstalled.addListener(() => {
   // browser.runtime.sendMessage({ bgRuntimeEvent: "onInstalled" });
 });
 
-browser.runtime.onUpdateAvailable.addListener(() => {
-  console.log(`onUpdateAvailable()`);
-  // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
-});
+// browser.runtime.onUpdateAvailable.addListener(() => {
+//   console.log(`onUpdateAvailable()`);
+//   // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
+// });
 
 const avmWorker = new AvmWorker();
 avmWorker.initListener();
