@@ -7,46 +7,48 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FE5F3DE32B2308B600CDB486 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F3DE22B2308B600CDB486 /* AppDelegate.swift */; };
-		FE5F3DE72B2308B600CDB486 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3DE52B2308B600CDB486 /* Main.html */; };
-		FE5F3DE92B2308B600CDB486 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3DE82B2308B600CDB486 /* Icon.png */; };
-		FE5F3DEB2B2308B600CDB486 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3DEA2B2308B600CDB486 /* Style.css */; };
-		FE5F3DED2B2308B600CDB486 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3DEC2B2308B600CDB486 /* Script.js */; };
-		FE5F3DEF2B2308B600CDB486 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F3DEE2B2308B600CDB486 /* ViewController.swift */; };
-		FE5F3DF22B2308B600CDB486 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3DF02B2308B600CDB486 /* Main.storyboard */; };
-		FE5F3DF42B2308B700CDB486 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3DF32B2308B700CDB486 /* Assets.xcassets */; };
-		FE5F3DFD2B2308B700CDB486 /* autogram-extension Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FE5F3DFC2B2308B700CDB486 /* autogram-extension Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		FE5F3E022B2308B700CDB486 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5F3E012B2308B700CDB486 /* SafariWebExtensionHandler.swift */; };
-		FE5F3E1F2B2308B800CDB486 /* inject.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E0F2B2308B800CDB486 /* inject.bundle.js */; };
-		FE5F3E202B2308B800CDB486 /* background.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E122B2308B800CDB486 /* background.bundle.js */; };
-		FE5F3E212B2308B800CDB486 /* redirect.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E152B2308B800CDB486 /* redirect.bundle.js */; };
-		FE5F3E222B2308B800CDB486 /* static in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E162B2308B800CDB486 /* static */; };
-		FE5F3E232B2308B800CDB486 /* options.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E172B2308B800CDB486 /* options.bundle.js */; };
-		FE5F3E242B2308B800CDB486 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E182B2308B800CDB486 /* manifest.json */; };
-		FE5F3E252B2308B800CDB486 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E1A2B2308B800CDB486 /* _locales */; };
-		FE5F3E262B2308B800CDB486 /* content.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E1B2B2308B800CDB486 /* content.bundle.js */; };
-		FE5F3E272B2308B800CDB486 /* inject.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E1C2B2308B800CDB486 /* inject.bundle.js.LICENSE.txt */; };
-		FE5F3E282B2308B800CDB486 /* popup.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = FE5F3E1E2B2308B800CDB486 /* popup.bundle.js */; };
+		E4E6888E2C21B04700DB9ED8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E6888D2C21B04700DB9ED8 /* AppDelegate.swift */; };
+		E4E688922C21B04700DB9ED8 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = E4E688912C21B04700DB9ED8 /* Base */; };
+		E4E688942C21B04700DB9ED8 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = E4E688932C21B04700DB9ED8 /* Icon.png */; };
+		E4E688962C21B04700DB9ED8 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = E4E688952C21B04700DB9ED8 /* Style.css */; };
+		E4E688982C21B04700DB9ED8 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688972C21B04700DB9ED8 /* Script.js */; };
+		E4E6889A2C21B04700DB9ED8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E688992C21B04700DB9ED8 /* ViewController.swift */; };
+		E4E6889D2C21B04700DB9ED8 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = E4E6889C2C21B04700DB9ED8 /* Base */; };
+		E4E6889F2C21B04800DB9ED8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E4E6889E2C21B04800DB9ED8 /* Assets.xcassets */; };
+		E4E688A82C21B04800DB9ED8 /* autogram-extension Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4E688A72C21B04800DB9ED8 /* autogram-extension Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E4E688AD2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E688AC2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift */; };
+		E4E688CC2C21B04800DB9ED8 /* inject.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688BA2C21B04800DB9ED8 /* inject.bundle.js */; };
+		E4E688CD2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4E688BC2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt */; };
+		E4E688CE2C21B04800DB9ED8 /* background.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688BE2C21B04800DB9ED8 /* background.bundle.js */; };
+		E4E688CF2C21B04800DB9ED8 /* redirect.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C12C21B04800DB9ED8 /* redirect.bundle.js */; };
+		E4E688D02C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C22C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt */; };
+		E4E688D12C21B04800DB9ED8 /* static in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C32C21B04800DB9ED8 /* static */; };
+		E4E688D22C21B04800DB9ED8 /* options.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C42C21B04800DB9ED8 /* options.bundle.js */; };
+		E4E688D32C21B04800DB9ED8 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C52C21B04800DB9ED8 /* manifest.json */; };
+		E4E688D42C21B04800DB9ED8 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C72C21B04800DB9ED8 /* _locales */; };
+		E4E688D52C21B04800DB9ED8 /* content.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C82C21B04800DB9ED8 /* content.bundle.js */; };
+		E4E688D62C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C92C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt */; };
+		E4E688D72C21B04800DB9ED8 /* popup.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688CB2C21B04800DB9ED8 /* popup.bundle.js */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		FE5F3DFE2B2308B700CDB486 /* PBXContainerItemProxy */ = {
+		E4E688A92C21B04800DB9ED8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = FE5F3DD72B2308B600CDB486 /* Project object */;
+			containerPortal = E4E688822C21B04700DB9ED8 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = FE5F3DFB2B2308B700CDB486;
+			remoteGlobalIDString = E4E688A62C21B04800DB9ED8;
 			remoteInfo = "autogram-extension Extension";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		FE5F3E0A2B2308B700CDB486 /* Embed Foundation Extensions */ = {
+		E4E688B52C21B04800DB9ED8 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				FE5F3DFD2B2308B700CDB486 /* autogram-extension Extension.appex in Embed Foundation Extensions */,
+				E4E688A82C21B04800DB9ED8 /* autogram-extension Extension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -54,49 +56,51 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		FE5F3DDF2B2308B600CDB486 /* autogram-extension.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "autogram-extension.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE5F3DE22B2308B600CDB486 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		FE5F3DE62B2308B600CDB486 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
-		FE5F3DE82B2308B600CDB486 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
-		FE5F3DEA2B2308B600CDB486 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
-		FE5F3DEC2B2308B600CDB486 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
-		FE5F3DEE2B2308B600CDB486 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		FE5F3DF12B2308B600CDB486 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		FE5F3DF32B2308B700CDB486 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		FE5F3DF52B2308B700CDB486 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FE5F3DF62B2308B700CDB486 /* autogram_extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = autogram_extension.entitlements; sourceTree = "<group>"; };
-		FE5F3DF72B2308B700CDB486 /* autogram-extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "autogram-extension.entitlements"; sourceTree = "<group>"; };
-		FE5F3DFC2B2308B700CDB486 /* autogram-extension Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "autogram-extension Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
-		FE5F3E012B2308B700CDB486 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
-		FE5F3E032B2308B700CDB486 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FE5F3E042B2308B700CDB486 /* autogram_extension_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = autogram_extension_Extension.entitlements; sourceTree = "<group>"; };
-		FE5F3E0F2B2308B800CDB486 /* inject.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = inject.bundle.js; path = ../../../dist/inject.bundle.js; sourceTree = "<group>"; };
-		FE5F3E102B2308B800CDB486 /* content.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = content.bundle.js.map; path = ../../../dist/content.bundle.js.map; sourceTree = "<group>"; };
-		FE5F3E112B2308B800CDB486 /* options.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = options.bundle.js.map; path = ../../../dist/options.bundle.js.map; sourceTree = "<group>"; };
-		FE5F3E122B2308B800CDB486 /* background.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.bundle.js; path = ../../../dist/background.bundle.js; sourceTree = "<group>"; };
-		FE5F3E132B2308B800CDB486 /* popup.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = popup.bundle.js.map; path = ../../../dist/popup.bundle.js.map; sourceTree = "<group>"; };
-		FE5F3E142B2308B800CDB486 /* redirect.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = redirect.bundle.js.map; path = ../../../dist/redirect.bundle.js.map; sourceTree = "<group>"; };
-		FE5F3E152B2308B800CDB486 /* redirect.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = redirect.bundle.js; path = ../../../dist/redirect.bundle.js; sourceTree = "<group>"; };
-		FE5F3E162B2308B800CDB486 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; name = static; path = ../../../dist/static; sourceTree = "<group>"; };
-		FE5F3E172B2308B800CDB486 /* options.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = options.bundle.js; path = ../../../dist/options.bundle.js; sourceTree = "<group>"; };
-		FE5F3E182B2308B800CDB486 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../dist/manifest.json; sourceTree = "<group>"; };
-		FE5F3E192B2308B800CDB486 /* inject.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = inject.bundle.js.map; path = ../../../dist/inject.bundle.js.map; sourceTree = "<group>"; };
-		FE5F3E1A2B2308B800CDB486 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = _locales; path = ../../../dist/_locales; sourceTree = "<group>"; };
-		FE5F3E1B2B2308B800CDB486 /* content.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.bundle.js; path = ../../../dist/content.bundle.js; sourceTree = "<group>"; };
-		FE5F3E1C2B2308B800CDB486 /* inject.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = inject.bundle.js.LICENSE.txt; path = ../../../dist/inject.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
-		FE5F3E1D2B2308B800CDB486 /* background.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = background.bundle.js.map; path = ../../../dist/background.bundle.js.map; sourceTree = "<group>"; };
-		FE5F3E1E2B2308B800CDB486 /* popup.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.bundle.js; path = ../../../dist/popup.bundle.js; sourceTree = "<group>"; };
+		E4E6888A2C21B04700DB9ED8 /* autogram-extension.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "autogram-extension.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4E6888D2C21B04700DB9ED8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E4E688912C21B04700DB9ED8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		E4E688932C21B04700DB9ED8 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		E4E688952C21B04700DB9ED8 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		E4E688972C21B04700DB9ED8 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		E4E688992C21B04700DB9ED8 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		E4E6889C2C21B04700DB9ED8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E4E6889E2C21B04800DB9ED8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E4E688A02C21B04800DB9ED8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E4E688A12C21B04800DB9ED8 /* autogram_extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = autogram_extension.entitlements; sourceTree = "<group>"; };
+		E4E688A22C21B04800DB9ED8 /* autogram-extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "autogram-extension.entitlements"; sourceTree = "<group>"; };
+		E4E688A72C21B04800DB9ED8 /* autogram-extension Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "autogram-extension Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4E688AC2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		E4E688AE2C21B04800DB9ED8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E4E688AF2C21B04800DB9ED8 /* autogram_extension_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = autogram_extension_Extension.entitlements; sourceTree = "<group>"; };
+		E4E688BA2C21B04800DB9ED8 /* inject.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = inject.bundle.js; path = ../../../dist/inject.bundle.js; sourceTree = "<group>"; };
+		E4E688BB2C21B04800DB9ED8 /* content.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = content.bundle.js.map; path = ../../../dist/content.bundle.js.map; sourceTree = "<group>"; };
+		E4E688BC2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = content.bundle.js.LICENSE.txt; path = ../../../dist/content.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
+		E4E688BD2C21B04800DB9ED8 /* options.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = options.bundle.js.map; path = ../../../dist/options.bundle.js.map; sourceTree = "<group>"; };
+		E4E688BE2C21B04800DB9ED8 /* background.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.bundle.js; path = ../../../dist/background.bundle.js; sourceTree = "<group>"; };
+		E4E688BF2C21B04800DB9ED8 /* popup.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = popup.bundle.js.map; path = ../../../dist/popup.bundle.js.map; sourceTree = "<group>"; };
+		E4E688C02C21B04800DB9ED8 /* redirect.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = redirect.bundle.js.map; path = ../../../dist/redirect.bundle.js.map; sourceTree = "<group>"; };
+		E4E688C12C21B04800DB9ED8 /* redirect.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = redirect.bundle.js; path = ../../../dist/redirect.bundle.js; sourceTree = "<group>"; };
+		E4E688C22C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = background.bundle.js.LICENSE.txt; path = ../../../dist/background.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
+		E4E688C32C21B04800DB9ED8 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; name = static; path = ../../../dist/static; sourceTree = "<group>"; };
+		E4E688C42C21B04800DB9ED8 /* options.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = options.bundle.js; path = ../../../dist/options.bundle.js; sourceTree = "<group>"; };
+		E4E688C52C21B04800DB9ED8 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../dist/manifest.json; sourceTree = "<group>"; };
+		E4E688C62C21B04800DB9ED8 /* inject.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = inject.bundle.js.map; path = ../../../dist/inject.bundle.js.map; sourceTree = "<group>"; };
+		E4E688C72C21B04800DB9ED8 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = _locales; path = ../../../dist/_locales; sourceTree = "<group>"; };
+		E4E688C82C21B04800DB9ED8 /* content.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.bundle.js; path = ../../../dist/content.bundle.js; sourceTree = "<group>"; };
+		E4E688C92C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = inject.bundle.js.LICENSE.txt; path = ../../../dist/inject.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
+		E4E688CA2C21B04800DB9ED8 /* background.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = background.bundle.js.map; path = ../../../dist/background.bundle.js.map; sourceTree = "<group>"; };
+		E4E688CB2C21B04800DB9ED8 /* popup.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.bundle.js; path = ../../../dist/popup.bundle.js; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		FE5F3DDC2B2308B600CDB486 /* Frameworks */ = {
+		E4E688872C21B04700DB9ED8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FE5F3DF92B2308B700CDB486 /* Frameworks */ = {
+		E4E688A42C21B04800DB9ED8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -106,80 +110,82 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		FE5F3DD62B2308B600CDB486 = {
+		E4E688812C21B04700DB9ED8 = {
 			isa = PBXGroup;
 			children = (
-				FE5F3DE12B2308B600CDB486 /* autogram-extension */,
-				FE5F3E002B2308B700CDB486 /* autogram-extension Extension */,
-				FE5F3DE02B2308B600CDB486 /* Products */,
+				E4E6888C2C21B04700DB9ED8 /* autogram-extension */,
+				E4E688AB2C21B04800DB9ED8 /* autogram-extension Extension */,
+				E4E6888B2C21B04700DB9ED8 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		FE5F3DE02B2308B600CDB486 /* Products */ = {
+		E4E6888B2C21B04700DB9ED8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FE5F3DDF2B2308B600CDB486 /* autogram-extension.app */,
-				FE5F3DFC2B2308B700CDB486 /* autogram-extension Extension.appex */,
+				E4E6888A2C21B04700DB9ED8 /* autogram-extension.app */,
+				E4E688A72C21B04800DB9ED8 /* autogram-extension Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		FE5F3DE12B2308B600CDB486 /* autogram-extension */ = {
+		E4E6888C2C21B04700DB9ED8 /* autogram-extension */ = {
 			isa = PBXGroup;
 			children = (
-				FE5F3DE22B2308B600CDB486 /* AppDelegate.swift */,
-				FE5F3DEE2B2308B600CDB486 /* ViewController.swift */,
-				FE5F3DF02B2308B600CDB486 /* Main.storyboard */,
-				FE5F3DF32B2308B700CDB486 /* Assets.xcassets */,
-				FE5F3DF52B2308B700CDB486 /* Info.plist */,
-				FE5F3DF62B2308B700CDB486 /* autogram_extension.entitlements */,
-				FE5F3DF72B2308B700CDB486 /* autogram-extension.entitlements */,
-				FE5F3DE42B2308B600CDB486 /* Resources */,
+				E4E6888D2C21B04700DB9ED8 /* AppDelegate.swift */,
+				E4E688992C21B04700DB9ED8 /* ViewController.swift */,
+				E4E6889B2C21B04700DB9ED8 /* Main.storyboard */,
+				E4E6889E2C21B04800DB9ED8 /* Assets.xcassets */,
+				E4E688A02C21B04800DB9ED8 /* Info.plist */,
+				E4E688A12C21B04800DB9ED8 /* autogram_extension.entitlements */,
+				E4E688A22C21B04800DB9ED8 /* autogram-extension.entitlements */,
+				E4E6888F2C21B04700DB9ED8 /* Resources */,
 			);
 			path = "autogram-extension";
 			sourceTree = "<group>";
 		};
-		FE5F3DE42B2308B600CDB486 /* Resources */ = {
+		E4E6888F2C21B04700DB9ED8 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FE5F3DE52B2308B600CDB486 /* Main.html */,
-				FE5F3DE82B2308B600CDB486 /* Icon.png */,
-				FE5F3DEA2B2308B600CDB486 /* Style.css */,
-				FE5F3DEC2B2308B600CDB486 /* Script.js */,
+				E4E688902C21B04700DB9ED8 /* Main.html */,
+				E4E688932C21B04700DB9ED8 /* Icon.png */,
+				E4E688952C21B04700DB9ED8 /* Style.css */,
+				E4E688972C21B04700DB9ED8 /* Script.js */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		FE5F3E002B2308B700CDB486 /* autogram-extension Extension */ = {
+		E4E688AB2C21B04800DB9ED8 /* autogram-extension Extension */ = {
 			isa = PBXGroup;
 			children = (
-				FE5F3E0E2B2308B800CDB486 /* Resources */,
-				FE5F3E012B2308B700CDB486 /* SafariWebExtensionHandler.swift */,
-				FE5F3E032B2308B700CDB486 /* Info.plist */,
-				FE5F3E042B2308B700CDB486 /* autogram_extension_Extension.entitlements */,
+				E4E688B92C21B04800DB9ED8 /* Resources */,
+				E4E688AC2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift */,
+				E4E688AE2C21B04800DB9ED8 /* Info.plist */,
+				E4E688AF2C21B04800DB9ED8 /* autogram_extension_Extension.entitlements */,
 			);
 			path = "autogram-extension Extension";
 			sourceTree = "<group>";
 		};
-		FE5F3E0E2B2308B800CDB486 /* Resources */ = {
+		E4E688B92C21B04800DB9ED8 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FE5F3E0F2B2308B800CDB486 /* inject.bundle.js */,
-				FE5F3E102B2308B800CDB486 /* content.bundle.js.map */,
-				FE5F3E112B2308B800CDB486 /* options.bundle.js.map */,
-				FE5F3E122B2308B800CDB486 /* background.bundle.js */,
-				FE5F3E132B2308B800CDB486 /* popup.bundle.js.map */,
-				FE5F3E142B2308B800CDB486 /* redirect.bundle.js.map */,
-				FE5F3E152B2308B800CDB486 /* redirect.bundle.js */,
-				FE5F3E162B2308B800CDB486 /* static */,
-				FE5F3E172B2308B800CDB486 /* options.bundle.js */,
-				FE5F3E182B2308B800CDB486 /* manifest.json */,
-				FE5F3E192B2308B800CDB486 /* inject.bundle.js.map */,
-				FE5F3E1A2B2308B800CDB486 /* _locales */,
-				FE5F3E1B2B2308B800CDB486 /* content.bundle.js */,
-				FE5F3E1C2B2308B800CDB486 /* inject.bundle.js.LICENSE.txt */,
-				FE5F3E1D2B2308B800CDB486 /* background.bundle.js.map */,
-				FE5F3E1E2B2308B800CDB486 /* popup.bundle.js */,
+				E4E688BA2C21B04800DB9ED8 /* inject.bundle.js */,
+				E4E688BB2C21B04800DB9ED8 /* content.bundle.js.map */,
+				E4E688BC2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt */,
+				E4E688BD2C21B04800DB9ED8 /* options.bundle.js.map */,
+				E4E688BE2C21B04800DB9ED8 /* background.bundle.js */,
+				E4E688BF2C21B04800DB9ED8 /* popup.bundle.js.map */,
+				E4E688C02C21B04800DB9ED8 /* redirect.bundle.js.map */,
+				E4E688C12C21B04800DB9ED8 /* redirect.bundle.js */,
+				E4E688C22C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt */,
+				E4E688C32C21B04800DB9ED8 /* static */,
+				E4E688C42C21B04800DB9ED8 /* options.bundle.js */,
+				E4E688C52C21B04800DB9ED8 /* manifest.json */,
+				E4E688C62C21B04800DB9ED8 /* inject.bundle.js.map */,
+				E4E688C72C21B04800DB9ED8 /* _locales */,
+				E4E688C82C21B04800DB9ED8 /* content.bundle.js */,
+				E4E688C92C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt */,
+				E4E688CA2C21B04800DB9ED8 /* background.bundle.js.map */,
+				E4E688CB2C21B04800DB9ED8 /* popup.bundle.js */,
 			);
 			name = Resources;
 			path = "autogram-extension Extension";
@@ -188,32 +194,32 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		FE5F3DDE2B2308B600CDB486 /* autogram-extension */ = {
+		E4E688892C21B04700DB9ED8 /* autogram-extension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE5F3E0B2B2308B700CDB486 /* Build configuration list for PBXNativeTarget "autogram-extension" */;
+			buildConfigurationList = E4E688B62C21B04800DB9ED8 /* Build configuration list for PBXNativeTarget "autogram-extension" */;
 			buildPhases = (
-				FE5F3DDB2B2308B600CDB486 /* Sources */,
-				FE5F3DDC2B2308B600CDB486 /* Frameworks */,
-				FE5F3DDD2B2308B600CDB486 /* Resources */,
-				FE5F3E0A2B2308B700CDB486 /* Embed Foundation Extensions */,
+				E4E688862C21B04700DB9ED8 /* Sources */,
+				E4E688872C21B04700DB9ED8 /* Frameworks */,
+				E4E688882C21B04700DB9ED8 /* Resources */,
+				E4E688B52C21B04800DB9ED8 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				FE5F3DFF2B2308B700CDB486 /* PBXTargetDependency */,
+				E4E688AA2C21B04800DB9ED8 /* PBXTargetDependency */,
 			);
 			name = "autogram-extension";
 			productName = "autogram-extension";
-			productReference = FE5F3DDF2B2308B600CDB486 /* autogram-extension.app */;
+			productReference = E4E6888A2C21B04700DB9ED8 /* autogram-extension.app */;
 			productType = "com.apple.product-type.application";
 		};
-		FE5F3DFB2B2308B700CDB486 /* autogram-extension Extension */ = {
+		E4E688A62C21B04800DB9ED8 /* autogram-extension Extension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FE5F3E072B2308B700CDB486 /* Build configuration list for PBXNativeTarget "autogram-extension Extension" */;
+			buildConfigurationList = E4E688B22C21B04800DB9ED8 /* Build configuration list for PBXNativeTarget "autogram-extension Extension" */;
 			buildPhases = (
-				FE5F3DF82B2308B700CDB486 /* Sources */,
-				FE5F3DF92B2308B700CDB486 /* Frameworks */,
-				FE5F3DFA2B2308B700CDB486 /* Resources */,
+				E4E688A32C21B04800DB9ED8 /* Sources */,
+				E4E688A42C21B04800DB9ED8 /* Frameworks */,
+				E4E688A52C21B04800DB9ED8 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -221,28 +227,28 @@
 			);
 			name = "autogram-extension Extension";
 			productName = "autogram-extension Extension";
-			productReference = FE5F3DFC2B2308B700CDB486 /* autogram-extension Extension.appex */;
+			productReference = E4E688A72C21B04800DB9ED8 /* autogram-extension Extension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		FE5F3DD72B2308B600CDB486 /* Project object */ = {
+		E4E688822C21B04700DB9ED8 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
 				TargetAttributes = {
-					FE5F3DDE2B2308B600CDB486 = {
-						CreatedOnToolsVersion = 15.0;
+					E4E688892C21B04700DB9ED8 = {
+						CreatedOnToolsVersion = 15.4;
 					};
-					FE5F3DFB2B2308B700CDB486 = {
-						CreatedOnToolsVersion = 15.0;
+					E4E688A62C21B04800DB9ED8 = {
+						CreatedOnToolsVersion = 15.4;
 					};
 				};
 			};
-			buildConfigurationList = FE5F3DDA2B2308B600CDB486 /* Build configuration list for PBXProject "autogram-extension" */;
+			buildConfigurationList = E4E688852C21B04700DB9ED8 /* Build configuration list for PBXProject "autogram-extension" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -250,91 +256,93 @@
 				en,
 				Base,
 			);
-			mainGroup = FE5F3DD62B2308B600CDB486;
-			productRefGroup = FE5F3DE02B2308B600CDB486 /* Products */;
+			mainGroup = E4E688812C21B04700DB9ED8;
+			productRefGroup = E4E6888B2C21B04700DB9ED8 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FE5F3DDE2B2308B600CDB486 /* autogram-extension */,
-				FE5F3DFB2B2308B700CDB486 /* autogram-extension Extension */,
+				E4E688892C21B04700DB9ED8 /* autogram-extension */,
+				E4E688A62C21B04800DB9ED8 /* autogram-extension Extension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		FE5F3DDD2B2308B600CDB486 /* Resources */ = {
+		E4E688882C21B04700DB9ED8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE5F3DE92B2308B600CDB486 /* Icon.png in Resources */,
-				FE5F3DF22B2308B600CDB486 /* Main.storyboard in Resources */,
-				FE5F3DED2B2308B600CDB486 /* Script.js in Resources */,
-				FE5F3DE72B2308B600CDB486 /* Main.html in Resources */,
-				FE5F3DF42B2308B700CDB486 /* Assets.xcassets in Resources */,
-				FE5F3DEB2B2308B600CDB486 /* Style.css in Resources */,
+				E4E688942C21B04700DB9ED8 /* Icon.png in Resources */,
+				E4E688982C21B04700DB9ED8 /* Script.js in Resources */,
+				E4E688922C21B04700DB9ED8 /* Base in Resources */,
+				E4E688962C21B04700DB9ED8 /* Style.css in Resources */,
+				E4E6889F2C21B04800DB9ED8 /* Assets.xcassets in Resources */,
+				E4E6889D2C21B04700DB9ED8 /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FE5F3DFA2B2308B700CDB486 /* Resources */ = {
+		E4E688A52C21B04800DB9ED8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE5F3E212B2308B800CDB486 /* redirect.bundle.js in Resources */,
-				FE5F3E1F2B2308B800CDB486 /* inject.bundle.js in Resources */,
-				FE5F3E282B2308B800CDB486 /* popup.bundle.js in Resources */,
-				FE5F3E222B2308B800CDB486 /* static in Resources */,
-				FE5F3E202B2308B800CDB486 /* background.bundle.js in Resources */,
-				FE5F3E242B2308B800CDB486 /* manifest.json in Resources */,
-				FE5F3E272B2308B800CDB486 /* inject.bundle.js.LICENSE.txt in Resources */,
-				FE5F3E252B2308B800CDB486 /* _locales in Resources */,
-				FE5F3E232B2308B800CDB486 /* options.bundle.js in Resources */,
-				FE5F3E262B2308B800CDB486 /* content.bundle.js in Resources */,
+				E4E688D42C21B04800DB9ED8 /* _locales in Resources */,
+				E4E688D52C21B04800DB9ED8 /* content.bundle.js in Resources */,
+				E4E688D72C21B04800DB9ED8 /* popup.bundle.js in Resources */,
+				E4E688CD2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt in Resources */,
+				E4E688CE2C21B04800DB9ED8 /* background.bundle.js in Resources */,
+				E4E688D22C21B04800DB9ED8 /* options.bundle.js in Resources */,
+				E4E688D62C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt in Resources */,
+				E4E688CC2C21B04800DB9ED8 /* inject.bundle.js in Resources */,
+				E4E688D32C21B04800DB9ED8 /* manifest.json in Resources */,
+				E4E688D02C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt in Resources */,
+				E4E688D12C21B04800DB9ED8 /* static in Resources */,
+				E4E688CF2C21B04800DB9ED8 /* redirect.bundle.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		FE5F3DDB2B2308B600CDB486 /* Sources */ = {
+		E4E688862C21B04700DB9ED8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE5F3DEF2B2308B600CDB486 /* ViewController.swift in Sources */,
-				FE5F3DE32B2308B600CDB486 /* AppDelegate.swift in Sources */,
+				E4E6889A2C21B04700DB9ED8 /* ViewController.swift in Sources */,
+				E4E6888E2C21B04700DB9ED8 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FE5F3DF82B2308B700CDB486 /* Sources */ = {
+		E4E688A32C21B04800DB9ED8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FE5F3E022B2308B700CDB486 /* SafariWebExtensionHandler.swift in Sources */,
+				E4E688AD2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		FE5F3DFF2B2308B700CDB486 /* PBXTargetDependency */ = {
+		E4E688AA2C21B04800DB9ED8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = FE5F3DFB2B2308B700CDB486 /* autogram-extension Extension */;
-			targetProxy = FE5F3DFE2B2308B700CDB486 /* PBXContainerItemProxy */;
+			target = E4E688A62C21B04800DB9ED8 /* autogram-extension Extension */;
+			targetProxy = E4E688A92C21B04800DB9ED8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		FE5F3DE52B2308B600CDB486 /* Main.html */ = {
+		E4E688902C21B04700DB9ED8 /* Main.html */ = {
 			isa = PBXVariantGroup;
 			children = (
-				FE5F3DE62B2308B600CDB486 /* Base */,
+				E4E688912C21B04700DB9ED8 /* Base */,
 			);
 			name = Main.html;
 			sourceTree = "<group>";
 		};
-		FE5F3DF02B2308B600CDB486 /* Main.storyboard */ = {
+		E4E6889B2C21B04700DB9ED8 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				FE5F3DF12B2308B600CDB486 /* Base */,
+				E4E6889C2C21B04700DB9ED8 /* Base */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -342,7 +350,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		FE5F3E052B2308B700CDB486 /* Debug */ = {
+		E4E688B02C21B04800DB9ED8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -395,7 +403,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.6;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -405,7 +413,7 @@
 			};
 			name = Debug;
 		};
-		FE5F3E062B2308B700CDB486 /* Release */ = {
+		E4E688B12C21B04800DB9ED8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -452,7 +460,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.6;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETPLACES = "";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -460,13 +469,14 @@
 			};
 			name = Release;
 		};
-		FE5F3E082B2308B700CDB486 /* Debug */ = {
+		E4E688B32C21B04800DB9ED8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "autogram-extension Extension/autogram_extension_Extension.entitlements";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.0.2;
+				DEVELOPMENT_TEAM = 44U4JSRX4Z;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension Extension/Info.plist";
@@ -478,27 +488,27 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "digital.slovensko.autogram.autogram-extension.Extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		FE5F3E092B2308B700CDB486 /* Release */ = {
+		E4E688B42C21B04800DB9ED8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "autogram-extension Extension/autogram_extension_Extension.entitlements";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.0.2;
+				DEVELOPMENT_TEAM = 44U4JSRX4Z;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension Extension/Info.plist";
@@ -510,37 +520,36 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "digital.slovensko.autogram.autogram-extension.Extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
-		FE5F3E0C2B2308B700CDB486 /* Debug */ = {
+		E4E688B72C21B04800DB9ED8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "autogram-extension/autogram-extension.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_STYLE = Manual;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 2.0.2;
+				DEVELOPMENT_TEAM = 44U4JSRX4Z;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "autogram-extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "Autorgam na štátnych weboch";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -549,7 +558,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.5.8;
+				MARKETING_VERSION = 2.0.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -558,29 +567,28 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "digital.slovensko.autogram.autogram-extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		FE5F3E0D2B2308B700CDB486 /* Release */ = {
+		E4E688B82C21B04800DB9ED8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "autogram-extension/autogram-extension.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				CODE_SIGN_STYLE = Manual;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 2.0.2;
+				DEVELOPMENT_TEAM = 44U4JSRX4Z;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "autogram-extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "Autorgam na štátnych weboch";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -589,7 +597,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MARKETING_VERSION = 1.5.8;
+				MARKETING_VERSION = 2.0.2;
 				OTHER_LDFLAGS = (
 					"-framework",
 					SafariServices,
@@ -598,7 +606,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "digital.slovensko.autogram.autogram-extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -607,34 +614,34 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FE5F3DDA2B2308B600CDB486 /* Build configuration list for PBXProject "autogram-extension" */ = {
+		E4E688852C21B04700DB9ED8 /* Build configuration list for PBXProject "autogram-extension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FE5F3E052B2308B700CDB486 /* Debug */,
-				FE5F3E062B2308B700CDB486 /* Release */,
+				E4E688B02C21B04800DB9ED8 /* Debug */,
+				E4E688B12C21B04800DB9ED8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE5F3E072B2308B700CDB486 /* Build configuration list for PBXNativeTarget "autogram-extension Extension" */ = {
+		E4E688B22C21B04800DB9ED8 /* Build configuration list for PBXNativeTarget "autogram-extension Extension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FE5F3E082B2308B700CDB486 /* Debug */,
-				FE5F3E092B2308B700CDB486 /* Release */,
+				E4E688B32C21B04800DB9ED8 /* Debug */,
+				E4E688B42C21B04800DB9ED8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FE5F3E0B2B2308B700CDB486 /* Build configuration list for PBXNativeTarget "autogram-extension" */ = {
+		E4E688B62C21B04800DB9ED8 /* Build configuration list for PBXNativeTarget "autogram-extension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				FE5F3E0C2B2308B700CDB486 /* Debug */,
-				FE5F3E0D2B2308B700CDB486 /* Release */,
+				E4E688B72C21B04800DB9ED8 /* Debug */,
+				E4E688B82C21B04800DB9ED8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = FE5F3DD72B2308B600CDB486 /* Project object */;
+	rootObject = E4E688822C21B04700DB9ED8 /* Project object */;
 }
