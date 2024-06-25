@@ -13,6 +13,7 @@ export class XadesPdfStrategy implements ObjectStrategy {
   transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
+  includeRefs: boolean;
 
   get document(): AutogramDocument {
     return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };

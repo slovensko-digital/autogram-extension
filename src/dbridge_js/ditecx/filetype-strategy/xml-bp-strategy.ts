@@ -49,6 +49,9 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
   get transformationTargetEnvironment() {
     return this.obj.xslTargetEnvironment;
   }
+  get includeRefs() {
+    return this.obj.xdcIncludeRefs;
+  }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "application/xml";
   }
@@ -64,6 +67,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
   transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
+  includeRefs: boolean;
 
   isXmlDataContainer() {
     return true;

@@ -94,6 +94,7 @@ export class SignRequest {
       transformationTargetEnvironment: getNullIfEmpty(
         this.objectInfo.transformationTargetEnvironment
       ),
+      embedUsedSchemas: !this.objectInfo.includeRefs,
     };
   }
 

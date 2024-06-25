@@ -12,6 +12,7 @@ export interface ObjectStrategy {
   transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
+  includeRefs: boolean;
   /**
    * Type of payload for Autogram (Autogram input)
    */
@@ -52,6 +53,9 @@ class EmptyStrategy implements ObjectStrategy {
   }
   get transformationTargetEnvironment() {
     return "";
+  }
+  get includeRefs() {
+    return true;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";

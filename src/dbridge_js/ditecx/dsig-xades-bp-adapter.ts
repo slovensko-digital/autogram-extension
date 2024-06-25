@@ -157,4 +157,13 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       callback
     );
   }
+
+  setWindowSize(
+    width,
+    height,
+    callback
+  ) {
+    this.stub("setWindowSize", arguments);
+    callback.onSuccess();
+  }
 }
