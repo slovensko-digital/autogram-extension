@@ -1,3 +1,18 @@
+# v2.0.3 (Thu Jun 27 2024)
+
+#### 🐛 Bug Fix
+
+- Add orsr portal and support schemas embedding [#94](https://github.com/slovensko-digital/autogram-extension/pull/94) ([@celuchmarek](https://github.com/celuchmarek) [@pomali](https://github.com/pomali))
+- Update Safari release [#90](https://github.com/slovensko-digital/autogram-extension/pull/90) ([@celuchmarek](https://github.com/celuchmarek))
+- fix: safari version (polyfill failing) ([@pomali](https://github.com/pomali))
+
+#### Authors: 2
+
+- [@pomali](https://github.com/pomali)
+- Marek Ceľuch ([@celuchmarek](https://github.com/celuchmarek))
+
+---
+
 # v2.0.2 (Mon Jun 17 2024)
 
 #### 🐛 Bug Fix
