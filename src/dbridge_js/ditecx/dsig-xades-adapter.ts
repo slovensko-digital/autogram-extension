@@ -162,6 +162,7 @@ export class DSigXadesAdapter extends DSigAdapter {
   }
   setWindowSize(width, height, callback) {
     this.stub("", arguments);
+    callback.onSuccess();
   }
   setCertificateFilter(filterID, callback) {
     this.stub("", arguments);
