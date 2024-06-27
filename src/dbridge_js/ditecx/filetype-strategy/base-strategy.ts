@@ -13,6 +13,10 @@ export interface ObjectStrategy {
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   /**
+   * If references to XSD and XSLT should be used instead of embedding inside XDC
+   */
+  includeRefs: boolean;
+  /**
    * Type of payload for Autogram (Autogram input)
    */
   payloadMimeType: `${string}/${string}${";base64" | ""}`;
@@ -52,6 +56,9 @@ class EmptyStrategy implements ObjectStrategy {
   }
   get transformationTargetEnvironment() {
     return "";
+  }
+  get includeRefs() {
+    return true;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     return "*/*";

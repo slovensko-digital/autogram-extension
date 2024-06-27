@@ -16,6 +16,7 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
   transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
+  includeRefs: boolean;
 
   get document(): AutogramDocument {
     return {
