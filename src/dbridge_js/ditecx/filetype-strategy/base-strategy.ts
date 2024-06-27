@@ -12,6 +12,9 @@ export interface ObjectStrategy {
   transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
+  /**
+   * If references to XSD and XSLT should be used instead of embedding inside XDC
+   */
   includeRefs: boolean;
   /**
    * Type of payload for Autogram (Autogram input)
