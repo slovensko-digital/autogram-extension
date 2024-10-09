@@ -1,5 +1,5 @@
 import { ManifestPluginOptions as WMPOptions } from "webpack-manifest-plugin";
-import { enabledUrls } from "../src/constants";
+import { enabledUrls } from "../src/supported-sites";
 import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
 import { FileDescriptor } from "webpack-manifest-plugin/dist/helpers";
@@ -62,6 +62,7 @@ function generateManifest(
             matches: enabledUrls,
             js: entries.content,
             all_frames: true,
+            run_at: "document_start"
           },
         ],
         background: {

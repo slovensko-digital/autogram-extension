@@ -86,6 +86,12 @@ function getSpyHandler(prefix?: string, depth?: number) {
       logger.push({ type: "apply", name, target, thisArg, argumentList });
       return Reflect.apply(target, thisArg, argumentList);
     },
+
+    set(target: object, prop: PropertyKey, value: unknown, receiver?: unknown) {
+      const name = `${prefix}.${prop.toString()}`;
+      logger.push({ type: "set", name, target, prop, value, receiver });
+      return false;
+    },
   };
   return spyHandler;
 }
