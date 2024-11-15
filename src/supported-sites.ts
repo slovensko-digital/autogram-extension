@@ -1,13 +1,32 @@
 export const extensionId = "kbiiffakfklnmcideniiecbgkoocemif";
 
+/**
+ * Inject the script as soon as possible
+ */
 export const DIRECT_INJECTION = "direct" as const;
+
+/**
+ *  Inject the script when the document is loaded
+ */
 export const ON_DOCUMENT_LOAD_INJECTION = "on-document-load" as const;
 export type InjectionStrategy =
   | typeof DIRECT_INJECTION
   | typeof ON_DOCUMENT_LOAD_INJECTION;
 
+/**
+ * Replace `ditec` object with the injected one. This is done just once, at the injection time.
+ */
 export const CONFLICT_RESOLUTION_REPLACE_ORIGINAL = "replace-original" as const;
+/**
+ * Replace `ditec` object with a proxy object wrapping our injected version that will be used instead of the original object,
+ * this proxy is immutable, every `set()` operation will be ignored.
+ */
 export const CONFLICT_RESOLUTION_IMMUTABLE_PROXY = "immutable-proxy" as const;
+
+/**
+ * Replace `ditec` object with a proxy object of original object that will be used instead of the original object, this proxy is mutable,
+ * every `set()` operation will be ignored.
+ */
 export const CONFLICT_RESOLUTION_PROXY_ORIGINAL = "proxy-original" as const;
 export type ConflictResolutionStrategy =
   | typeof CONFLICT_RESOLUTION_REPLACE_ORIGINAL
@@ -65,6 +84,7 @@ class SupportedSites {
 }
 
 export const supportedSites = new SupportedSites();
+
 const basicUrls = [
   "https://www.slovensko.sk/*",
   "https://schranka.slovensko.sk/*",
@@ -76,6 +96,20 @@ const basicUrls = [
   "https://sluzby.orsr.sk/*",
 ];
 
+for (const url of basicUrls) {
+  supportedSites.addSite(
+    url,
+    ON_DOCUMENT_LOAD_INJECTION,
+    CONFLICT_RESOLUTION_REPLACE_ORIGINAL
+  );
+}
+
+supportedSites.addSite(
+  "https://obcan.justice.sk/*",
+  DIRECT_INJECTION,
+  CONFLICT_RESOLUTION_IMMUTABLE_PROXY
+);
+
 const debugUrls =
   process.env.NODE_ENV !== "production"
     ? [
@@ -86,19 +120,6 @@ const debugUrls =
         "http://127.0.0.1:49675/*",
       ]
     : [];
-
-for (const url of basicUrls) {
-  supportedSites.addSite(
-    url,
-    ON_DOCUMENT_LOAD_INJECTION,
-    CONFLICT_RESOLUTION_REPLACE_ORIGINAL
-  );
-}
-supportedSites.addSite(
-  "https://obcan.justice.sk/*",
-  DIRECT_INJECTION,
-  CONFLICT_RESOLUTION_IMMUTABLE_PROXY
-);
 
 for (const url of debugUrls) {
   supportedSites.addSite(

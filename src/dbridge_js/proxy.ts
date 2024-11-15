@@ -24,7 +24,7 @@ const logger = {
   },
 };
 
-function getSpyHandler(prefix?: string, depth?: number) {
+function getSpyHandler(prefix?: string, depth?: number, mutable?: boolean) {
   const spyHandler = {
     get(target: object, prop: PropertyKey, receiver?: unknown) {
       //   log.push({ target, prefix, prop, receiver });
@@ -55,7 +55,7 @@ function getSpyHandler(prefix?: string, depth?: number) {
         depth < 3 &&
         !ignoredProps.includes(prop) &&
         (typeof reflection == "function" || typeof reflection == "object")
-        ? wrapWithProxy(reflection, name, depth + 1)
+        ? wrapWithProxy(reflection, name, depth + 1, mutable)
         : reflection;
     },
 
@@ -88,6 +88,9 @@ function getSpyHandler(prefix?: string, depth?: number) {
     },
 
     set(target: object, prop: PropertyKey, value: unknown, receiver?: unknown) {
+      if (mutable) {
+        return Reflect.set(target, prop, value, receiver);
+      }
       const name = `${prefix}.${prop.toString()}`;
       logger.push({ type: "set", name, target, prop, value, receiver });
       return false;
@@ -99,13 +102,14 @@ function getSpyHandler(prefix?: string, depth?: number) {
 export function wrapWithProxy<T extends object>(
   target: T,
   prefix = "root",
-  depth = 0
+  depth = 0,
+  mutable = false
 ): T & { __proxy_log: typeof log } {
   if (typeof target !== "object" && typeof target !== "function") {
     // console.log("skipping", typeof target, target);
     return target;
   }
-  return new Proxy(target, getSpyHandler(prefix, depth)) as T & {
+  return new Proxy(target, getSpyHandler(prefix, depth, mutable)) as T & {
     __proxy_log: typeof log;
   };
 }
