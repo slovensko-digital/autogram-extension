@@ -1,4 +1,5 @@
-import { InputObject, PartialSignerParameters } from "./sign-request";
+import { DesktopSignatureParameters } from "autogram-sdk";
+import { InputObject } from "./types";
 
 export interface ImplementationInterface {
   launch(callback: OnSuccessCallback): Promise<void>;
@@ -11,7 +12,7 @@ export interface ImplementationInterface {
   ): Promise<void>;
   addObject(obj: InputObject, callback: OnSuccessCallback): void;
   getSignature(
-    parameters: PartialSignerParameters,
+    parameters: Partial<DesktopSignatureParameters>,
     callback: OnSuccessCallback1,
     decodeBase64?: boolean
   ): Promise<void>;
