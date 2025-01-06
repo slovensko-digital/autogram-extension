@@ -1,8 +1,8 @@
 import {
   DesktopSignatureParameters,
   DesktopSignResponseBody,
-  FullClient,
 } from "autogram-sdk";
+import { FullClient } from "autogram-sdk/ui";
 import { TODO } from "../../util";
 import { SigningStatus, SignRequest } from "../ditecx/sign-request";
 
@@ -90,6 +90,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
         this.signRequest.payloadMimeType,
         decodeBase64
       );
+      this.signedObject = response.content;
       this.signRequest.signingStatus = SigningStatus.signed;
       callback.onSuccess(response.content);
     } catch (e) {

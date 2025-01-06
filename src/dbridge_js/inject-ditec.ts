@@ -10,7 +10,7 @@ declare global {
 const useProxy = false;
 const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: { ditec?: OriginalDitec }): void {
-  console.log("Start inject", { 
+  console.log("Start inject", {
     manifestVersion: __MANIFEST_VERSION__,
     commitHash: __COMMIT_HASH__,
   });
