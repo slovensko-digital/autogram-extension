@@ -4,8 +4,8 @@
     "outDir": "./dist/",
     "moduleResolution": "node",
     // "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true, // because of webpack config
+    "esModuleInterop": true, // because of webpack config
     "sourceMap": true,
     "strictNullChecks": true,
     "module": "CommonJS",

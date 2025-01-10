@@ -2,7 +2,7 @@ import {
   DesktopSignatureParameters,
   DesktopSignResponseBody,
 } from "autogram-sdk";
-import { FullClient } from "autogram-sdk/ui";
+import { CombinedClient } from "autogram-sdk/with-ui";
 import { TODO } from "../../util";
 import { SigningStatus, SignRequest } from "../ditecx/sign-request";
 
@@ -25,10 +25,10 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   private language = "sk";
   private signedObject: DesktopSignResponseBody;
 
-  private client: FullClient;
+  private client: CombinedClient;
 
   public constructor() {
-    this.client = new FullClient(new AvmChannelWeb(), () => {
+    this.client = new CombinedClient(new AvmChannelWeb(), () => {
       this.signRequest = new SignRequest();
     });
   }
@@ -90,7 +90,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
         this.signRequest.payloadMimeType,
         decodeBase64
       );
-      this.signedObject = response.content;
+      this.signedObject = response;
       this.signRequest.signingStatus = SigningStatus.signed;
       callback.onSuccess(response.content);
     } catch (e) {

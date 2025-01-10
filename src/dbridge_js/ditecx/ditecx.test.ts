@@ -3,9 +3,6 @@ jest.mock("../../injected-ui");
 jest.mock("../../client");
 
 import { ditecX } from "./ditecx";
-// import { AutogramRoot, createUI, SigningMethod } from "../../injected-ui";
-// import { apiClient } from "../../client";
-// import { AvmChannelWeb } from "../autogram/avm-channel";
 
 /**
  * @jest-environment jsdom
