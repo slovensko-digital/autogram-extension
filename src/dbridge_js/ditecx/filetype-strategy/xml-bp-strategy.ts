@@ -32,7 +32,10 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get identifier() {
-    return this.obj.xdcIdentifier;
+    if (this.obj.xdcIdentifier.includes("/"))
+      return this.obj.xdcIdentifier;
+
+    return this.obj.xdcIdentifier + "/" + this.obj.xdcVersion;
   }
   get schemaIdentifier() {
     return this.obj.xsdReferenceURI;
