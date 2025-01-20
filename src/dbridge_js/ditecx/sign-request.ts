@@ -1,4 +1,4 @@
-import { SignatureParameters } from "../../autogram-api";
+import { DesktopSignatureParameters } from "autogram-sdk";
 import {
   ObjectStrategy,
   XadesBpPngStrategy,
@@ -8,8 +8,7 @@ import {
   XadesXmlStrategy,
   XadesBp2XmlStrategy,
 } from "./filetype-strategy";
-import { InputObject, PartialSignerParameters } from "./types";
-export { InputObject, PartialSignerParameters } from "./types";
+import { InputObject } from "./types";
 
 export const SigningStatus = {
   new: "new",
@@ -39,8 +38,8 @@ export class SignRequest {
   }
 
   public signatureParameters(
-    params: PartialSignerParameters
-  ): SignatureParameters {
+    params: Partial<DesktopSignatureParameters>
+  ): DesktopSignatureParameters {
     // const containerXmlns = getProperty(
     //   params,
     //   "containerXmlns",

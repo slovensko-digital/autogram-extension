@@ -27,7 +27,7 @@ isExtensionEnabled().then((enabled) => {
 });
 
 function insertInjectScript(doc: Document) {
-  const url = browser.runtime.getURL("inject.bundle.js");
+  const url = browser.runtime.getURL("autogram-inject.bundle.js");
   console.log(url);
 
   const script = document.createElement("script");

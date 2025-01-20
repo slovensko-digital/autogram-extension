@@ -6,8 +6,9 @@ const config: webpack.Configuration = merge(common, {
   mode: "production",
   devtool: "source-map",
   output: {
-    filename: "[name].bundle.js",
+    filename: "autogram-[name].bundle.js",
     clean: true,
+    publicPath: "",
   },
 });
 

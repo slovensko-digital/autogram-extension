@@ -40,25 +40,26 @@ const config: webpack.Configuration = {
     // },
   },
   output: {
-    filename: "[name].[contenthash].js",
+    filename: "autogram-[name].[contenthash].js",
     path: path.resolve(__dirname, "../dist"),
+    publicPath: "",
   },
   module: {
     rules: [
-      {
-        test: /\.module\.css$/i,
-        use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: {
-              importLoaders: 1,
-              modules: true,
-              exportType: "array",
-            },
-          },
-        ],
-      },
+      // {
+      //   test: /\.module\.css$/i,
+      //   use: [
+      //     "style-loader",
+      //     {
+      //       loader: "css-loader",
+      //       options: {
+      //         importLoaders: 1,
+      //         modules: true,
+      //         exportType: "array",
+      //       },
+      //     },
+      //   ],
+      // },
       {
         test: /\.css$/i,
         use: ["raw-loader"],
@@ -105,8 +106,8 @@ const config: webpack.Configuration = {
     // }),
 
     new webpack.DefinePlugin({
-      '__COMMIT_HASH__': JSON.stringify(commitHash),
-      '__MANIFEST_VERSION__': JSON.stringify(manifestVersion),
+      __COMMIT_HASH__: JSON.stringify(commitHash),
+      __MANIFEST_VERSION__: JSON.stringify(manifestVersion),
     }),
     new CopyPlugin({
       patterns: [

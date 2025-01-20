@@ -1,10 +1,10 @@
-import {
-  ObjectStrategy,
-  PayloadMimeTypeStr,
-} from "./base-strategy";
-import { AutogramDocument } from "../../../client";
+import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
+
 import { ObjectXadesBpPng } from "../types";
-import { SignatureParameters } from "../../../autogram-api";
+import {
+  DesktopAutogramDocument,
+  DesktopSignatureParameters,
+} from "autogram-sdk";
 
 export class XadesBpPngStrategy implements ObjectStrategy {
   obj: ObjectXadesBpPng;
@@ -13,12 +13,12 @@ export class XadesBpPngStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
 
-  get document(): AutogramDocument {
+  get document(): DesktopAutogramDocument {
     return {
       content: this.obj.sourcePngBase64,
       filename: this.obj.objectId,

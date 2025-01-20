@@ -1,4 +1,3 @@
-import { SignatureParameters } from "../../autogram-api";
 
 export interface ObjectXadesXml {
   type: "XadesXml";
@@ -97,5 +96,3 @@ export type InputObject =
   | ObjectXadesPdf
   | ObjectXadesBp2Xml;
 
-
-export type PartialSignerParameters = Partial<SignatureParameters>;

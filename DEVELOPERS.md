@@ -1,4 +1,4 @@
-#  How to develop
+# How to develop
 
 We are using auto-it for releases so use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) commit message convention.
 
@@ -91,7 +91,7 @@ reason to do that.
 
 ### Safari
 
-Safari needs xcode project and associated app. We generate such app using 
+Safari needs xcode project and associated app. We generate such app using
 
 ```
 npm run xcode-generate-safari-web-extension
@@ -137,8 +137,6 @@ API dbridge_js funguje nasledovne:
 ## Štruktúra codebase
 
 - `src` samotná aplikácia
-  - `autogram-api` - klientska kniznica pre komunikaciu s Autogramom (Desktop)
-  - `avm-api` - klientska kniznica pre komunikaciu s Autogram v Mobile (AVM)
   - `dbridge_js` - "hlavná časť"
     - `inject-ditec.ts` - samotne vkladanie objektu
     - `proxy.ts` - debugovacie interceptovanie/nahravanie pri pouzivani (WIP) (napr. na vyrabanie testov)
@@ -152,10 +150,13 @@ API dbridge_js funguje nasledovne:
     - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
     - `popup.ts` - správanie popup-u
     - ...
-  - `injected-ui` - UI komponenty vkladané do stránky
   - `img` - zdrojové obrázky na distribuciu (do store-u)
   - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
   - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
 - `example-usage` - sample aplikacia pouzivajuca dbrige_js (dsigner), kde sa da vyskusat funkcionalita extension-u
 - `scripts` - pomocné skripty
 - `webpack` - konfigurácie webpacku pre rôzne prostredia
+
+## Autogram SDK
+
+Hlavná časť spojenia s Autogramom je v implementovaná cez [Autogram SDK](https://github.com/slovensko-digital/autogram-sdk) ktoré obsahuje aj UI na rozhodovanie sa medzi desktopovým a mobilným podpoisovačom.

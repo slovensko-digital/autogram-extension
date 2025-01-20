@@ -1,10 +1,10 @@
 import {
   AutogramVMobileIntegrationInterfaceStateful,
-  DocumentToSign,
-  GetDocumentsResponse,
-  SignedDocument,
+  AVMDocumentToSign,
+  AVMGetDocumentsResponse,
+  AVMSignedDocument,
   randomUUID,
-} from "../../avm-api/lib/apiClient";
+} from "autogram-sdk";
 import { z } from "zod";
 
 /**
@@ -34,7 +34,7 @@ export class AvmChannelWeb
     const response = ZGetQrCodeUrlResponse.parse(obj);
     return response;
   }
-  async addDocument(documentToSign: DocumentToSign): Promise<void> {
+  async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
     await this.channel.sendMessage({
       method: "addDocument",
       args: { documentToSign },
@@ -42,7 +42,7 @@ export class AvmChannelWeb
   }
   async waitForSignature(
     abortController?: AbortController
-  ): Promise<SignedDocument> {
+  ): Promise<AVMSignedDocument> {
     /* transform abortController signal to message because abort handler can't cross execution contexts */
     const abortHandler = () => {
       this.channel.sendMessage({
@@ -246,7 +246,7 @@ const ZChannelResponse = z.object({
 const ZGetQrCodeUrlResponse = z.string();
 export type GetQrCodeUrlResponse = z.infer<typeof ZGetQrCodeUrlResponse>;
 
-const ZWaitForSignatureResponse = GetDocumentsResponse;
+const ZWaitForSignatureResponse = AVMGetDocumentsResponse;
 export type WaitForSignatureResponse = z.infer<
   typeof ZWaitForSignatureResponse
 >;

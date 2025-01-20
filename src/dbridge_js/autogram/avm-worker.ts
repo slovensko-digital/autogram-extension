@@ -1,9 +1,9 @@
 import { z } from "zod";
 import {
   AutogramVMobileIntegration,
-  AvmIntegrationDocument,
-  DocumentToSign,
-} from "../../avm-api/lib/apiClient";
+  AVMIntegrationDocument,
+  AVMDocumentToSign,
+} from "autogram-sdk";
 import { ZChannelMessage } from "./avm-channel";
 import { get, set } from "idb-keyval";
 import browser from "webextension-polyfill";
@@ -13,7 +13,7 @@ export class AvmWorker {
     get,
     set,
   });
-  private documentRefs = new Map<SenderId, AvmIntegrationDocument>();
+  private documentRefs = new Map<SenderId, AVMIntegrationDocument>();
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
@@ -38,7 +38,12 @@ export class AvmWorker {
               id: data.id,
               result: result ?? null,
             };
-            console.log("background response", response, JSON.stringify(response), typeof response?.result);
+            console.log(
+              "background response",
+              response,
+              JSON.stringify(response),
+              typeof response?.result
+            );
             port.postMessage(response);
           },
           (error: Error) => {
@@ -98,7 +103,7 @@ export class AvmWorker {
     addDocument: async (args: unknown, senderId: SenderId): Promise<void> => {
       const { documentToSign } = ZAddDocumentArgs.parse(args);
       const documentRef = await this.apiClient.addDocument(
-        documentToSign as unknown as DocumentToSign
+        documentToSign as unknown as AVMDocumentToSign
       );
       this.documentRefs.set(senderId, documentRef);
     },
