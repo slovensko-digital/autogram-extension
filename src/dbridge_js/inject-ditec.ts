@@ -13,8 +13,6 @@ declare global {
   const __COMMIT_HASH__: string;
 }
 
-const useProxy = false;
-const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: {
   ditec?: OriginalDitec;
   location: Location;
@@ -67,11 +65,9 @@ class ProxyConflictResolver extends ConflictResolver {
 class ProxyOriginalRecorderConflictResolver extends ConflictResolver {
   public key = CONFLICT_RESOLUTION_PROXY_ORIGINAL;
   inject(windowAny) {
-    Promise.all([import("./proxy"), constructDitecX()]).then(
-      ([{ wrapWithProxy }, ditecX]) => {
-        windowAny.ditec = wrapWithProxy(windowAny.ditec);
-      }
-    );
+    import("./proxy").then(({ wrapWithProxy }) => {
+      windowAny.ditec = wrapWithProxy(windowAny.ditec);
+    });
   }
 }
 

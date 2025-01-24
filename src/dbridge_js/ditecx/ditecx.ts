@@ -36,7 +36,7 @@ export type DitecX = {
     isDitecError: (error: unknown) => boolean;
     extendClass: (...args: unknown[]) => void;
   };
-  versions: {};
+  versions: object;
   dSigXadesJs: DSigXadesAdapter;
   dSigXadesBpJs: DSigXadesBpAdapter;
   DViewerDotNet: DummyClass;
