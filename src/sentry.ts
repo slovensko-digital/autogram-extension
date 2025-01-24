@@ -18,7 +18,7 @@ if (!__IS_PRODUCTION__) {
     }
   );
   const client = new BrowserClient({
-    dsn: "http://91eed826091a4c3692c16ef7bf5b135a@localhost:8099/1",
+    dsn: "http://beb82325ecae457fa78123c980468417@localhost:8099/1",
     release: "autogram-extension@" + __COMMIT_HASH__,
     transport: makeFetchTransport,
     stackParser: defaultStackParser,
