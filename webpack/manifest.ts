@@ -62,7 +62,7 @@ function generateManifest(
             matches: enabledUrls,
             js: entries.content,
             all_frames: true,
-            run_at: "document_start"
+            run_at: "document_start",
           },
         ],
         background: {
@@ -82,8 +82,12 @@ function generateManifest(
         web_accessible_resources: [
           {
             resources: [
-              ...entries.inject.map((x) => [x, x + ".map"]).flat(),
-              ...entries.content.map((x) => [x, x + ".map"]).flat(),
+              // ...entries.inject.map((x) => [x, x + ".map"]).flat(),
+              // ...entries.content.map((x) => [x, x + ".map"]).flat(),
+
+              ...Object.keys(entries)
+                .map((key) => entries[key].map((x) => [x, x + ".map"]).flat())
+                .flat(),
               "static/logo.png",
             ],
             matches: enabledUrls,

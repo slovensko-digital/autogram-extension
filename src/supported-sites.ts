@@ -9,9 +9,19 @@ export const DIRECT_INJECTION = "direct" as const;
  *  Inject the script when the document is loaded
  */
 export const ON_DOCUMENT_LOAD_INJECTION = "on-document-load" as const;
+// /**
+//  * Inject the script based on MutationObserver
+//  */
+// export const MUTATION_OBSERVER_INJECTION = "mutation-observer" as const;
+/**
+ * Periodically check if the dsigner is initialized, then inject the script
+ */
+export const INTERVAL_INJECTION = "interval" as const;
 export type InjectionStrategy =
   | typeof DIRECT_INJECTION
-  | typeof ON_DOCUMENT_LOAD_INJECTION;
+  | typeof ON_DOCUMENT_LOAD_INJECTION
+  // | typeof MUTATION_OBSERVER_INJECTION
+  | typeof INTERVAL_INJECTION;
 
 /**
  * Replace `ditec` object with the injected one. This is done just once, at the injection time.
@@ -62,7 +72,9 @@ class SupportedSites {
   constructor() {}
 
   matchUrl(url: string): Site {
+    console.log("matchUrl", url);
     const site = this.sites.find((site) => site.matchUrl(url));
+    console.log("site", site);
     if (site) {
       return site;
     }
@@ -110,6 +122,18 @@ supportedSites.addSite(
   CONFLICT_RESOLUTION_IMMUTABLE_PROXY
 );
 
+[
+  "https://city-account-next.dev.bratislava.sk/*",
+  "https://city-account-next.staging.bratislava.sk/*",
+  "https://konto.bratislava.sk/*",
+].forEach((url) => {
+  supportedSites.addSite(
+    url,
+    INTERVAL_INJECTION,
+    CONFLICT_RESOLUTION_REPLACE_ORIGINAL
+  );
+});
+
 const debugUrls =
   process.env.NODE_ENV !== "production"
     ? [
@@ -124,7 +148,12 @@ const debugUrls =
 for (const url of debugUrls) {
   supportedSites.addSite(
     url,
-    ON_DOCUMENT_LOAD_INJECTION,
+
+    /* injection type */
+    INTERVAL_INJECTION,
+    // ON_DOCUMENT_LOAD_INJECTION,
+
+    /* conflict resolution */
     CONFLICT_RESOLUTION_REPLACE_ORIGINAL
   );
 }

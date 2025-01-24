@@ -24,35 +24,36 @@ export function inject(windowAny: {
   console.log("original ditec", windowAny.ditec);
 
   const site = supportedSites.matchUrl(windowAny.location.href);
+  debugger; // eslint-disable-line no-debugger
 
-  let injector: ConflictResolver | null = null;
-  for (const InjectorClass of [
+  let conflictResolver: ConflictResolver | null = null;
+  for (const ConflictResolverClass of [
     ProxyConflictResolver,
     ReplaceOriginalConflictResolver,
     ProxyOriginalRecorderConflictResolver,
   ]) {
-    if (site.conflictResolution === InjectorClass.prototype.key) {
-      injector = new InjectorClass();
+    if (site.conflictResolution === ConflictResolverClass.key) {
+      conflictResolver = new ConflictResolverClass();
       break;
     }
   }
-  if (!injector) {
+  if (!conflictResolver) {
     throw new Error(
       `Unsupported conflict resolution strategy ${site.conflictResolution}`
     );
   }
-  injector.inject(windowAny);
+  conflictResolver.inject(windowAny);
 
   console.log("End inject", windowAny.ditec);
 }
 
 abstract class ConflictResolver {
-  public abstract key: string;
+  public static readonly key: string;
   abstract inject(windowAny: { [key: string]: unknown }): void;
 }
 
 class ProxyConflictResolver extends ConflictResolver {
-  public key = CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
+  public static readonly key = CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
   inject(windowAny) {
     Promise.all([import("./proxy"), constructDitecX()]).then(
       ([{ wrapWithProxy }, ditecX]) => {
@@ -63,7 +64,7 @@ class ProxyConflictResolver extends ConflictResolver {
 }
 
 class ProxyOriginalRecorderConflictResolver extends ConflictResolver {
-  public key = CONFLICT_RESOLUTION_PROXY_ORIGINAL;
+  public static readonly key = CONFLICT_RESOLUTION_PROXY_ORIGINAL;
   inject(windowAny) {
     import("./proxy").then(({ wrapWithProxy }) => {
       windowAny.ditec = wrapWithProxy(windowAny.ditec);
@@ -72,12 +73,14 @@ class ProxyOriginalRecorderConflictResolver extends ConflictResolver {
 }
 
 class ReplaceOriginalConflictResolver extends ConflictResolver {
-  public key = CONFLICT_RESOLUTION_REPLACE_ORIGINAL;
+  public static readonly key = CONFLICT_RESOLUTION_REPLACE_ORIGINAL;
   inject(windowAny) {
     if (windowAny.ditec) {
       constructDitecX().then((ditecX) => {
         windowAny.ditec = ditecX;
       });
+    } else {
+      throw new Error("Original ditec object is not available");
     }
   }
 }

@@ -1,5 +1,5 @@
 import { inject } from "../dbridge_js/inject-ditec";
-import { scope } from "../sentry";
+import { captureException } from "../sentry";
 try {
   console.log("Sentry loaded");
 
@@ -16,5 +16,5 @@ try {
   // eslint-disable-next-line no-debugger
   // debugger;
 } catch (e) {
-  scope.captureException(e);
+  captureException(e);
 }

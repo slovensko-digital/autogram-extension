@@ -148,6 +148,7 @@ API dbridge_js funguje nasledovne:
   - `entrypoint` - vstupné skripty pre rôzne kontexty v ktorých beží extension
     - `content.ts` - časť spúšťajúca sa nad stránkou, vkladá `inject.ts`
     - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
+    - `inject-interval-detect-ditec.ts` - jednorázový skript, ktorý detekuje či bol injectnutý `ditec` objekt
     - `popup.ts` - správanie popup-u
     - ...
   - `img` - zdrojové obrázky na distribuciu (do store-u)

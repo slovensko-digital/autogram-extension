@@ -1,6 +1,6 @@
 import { AvmWorker } from "../dbridge_js/autogram/avm-worker";
 import browser from "webextension-polyfill";
-import { scope } from "../sentry";
+import { captureException } from "../sentry";
 try {
   console.log("background");
 
@@ -37,5 +37,5 @@ try {
   const avmWorker = new AvmWorker();
   avmWorker.initListener();
 } catch (e) {
-  scope.captureException(e);
+  captureException(e);
 }
