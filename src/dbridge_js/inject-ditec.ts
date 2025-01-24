@@ -1,4 +1,4 @@
-import { ditecX } from "./ditecx/ditecx";
+import { constructDitecX } from "./ditecx/ditecx";
 import {
   CONFLICT_RESOLUTION_IMMUTABLE_PROXY,
   CONFLICT_RESOLUTION_PROXY_ORIGINAL,
@@ -13,6 +13,8 @@ declare global {
   const __COMMIT_HASH__: string;
 }
 
+const useProxy = false;
+const useProxyWithOriginal = useProxy && false;
 export function inject(windowAny: {
   ditec?: OriginalDitec;
   location: Location;
@@ -54,18 +56,22 @@ abstract class ConflictResolver {
 class ProxyConflictResolver extends ConflictResolver {
   public key = CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
   inject(windowAny) {
-    import("./proxy").then(({ wrapWithProxy }) => {
-      windowAny.ditec = wrapWithProxy(ditecX);
-    });
+    Promise.all([import("./proxy"), constructDitecX()]).then(
+      ([{ wrapWithProxy }, ditecX]) => {
+        windowAny.ditec = wrapWithProxy(ditecX);
+      }
+    );
   }
 }
 
 class ProxyOriginalRecorderConflictResolver extends ConflictResolver {
   public key = CONFLICT_RESOLUTION_PROXY_ORIGINAL;
   inject(windowAny) {
-    import("./proxy").then(({ wrapWithProxy }) => {
-      windowAny.ditec = wrapWithProxy(windowAny.ditec);
-    });
+    Promise.all([import("./proxy"), constructDitecX()]).then(
+      ([{ wrapWithProxy }, ditecX]) => {
+        windowAny.ditec = wrapWithProxy(windowAny.ditec);
+      }
+    );
   }
 }
 
@@ -73,7 +79,9 @@ class ReplaceOriginalConflictResolver extends ConflictResolver {
   public key = CONFLICT_RESOLUTION_REPLACE_ORIGINAL;
   inject(windowAny) {
     if (windowAny.ditec) {
-      windowAny.ditec = ditecX;
+      constructDitecX().then((ditecX) => {
+        windowAny.ditec = ditecX;
+      });
     }
   }
 }

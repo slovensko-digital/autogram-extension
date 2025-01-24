@@ -1,12 +1,18 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
-import { version } from "../../package.json";
+import packageJson from "../../package.json";
 import { ContentChannelPassthrough } from "../dbridge_js/autogram/avm-channel";
 import {
   supportedSites,
   ON_DOCUMENT_LOAD_INJECTION,
   DIRECT_INJECTION,
 } from "../supported-sites";
+
+const { version } = packageJson;
+
+import { handleError } from "../sentry";
+
+console.log("Sentry loaded");
 
 console.log("content");
 
@@ -29,7 +35,7 @@ isExtensionEnabled().then((enabled) => {
       console.log("workdeskIframe not found");
     }
   }
-});
+}, handleError);
 
 function insertInjectScript(doc: Document) {
   const site = supportedSites.matchUrl(doc.location.href);
@@ -67,7 +73,7 @@ class BaseInjector {
   }
 
   createScript() {
-    const url = browser.runtime.getURL("inject.bundle.js");
+    const url = browser.runtime.getURL("autogram-inject.bundle.js");
     console.log(url);
 
     const script = document.createElement("script");
@@ -92,7 +98,7 @@ class OnDocumentLoadInjector extends BaseInjector {
   key = ON_DOCUMENT_LOAD_INJECTION;
   inject() {
     console.log("OnDocumentLoadInjector");
-    this.websiteReady().then(this.append);
+    this.websiteReady().then(this.append, handleError);
   }
 
   websiteReady(): Promise<void> {

@@ -3,8 +3,10 @@ import { Base64 } from "js-base64";
 import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 
 import { ObjectXadesBpTxt } from "../types";
-import { AutogramDocument } from "../../../client";
-import { SignatureParameters } from "../../../autogram-api";
+import {
+  DesktopAutogramDocument,
+  DesktopSignatureParameters,
+} from "autogram-sdk";
 
 export class XadesBpTxtStrategy implements ObjectStrategy {
   obj: ObjectXadesBpTxt;
@@ -13,12 +15,12 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
 
-  get document(): AutogramDocument {
+  get document(): DesktopAutogramDocument {
     return {
       content: Base64.encode(this.obj.sourceTxt),
       filename: this.obj.objectId,

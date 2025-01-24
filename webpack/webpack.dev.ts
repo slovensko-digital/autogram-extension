@@ -9,7 +9,8 @@ const config: webpack.Configuration = merge(common, {
     static: "./dist",
   },
   output: {
-    filename: "[name].bundle.js",
+    filename: "autogram-[name].bundle.js",
+    publicPath: "",
   },
 });
 
