@@ -1,12 +1,20 @@
 import { inject } from "../dbridge_js/inject-ditec";
+import { scope } from "../sentry";
+try {
+  console.log("Sentry loaded");
 
-type WindowWithDitec = Window & { ditec?: object };
+  // throw new Error("Error Thrown on purpose to send it to Bugsink");
 
-const windowAny = window as WindowWithDitec;
+  type WindowWithDitec = Window & { ditec?: object };
 
-inject(windowAny);
+  const windowAny = window as WindowWithDitec;
 
-console.log("inject");
+  inject(windowAny);
 
-// eslint-disable-next-line no-debugger
-// debugger;
+  console.log("inject");
+
+  // eslint-disable-next-line no-debugger
+  // debugger;
+} catch (e) {
+  scope.captureException(e);
+}

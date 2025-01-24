@@ -1,7 +1,13 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
-import { version } from "../../package.json";
+import packageJson from "../../package.json";
 import { ContentChannelPassthrough } from "../dbridge_js/autogram/avm-channel";
+
+const { version } = packageJson;
+
+import { handleError } from "../sentry";
+
+console.log("Sentry loaded");
 
 console.log("content");
 
@@ -24,7 +30,7 @@ isExtensionEnabled().then((enabled) => {
       console.log("workdeskIframe not found");
     }
   }
-});
+}, handleError);
 
 function insertInjectScript(doc: Document) {
   const url = browser.runtime.getURL("autogram-inject.bundle.js");
@@ -44,7 +50,7 @@ function insertInjectScript(doc: Document) {
     doc.head.appendChild(script);
   }
 
-  websiteReady().then(append);
+  websiteReady().then(append, handleError);
 }
 
 function websiteReady(): Promise<void> {

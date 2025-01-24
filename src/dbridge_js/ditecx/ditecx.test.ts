@@ -1,14 +1,17 @@
-
 jest.mock("../../injected-ui");
 jest.mock("../../client");
 
-import { ditecX } from "./ditecx";
+import { constructDitecX, DitecX } from "./ditecx";
 
 /**
  * @jest-environment jsdom
  */
 
 describe("has ditec structure", () => {
+  let ditecX: DitecX;
+  beforeAll(async () => {
+    ditecX = await constructDitecX();
+  });
   test("XADES addXmlObject", () => {
     expect(ditecX.dSigXadesJs.addXmlObject).toStrictEqual(expect.any(Function));
   });
@@ -20,6 +23,10 @@ describe("has ditec structure", () => {
 });
 
 describe("mocked", () => {
+  let ditecX: DitecX;
+  beforeAll(async () => {
+    ditecX = await constructDitecX();
+  });
   test("basic", (done) => {
     const ds = ditecX.dSigXadesJs;
 
@@ -57,7 +64,10 @@ describe("mocked", () => {
 });
 
 describe("upvs", async () => {
-  beforeAll(() => {});
+  let ditecX: DitecX;
+  beforeAll(async () => {
+    ditecX = await constructDitecX();
+  });
   test("basic", async () => {
     const ds = ditecX.dSigXadesJs;
     await asPromise(ds.addTxtObject)(

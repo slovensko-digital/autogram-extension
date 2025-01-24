@@ -1,6 +1,8 @@
 import { DesktopSignatureParameters } from "autogram-sdk";
 import {
   ObjectStrategy,
+} from "./filetype-strategy/base-strategy";
+import {
   XadesBpPngStrategy,
   XadesBpTxtStrategy,
   XadesBpXmlStrategy,

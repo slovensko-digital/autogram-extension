@@ -1,4 +1,4 @@
-import { ditecX } from "./ditecx/ditecx";
+import { constructDitecX } from "./ditecx/ditecx";
 
 type OriginalDitec = object;
 
@@ -14,21 +14,24 @@ export function inject(windowAny: { ditec?: OriginalDitec }): void {
     manifestVersion: __MANIFEST_VERSION__,
     commitHash: __COMMIT_HASH__,
   });
-  console.log(windowAny.ditec);
 
-  if (windowAny.ditec) {
-    if (useProxy) {
-      import("./proxy").then(({ wrapWithProxy }) => {
-        windowAny.ditec = !useProxyWithOriginal
-          ? wrapWithProxy(ditecX)
-          : windowAny.ditec
-            ? wrapWithProxy(windowAny.ditec)
-            : undefined;
-      });
-    } else {
-      windowAny.ditec = ditecX;
+  console.log(1, windowAny.ditec);
+
+  constructDitecX().then((ditecX) => {
+    console.log(2, windowAny.ditec);
+    if (windowAny.ditec) {
+      if (useProxy) {
+        import("./proxy").then(({ wrapWithProxy }) => {
+          windowAny.ditec = !useProxyWithOriginal
+            ? wrapWithProxy(ditecX)
+            : windowAny.ditec
+              ? wrapWithProxy(windowAny.ditec)
+              : undefined;
+        });
+      } else {
+        windowAny.ditec = ditecX;
+      }
+      // windowAny.ditec = wrapWithProxy(ditecX);
     }
-
-    // windowAny.ditec = wrapWithProxy(ditecX);
-  }
+  });
 }

@@ -18,7 +18,9 @@ import { InputObject } from "../ditecx/types";
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 
 /**
+ * Implementation of signing using autogram-sdk
  *
+ * it means we can sign using both autogram and AVM
  */
 export class DBridgeAutogramImpl implements ImplementationInterface {
   private signRequest: SignRequest;
@@ -27,10 +29,18 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   private client: CombinedClient;
 
-  public constructor() {
-    this.client = new CombinedClient(new AvmChannelWeb(), () => {
+  private constructor(client: CombinedClient) {
+    this.client = client;
+    this.signRequest = new SignRequest();
+    this.client.setResetSignRequestCallback(() => {
       this.signRequest = new SignRequest();
     });
+  }
+
+  public static async init(): Promise<DBridgeAutogramImpl> {
+    return new DBridgeAutogramImpl(
+      await CombinedClient.init(new AvmChannelWeb())
+    );
   }
 
   public async launch(callback: OnSuccessCallback): Promise<void> {
