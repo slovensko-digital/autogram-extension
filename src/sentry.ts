@@ -8,7 +8,7 @@ import {
 
 let scope: Scope | null = null;
 
-if (process.env.NODE_ENV !== "production") {
+if (!__IS_PRODUCTION__) {
   // filter integrations that use the global variable
   const integrations = getDefaultIntegrations({}).filter(
     (defaultIntegration) => {

@@ -8,11 +8,6 @@ import {
 
 type OriginalDitec = object;
 
-declare global {
-  const __MANIFEST_VERSION__: string;
-  const __COMMIT_HASH__: string;
-}
-
 export function inject(windowAny: {
   ditec?: OriginalDitec;
   location: Location;
@@ -24,7 +19,6 @@ export function inject(windowAny: {
   console.log("original ditec", windowAny.ditec);
 
   const site = supportedSites.matchUrl(windowAny.location.href);
-  debugger; // eslint-disable-line no-debugger
 
   let conflictResolver: ConflictResolver | null = null;
   for (const ConflictResolverClass of [

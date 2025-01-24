@@ -134,16 +134,15 @@ supportedSites.addSite(
   );
 });
 
-const debugUrls =
-  process.env.NODE_ENV !== "production"
-    ? [
-        "http://localhost:3000/*",
-        "http://localhost:49675/*",
-        "http://localhost/*",
-        "http://127.0.0.1/*",
-        "http://127.0.0.1:49675/*",
-      ]
-    : [];
+const debugUrls = !(process.env.NODE_ENV === "production")
+  ? [
+      "http://localhost:3000/*",
+      "http://localhost:49675/*",
+      "http://localhost/*",
+      "http://127.0.0.1/*",
+      "http://127.0.0.1:49675/*",
+    ]
+  : [];
 
 for (const url of debugUrls) {
   supportedSites.addSite(

@@ -25,7 +25,8 @@ const config: webpack.Configuration = {
     background: "./src/entrypoint/background.ts",
     content: "./src/entrypoint/content.ts",
     inject: "./src/entrypoint/inject.ts",
-    injectIntervalDetectDitec: "./src/entrypoint/inject-interval-detect-ditec.ts",
+    injectIntervalDetectDitec:
+      "./src/entrypoint/inject-interval-detect-ditec.ts",
     popup: "./src/entrypoint/popup.ts",
     options: "./src/entrypoint/options.ts",
     redirect: "./src/entrypoint/redirect.ts",
@@ -109,6 +110,7 @@ const config: webpack.Configuration = {
     new webpack.DefinePlugin({
       __COMMIT_HASH__: JSON.stringify(commitHash),
       __MANIFEST_VERSION__: JSON.stringify(manifestVersion),
+      __IS_PRODUCTION__: JSON.stringify(process.env.NODE_ENV === "production"),
     }),
     new CopyPlugin({
       patterns: [
