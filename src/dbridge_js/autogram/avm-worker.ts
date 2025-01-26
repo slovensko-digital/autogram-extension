@@ -17,7 +17,14 @@ export class AvmWorker {
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
+    let keepAlive: number | null = null;
+
     browser.runtime.onConnect.addListener((port) => {
+      if (keepAlive) {
+        clearInterval(keepAlive);
+      }
+      console.log("start keepAlive");
+      keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
       console.log("Connected .....", port);
       const handleMessage = (request) => {
         const sender = port.sender;
@@ -69,6 +76,11 @@ export class AvmWorker {
           p,
           lastError: browser.runtime.lastError,
         });
+
+        if (keepAlive) {
+          console.log("clear keepAlive");
+          clearInterval(keepAlive);
+        }
         //   port.onMessage.removeListener(handleMessage);
       });
       port.onMessage.addListener(handleMessage);

@@ -74,7 +74,7 @@ class ReplaceOriginalConflictResolver extends ConflictResolver {
         windowAny.ditec = ditecX;
       });
     } else {
-      throw new Error("Original ditec object is not available");
+      console.log("No original ditec to replace");
     }
   }
 }

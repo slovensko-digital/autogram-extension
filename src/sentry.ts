@@ -34,5 +34,7 @@ if (!__IS_PRODUCTION__) {
 export function captureException(error: Error) {
   if (scope) {
     scope.captureException(error);
+  } else {
+    console.error(error);
   }
 }
