@@ -17,14 +17,10 @@ export class AvmWorker {
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
-    let keepAlive: number | null = null;
+    const keepAlive = new KeepAlive();
 
     browser.runtime.onConnect.addListener((port) => {
-      if (keepAlive) {
-        clearInterval(keepAlive);
-      }
-      console.log("start keepAlive");
-      keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+      keepAlive.start();
       console.log("Connected .....", port);
       const handleMessage = (request) => {
         const sender = port.sender;
@@ -77,10 +73,7 @@ export class AvmWorker {
           lastError: browser.runtime.lastError,
         });
 
-        if (keepAlive) {
-          console.log("clear keepAlive");
-          clearInterval(keepAlive);
-        }
+        keepAlive.stop();
         //   port.onMessage.removeListener(handleMessage);
       });
       port.onMessage.addListener(handleMessage);
@@ -206,4 +199,28 @@ type SenderId = string;
 
 function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
   return `${sender.tab?.id?.toString()}|${sender.frameId?.toString()}`;
+}
+
+/**
+ * https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#keep-sw-alive
+ *
+ * Keep the service worker alive by periodically calling extension API to prevent it from being stopped.
+ */
+class KeepAlive {
+  private interval: number | null = null;
+
+  start() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+    console.log("KeepAlive start");
+    this.interval = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+  }
+
+  stop() {
+    if (this.interval) {
+      console.log("KeepAlive stop");
+      clearInterval(this.interval);
+    }
+  }
 }
