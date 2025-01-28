@@ -91,6 +91,8 @@ reason to do that.
 
 ### Safari
 
+To update app build in XCode should be enough - it sources the extension from `dist` folder, so don't forget to have correct build there.
+
 Safari needs xcode project and associated app. We generate such app using
 
 ```
