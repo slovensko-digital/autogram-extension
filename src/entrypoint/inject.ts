@@ -1,8 +1,6 @@
 import { inject } from "../dbridge_js/inject-ditec";
 import { captureException } from "../sentry";
 try {
-  console.log("Sentry loaded");
-
   // throw new Error("Error Thrown on purpose to send it to Bugsink");
 
   type WindowWithDitec = Window & { ditec?: object };

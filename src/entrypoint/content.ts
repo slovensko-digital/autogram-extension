@@ -16,8 +16,6 @@ const { version } = packageJson;
 
 import { captureException } from "../sentry";
 
-console.log("Sentry loaded");
-
 console.log("content");
 
 isExtensionEnabled().then((enabled) => {

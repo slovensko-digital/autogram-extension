@@ -17,18 +17,7 @@
 		E4E6889F2C21B04800DB9ED8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E4E6889E2C21B04800DB9ED8 /* Assets.xcassets */; };
 		E4E688A82C21B04800DB9ED8 /* autogram-extension Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4E688A72C21B04800DB9ED8 /* autogram-extension Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E4E688AD2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E688AC2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift */; };
-		E4E688CC2C21B04800DB9ED8 /* inject.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688BA2C21B04800DB9ED8 /* inject.bundle.js */; };
-		E4E688CD2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4E688BC2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt */; };
-		E4E688CE2C21B04800DB9ED8 /* background.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688BE2C21B04800DB9ED8 /* background.bundle.js */; };
-		E4E688CF2C21B04800DB9ED8 /* redirect.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C12C21B04800DB9ED8 /* redirect.bundle.js */; };
-		E4E688D02C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C22C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt */; };
-		E4E688D12C21B04800DB9ED8 /* static in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C32C21B04800DB9ED8 /* static */; };
-		E4E688D22C21B04800DB9ED8 /* options.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C42C21B04800DB9ED8 /* options.bundle.js */; };
-		E4E688D32C21B04800DB9ED8 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C52C21B04800DB9ED8 /* manifest.json */; };
-		E4E688D42C21B04800DB9ED8 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C72C21B04800DB9ED8 /* _locales */; };
-		E4E688D52C21B04800DB9ED8 /* content.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C82C21B04800DB9ED8 /* content.bundle.js */; };
-		E4E688D62C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E4E688C92C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt */; };
-		E4E688D72C21B04800DB9ED8 /* popup.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E4E688CB2C21B04800DB9ED8 /* popup.bundle.js */; };
+		FEABE3A02D48EC2B0046C038 /* dist in Resources */ = {isa = PBXBuildFile; fileRef = FEABE39F2D48EC2B0046C038 /* dist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,24 +61,7 @@
 		E4E688AC2C21B04800DB9ED8 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
 		E4E688AE2C21B04800DB9ED8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E4E688AF2C21B04800DB9ED8 /* autogram_extension_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = autogram_extension_Extension.entitlements; sourceTree = "<group>"; };
-		E4E688BA2C21B04800DB9ED8 /* inject.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = inject.bundle.js; path = ../../../dist/inject.bundle.js; sourceTree = "<group>"; };
-		E4E688BB2C21B04800DB9ED8 /* content.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = content.bundle.js.map; path = ../../../dist/content.bundle.js.map; sourceTree = "<group>"; };
-		E4E688BC2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = content.bundle.js.LICENSE.txt; path = ../../../dist/content.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
-		E4E688BD2C21B04800DB9ED8 /* options.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = options.bundle.js.map; path = ../../../dist/options.bundle.js.map; sourceTree = "<group>"; };
-		E4E688BE2C21B04800DB9ED8 /* background.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.bundle.js; path = ../../../dist/background.bundle.js; sourceTree = "<group>"; };
-		E4E688BF2C21B04800DB9ED8 /* popup.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = popup.bundle.js.map; path = ../../../dist/popup.bundle.js.map; sourceTree = "<group>"; };
-		E4E688C02C21B04800DB9ED8 /* redirect.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = redirect.bundle.js.map; path = ../../../dist/redirect.bundle.js.map; sourceTree = "<group>"; };
-		E4E688C12C21B04800DB9ED8 /* redirect.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = redirect.bundle.js; path = ../../../dist/redirect.bundle.js; sourceTree = "<group>"; };
-		E4E688C22C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = background.bundle.js.LICENSE.txt; path = ../../../dist/background.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
-		E4E688C32C21B04800DB9ED8 /* static */ = {isa = PBXFileReference; lastKnownFileType = folder; name = static; path = ../../../dist/static; sourceTree = "<group>"; };
-		E4E688C42C21B04800DB9ED8 /* options.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = options.bundle.js; path = ../../../dist/options.bundle.js; sourceTree = "<group>"; };
-		E4E688C52C21B04800DB9ED8 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../dist/manifest.json; sourceTree = "<group>"; };
-		E4E688C62C21B04800DB9ED8 /* inject.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = inject.bundle.js.map; path = ../../../dist/inject.bundle.js.map; sourceTree = "<group>"; };
-		E4E688C72C21B04800DB9ED8 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = _locales; path = ../../../dist/_locales; sourceTree = "<group>"; };
-		E4E688C82C21B04800DB9ED8 /* content.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.bundle.js; path = ../../../dist/content.bundle.js; sourceTree = "<group>"; };
-		E4E688C92C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = inject.bundle.js.LICENSE.txt; path = ../../../dist/inject.bundle.js.LICENSE.txt; sourceTree = "<group>"; };
-		E4E688CA2C21B04800DB9ED8 /* background.bundle.js.map */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = background.bundle.js.map; path = ../../../dist/background.bundle.js.map; sourceTree = "<group>"; };
-		E4E688CB2C21B04800DB9ED8 /* popup.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.bundle.js; path = ../../../dist/popup.bundle.js; sourceTree = "<group>"; };
+		FEABE39F2D48EC2B0046C038 /* dist */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dist; path = ../../../dist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,24 +140,7 @@
 		E4E688B92C21B04800DB9ED8 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E4E688BA2C21B04800DB9ED8 /* inject.bundle.js */,
-				E4E688BB2C21B04800DB9ED8 /* content.bundle.js.map */,
-				E4E688BC2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt */,
-				E4E688BD2C21B04800DB9ED8 /* options.bundle.js.map */,
-				E4E688BE2C21B04800DB9ED8 /* background.bundle.js */,
-				E4E688BF2C21B04800DB9ED8 /* popup.bundle.js.map */,
-				E4E688C02C21B04800DB9ED8 /* redirect.bundle.js.map */,
-				E4E688C12C21B04800DB9ED8 /* redirect.bundle.js */,
-				E4E688C22C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt */,
-				E4E688C32C21B04800DB9ED8 /* static */,
-				E4E688C42C21B04800DB9ED8 /* options.bundle.js */,
-				E4E688C52C21B04800DB9ED8 /* manifest.json */,
-				E4E688C62C21B04800DB9ED8 /* inject.bundle.js.map */,
-				E4E688C72C21B04800DB9ED8 /* _locales */,
-				E4E688C82C21B04800DB9ED8 /* content.bundle.js */,
-				E4E688C92C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt */,
-				E4E688CA2C21B04800DB9ED8 /* background.bundle.js.map */,
-				E4E688CB2C21B04800DB9ED8 /* popup.bundle.js */,
+				FEABE39F2D48EC2B0046C038 /* dist */,
 			);
 			name = Resources;
 			path = "autogram-extension Extension";
@@ -220,6 +175,7 @@
 				E4E688A32C21B04800DB9ED8 /* Sources */,
 				E4E688A42C21B04800DB9ED8 /* Frameworks */,
 				E4E688A52C21B04800DB9ED8 /* Resources */,
+				FEABE3A32D48EC500046C038 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -285,22 +241,31 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E4E688D42C21B04800DB9ED8 /* _locales in Resources */,
-				E4E688D52C21B04800DB9ED8 /* content.bundle.js in Resources */,
-				E4E688D72C21B04800DB9ED8 /* popup.bundle.js in Resources */,
-				E4E688CD2C21B04800DB9ED8 /* content.bundle.js.LICENSE.txt in Resources */,
-				E4E688CE2C21B04800DB9ED8 /* background.bundle.js in Resources */,
-				E4E688D22C21B04800DB9ED8 /* options.bundle.js in Resources */,
-				E4E688D62C21B04800DB9ED8 /* inject.bundle.js.LICENSE.txt in Resources */,
-				E4E688CC2C21B04800DB9ED8 /* inject.bundle.js in Resources */,
-				E4E688D32C21B04800DB9ED8 /* manifest.json in Resources */,
-				E4E688D02C21B04800DB9ED8 /* background.bundle.js.LICENSE.txt in Resources */,
-				E4E688D12C21B04800DB9ED8 /* static in Resources */,
-				E4E688CF2C21B04800DB9ED8 /* redirect.bundle.js in Resources */,
+				FEABE3A02D48EC2B0046C038 /* dist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		FEABE3A32D48EC500046C038 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "rm -rf \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/static\"\nrm -rf \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/_locales\"\nmv -f \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/dist\"/*  \"${CONFIGURATION_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E4E688862C21B04700DB9ED8 /* Sources */ = {
@@ -473,11 +438,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "autogram-extension Extension/autogram_extension_Extension.entitlements";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2.0.2;
-				DEVELOPMENT_TEAM = 44U4JSRX4Z;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension Extension/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "autogram-extension Extension";
@@ -510,6 +476,7 @@
 				CURRENT_PROJECT_VERSION = 2.0.2;
 				DEVELOPMENT_TEAM = 44U4JSRX4Z;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension Extension/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "autogram-extension Extension";
@@ -540,11 +507,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "autogram-extension/autogram-extension.entitlements";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 44U4JSRX4Z;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension/Info.plist";

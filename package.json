@@ -76,7 +76,7 @@
     "@types/css-font-loading-module": "^0.0.13",
     "@types/firefox-webext-browser": "^82.0.0",
     "@types/webextension-polyfill": "^0.8.2",
-    "autogram-sdk": "^0.0.0",
+    "autogram-sdk": "^0.0.3",
     "crypto-browserify": "^3.12.0",
     "idb-keyval": "^6.2.1",
     "isomorphic-webcrypto": "^2.3.8",
