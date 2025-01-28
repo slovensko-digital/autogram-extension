@@ -1,9 +1,9 @@
 import { z } from "zod";
 import {
   AutogramVMobileIntegration,
-  AvmIntegrationDocument,
-  DocumentToSign,
-} from "../../avm-api/lib/apiClient";
+  AVMIntegrationDocument,
+  AVMDocumentToSign,
+} from "autogram-sdk";
 import { ZChannelMessage } from "./avm-channel";
 import { get, set } from "idb-keyval";
 import browser from "webextension-polyfill";
@@ -13,11 +13,14 @@ export class AvmWorker {
     get,
     set,
   });
-  private documentRefs = new Map<SenderId, AvmIntegrationDocument>();
+  private documentRefs = new Map<SenderId, AVMIntegrationDocument>();
   private abortControllers = new Map<SenderId, AbortController>();
 
   initListener() {
+    const keepAlive = new KeepAlive();
+
     browser.runtime.onConnect.addListener((port) => {
+      keepAlive.start();
       console.log("Connected .....", port);
       const handleMessage = (request) => {
         const sender = port.sender;
@@ -38,7 +41,12 @@ export class AvmWorker {
               id: data.id,
               result: result ?? null,
             };
-            console.log("background response", response, JSON.stringify(response), typeof response?.result);
+            console.log(
+              "background response",
+              response,
+              JSON.stringify(response),
+              typeof response?.result
+            );
             port.postMessage(response);
           },
           (error: Error) => {
@@ -64,6 +72,8 @@ export class AvmWorker {
           p,
           lastError: browser.runtime.lastError,
         });
+
+        keepAlive.stop();
         //   port.onMessage.removeListener(handleMessage);
       });
       port.onMessage.addListener(handleMessage);
@@ -98,7 +108,7 @@ export class AvmWorker {
     addDocument: async (args: unknown, senderId: SenderId): Promise<void> => {
       const { documentToSign } = ZAddDocumentArgs.parse(args);
       const documentRef = await this.apiClient.addDocument(
-        documentToSign as unknown as DocumentToSign
+        documentToSign as unknown as AVMDocumentToSign
       );
       this.documentRefs.set(senderId, documentRef);
     },
@@ -189,4 +199,28 @@ type SenderId = string;
 
 function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
   return `${sender.tab?.id?.toString()}|${sender.frameId?.toString()}`;
+}
+
+/**
+ * https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#keep-sw-alive
+ *
+ * Keep the service worker alive by periodically calling extension API to prevent it from being stopped.
+ */
+class KeepAlive {
+  private interval: number | null = null;
+
+  start() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+    console.log("KeepAlive start");
+    this.interval = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+  }
+
+  stop() {
+    if (this.interval) {
+      console.log("KeepAlive stop");
+      clearInterval(this.interval);
+    }
+  }
 }

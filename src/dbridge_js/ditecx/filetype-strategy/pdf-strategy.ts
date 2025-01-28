@@ -1,7 +1,6 @@
 import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
-import { AutogramDocument } from "../../../client";
 import { ObjectXadesPdf } from "../types";
-import { SignatureParameters } from "../../../autogram-api";
+import { DesktopAutogramDocument, DesktopSignatureParameters } from "autogram-sdk";
 
 export class XadesPdfStrategy implements ObjectStrategy {
   obj: ObjectXadesPdf;
@@ -10,12 +9,12 @@ export class XadesPdfStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
 
-  get document(): AutogramDocument {
+  get document(): DesktopAutogramDocument {
     return { content: this.obj.sourcePdfBase64, filename: this.obj.objectId };
   }
   get objSchema(): string | undefined {

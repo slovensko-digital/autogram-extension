@@ -2,14 +2,14 @@
   "compilerOptions": {
     "jsx": "react",
     "outDir": "./dist/",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     // "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true, // because of webpack config
+    "esModuleInterop": true, // because of webpack config
     "sourceMap": true,
     "strictNullChecks": true,
-    "module": "CommonJS",
-    "target": "ES6",
+    "module": "ESNext",
+    "target": "ES5",
     "allowJs": true,
     "experimentalDecorators": true,
     "lib": ["ES5", "ES2023", "DOM", "ESNext"],
@@ -17,5 +17,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true
   },
-  "exclude": ["spec"]
+  "exclude": ["spec"],
+  "ts-node": {
+    "compilerOptions": {
+      "esm": true
+    }
+  }
 }

@@ -1,11 +1,11 @@
-import {
-  ObjectStrategy,
-  PayloadMimeTypeStr,
-} from "./base-strategy";
-import { AutogramDocument } from "../../../client";
+import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
+
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
-import { SignatureParameters } from "../../../autogram-api";
+import {
+  DesktopAutogramDocument,
+  DesktopSignatureParameters,
+} from "autogram-sdk";
 
 export class XadesBpXmlStrategy implements ObjectStrategy {
   obj: ObjectXadesBpXml;
@@ -13,7 +13,7 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): AutogramDocument {
+  get document(): DesktopAutogramDocument {
     return {
       content: this.obj.xdcXMLData,
       filename: this.obj.objectId,
@@ -64,7 +64,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: SignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
@@ -73,7 +73,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return true;
   }
 
-  get document(): AutogramDocument {
+  get document(): DesktopAutogramDocument {
     return {
       content: this.obj.sourceXml,
       filename: this.obj.objectId,
@@ -100,5 +100,4 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     }
     return "application/xml;base64";
   }
-
 }

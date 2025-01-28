@@ -1,12 +1,14 @@
 import {
   AutogramVMobileIntegrationInterfaceStateful,
-  DocumentToSign,
-  GetDocumentsResponse,
-  SignedDocument,
+  AVMDocumentToSign,
+  AVMGetDocumentsResponse,
+  AVMSignedDocument,
   randomUUID,
-} from "../../avm-api/lib/apiClient";
+} from "autogram-sdk";
 import { z } from "zod";
 
+/** How many times should we retry sending message / intializing port */
+const RETRY_LIMIT = 5;
 /**
  * Class used on side of injected content script
  */
@@ -34,7 +36,7 @@ export class AvmChannelWeb
     const response = ZGetQrCodeUrlResponse.parse(obj);
     return response;
   }
-  async addDocument(documentToSign: DocumentToSign): Promise<void> {
+  async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
     await this.channel.sendMessage({
       method: "addDocument",
       args: { documentToSign },
@@ -42,7 +44,7 @@ export class AvmChannelWeb
   }
   async waitForSignature(
     abortController?: AbortController
-  ): Promise<SignedDocument> {
+  ): Promise<AVMSignedDocument> {
     /* transform abortController signal to message because abort handler can't cross execution contexts */
     const abortHandler = () => {
       this.channel.sendMessage({
@@ -128,12 +130,19 @@ export class WebChannelCaller {
     const id = randomUUID();
     const detail = { ...data, id };
     console.log(detail);
-    const evt = new CustomEvent(EVENT_SEND_MESSAGE, {
-      detail,
-      bubbles: true,
-      composed: true,
-    });
-    window.dispatchEvent(evt);
+    try {
+      const evt = new CustomEvent(EVENT_SEND_MESSAGE, {
+        detail,
+        bubbles: true,
+        composed: true,
+      });
+      window.dispatchEvent(evt);
+    } catch (e) {
+      console.log("WebChannelCaller.sendMessage error");
+      console.error(e);
+      throw e;
+    }
+
     const withResolvers: PromiseWithResolvers<unknown> = Promise.withResolvers
       ? Promise.withResolvers<unknown>()
       : promiseWithResolversPolyfill<unknown>();
@@ -149,13 +158,27 @@ export class WebChannelCaller {
 export class ContentChannelPassthrough {
   port: chrome.runtime.Port; // We use chrome.runtime here because `import browser from "webextension-polyfill"` is not working in web (page) script
   helloInterval: number | NodeJS.Timeout | null;
+  reinitNumber = 0;
   constructor() {
     this.initPort();
   }
 
-  private initPort() {
-    console.log("initPort", new Date());
-    this.port = chrome.runtime.connect({ name: "autogram-extension" });
+  private initPort(retryNumber = 0) {
+    console.log("initPort", new Date(), retryNumber);
+
+    if (retryNumber > RETRY_LIMIT) {
+      throw new Error("Port reinit failed");
+    }
+
+    this.reinitNumber = retryNumber;
+
+    try {
+      this.port = chrome.runtime.connect({ name: "autogram-extension" });
+    } catch (e) {
+      console.log("initPort error");
+      console.error(e);
+      throw e;
+    }
     this.port.onDisconnect.addListener((p) => {
       console.log("Port Disconnected .....", {
         p,
@@ -172,7 +195,8 @@ export class ContentChannelPassthrough {
     }, 10000);
   }
 
-  postMessage(message: ChannelMessage) {
+  postMessage(message: ChannelMessage, retryNumber = 0) {
+    console.log("content post message", message, retryNumber);
     try {
       this.port.postMessage(message);
     } catch (e) {
@@ -181,9 +205,13 @@ export class ContentChannelPassthrough {
         (e.message === "Extension context invalidated." ||
           e.message === "Attempting to use a disconnected port object")
       ) {
+        if (retryNumber > RETRY_LIMIT) {
+          throw new Error("Port disconnected, retry limit reached");
+        }
+
         console.log("Port disconnected, reinit", e);
-        this.initPort();
-        this.port.postMessage(message);
+        this.initPort(this.reinitNumber + 1);
+        this.postMessage(message, retryNumber + 1);
       } else {
         console.error("Error sending message", e);
       }
@@ -246,7 +274,7 @@ const ZChannelResponse = z.object({
 const ZGetQrCodeUrlResponse = z.string();
 export type GetQrCodeUrlResponse = z.infer<typeof ZGetQrCodeUrlResponse>;
 
-const ZWaitForSignatureResponse = GetDocumentsResponse;
+const ZWaitForSignatureResponse = AVMGetDocumentsResponse;
 export type WaitForSignatureResponse = z.infer<
   typeof ZWaitForSignatureResponse
 >;
