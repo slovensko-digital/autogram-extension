@@ -1,7 +1,10 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
+import { createLogger } from "../../log";
 import { ImplementationInterface } from "./implementation";
+
+const log = createLogger("ag-ext.dsig-base-adapter");
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
@@ -55,7 +58,7 @@ export class DSigAdapter {
   }
 
   log(...rest: unknown[]): void {
-    console.log(this.constructor.name, ...rest);
+    log.debug(this.constructor.name, ...rest);
   }
 
   stub(name: string, ...rest: unknown[]): void {
@@ -89,7 +92,7 @@ export class DSigAdapter {
   }
 
   detectSupportedPlatforms(platforms, callback) {
-    console.log({ platforms });
+    this.log({ platforms });
 
     // callback.onSuccess(["autogram"]);
     callback.onSuccess(["java"]);

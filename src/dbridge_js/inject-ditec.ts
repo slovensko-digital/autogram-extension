@@ -5,6 +5,9 @@ import {
   CONFLICT_RESOLUTION_REPLACE_ORIGINAL,
   supportedSites,
 } from "../supported-sites";
+import { createLogger } from "../log";
+
+const log = createLogger("ag-ext.supported-sites");
 
 type OriginalDitec = object;
 
@@ -12,11 +15,14 @@ export function inject(windowAny: {
   ditec?: OriginalDitec;
   location: Location;
 }): void {
-  console.log("Start inject", {
+  log.debug("inject-ditec", {
+    windowIsTop: window.top === window,
+  });
+  log.debug("Start inject", {
     manifestVersion: __MANIFEST_VERSION__,
     commitHash: __COMMIT_HASH__,
   });
-  console.log("original ditec", windowAny.ditec);
+  log.debug("original ditec", windowAny.ditec);
 
   const site = supportedSites.matchUrl(windowAny.location.href);
 
@@ -38,7 +44,7 @@ export function inject(windowAny: {
   }
   conflictResolver.inject(windowAny);
 
-  console.log("End inject", windowAny.ditec);
+  log.debug("End inject", windowAny.ditec);
 }
 
 abstract class ConflictResolver {
@@ -74,7 +80,7 @@ class ReplaceOriginalConflictResolver extends ConflictResolver {
         windowAny.ditec = ditecX;
       });
     } else {
-      console.log("No original ditec to replace");
+      log.info("No original ditec to replace");
     }
   }
 }

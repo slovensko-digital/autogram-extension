@@ -1,7 +1,7 @@
 import { isExtensionEnabled } from "../options/content";
 import browser from "webextension-polyfill";
 import packageJson from "../../package.json";
-import { ContentChannelPassthrough } from "../dbridge_js/autogram/avm-channel";
+import { ContentChannelPassthrough } from "../dbridge_js/autogram/channel/content";
 import {
   supportedSites,
   ON_DOCUMENT_LOAD_INJECTION,
@@ -15,29 +15,58 @@ type WindowWithDitec = Window & { ditec?: any }; // eslint-disable-line @typescr
 const { version } = packageJson;
 
 import { captureException } from "../sentry";
+import { createLogger } from "../log";
 
-console.log("content");
+const log = createLogger("ag-ext.ent.content");
 
-isExtensionEnabled().then((enabled) => {
-  if (enabled) {
-    console.log(`Autogram extension ${version} is enabled`);
+// log.trace("trace");
+// log.debug("debug");
+// log.log("log");
+// log.info("info");
+// log.warn("warn");
+// log.error("error");
 
-    const messagePassthrough = new ContentChannelPassthrough();
-    messagePassthrough.initEventListener();
-    insertInjectScript(document);
+log.info("content", __BUILD_TIME__, {
+  windowIsTop: window.top === window,
+  windowName: window.name,
+  windowLocation: window.location,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  autogramContentScriptLock: (window as any).autogramContentScriptLock,
+});
 
-    // TODO: probably this should be conditional, based on the website
-    const iframe = document.getElementById(
-      "workdeskIframe"
-    ) as HTMLIFrameElement;
-    if (iframe && iframe.contentDocument) {
-      console.log("workdeskIframe found");
-      insertInjectScript(iframe.contentDocument);
-    } else {
-      console.log("workdeskIframe not found");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if ((window as any).autogramContentScriptLock !== undefined) {
+  throw new Error("Autogram content script already loaded");
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).autogramContentScriptLock = new Date().toISOString();
+
+isExtensionEnabled()
+  .then((enabled) => {
+    if (enabled) {
+      log.info(
+        `Autogram extension ${version}(mv${__MANIFEST_VERSION__}) is enabled`
+      );
+
+      const messagePassthrough = new ContentChannelPassthrough();
+      messagePassthrough.initEventListener();
+      insertInjectScript(document);
+
+      // TODO: probably this should be conditional, based on the website
+      const iframe = document.getElementById(
+        "workdeskIframe"
+      ) as HTMLIFrameElement;
+      if (iframe && iframe.contentDocument) {
+        log.debug("workdeskIframe found");
+        insertInjectScript(iframe.contentDocument);
+      } else {
+        log.debug("workdeskIframe not found");
+      }
     }
-  }
-}, captureException);
+    // throw new Error("example");
+  }, captureException)
+  .catch(captureException);
 
 function insertInjectScript(doc: Document) {
   const site = supportedSites.matchUrl(doc.location.href);
@@ -49,8 +78,13 @@ function insertInjectScript(doc: Document) {
     IntervalInjector,
     // MutationObserverInjector,
   ]) {
-    console.log(site.injectionStrategy, InjectorClass, InjectorClass.key);
     if (site.injectionStrategy === InjectorClass.key) {
+      log.debug(
+        "Using injector strategy",
+        site.injectionStrategy,
+        InjectorClass,
+        InjectorClass.key
+      );
       injector = new InjectorClass(doc);
       break;
     }
@@ -76,21 +110,21 @@ class BaseInjector {
   }
 
   append() {
-    console.log(this.script);
-    console.log(this.script.src);
+    log.debug("appending script", this.script);
+    log.debug("appending script", this.script.src);
     this.doc.head.appendChild(this.script);
   }
 
   createScript() {
     const url = browser.runtime.getURL("autogram-inject.bundle.js");
-    console.log(url);
+    log.debug("using script url", url);
 
     const script = document.createElement("script");
     script.src = url;
     script.type = "text/javascript";
 
     script.onload = function () {
-      console.log("script load");
+      log.debug("script loaded");
     };
     return script;
   }
@@ -99,6 +133,7 @@ class BaseInjector {
 class DirectInjector extends BaseInjector {
   static key = DIRECT_INJECTION;
   inject() {
+    log.debug("DirectInjector");
     this.append();
   }
 }
@@ -106,7 +141,7 @@ class DirectInjector extends BaseInjector {
 class OnDocumentLoadInjector extends BaseInjector {
   static key = ON_DOCUMENT_LOAD_INJECTION;
   inject() {
-    console.log("OnDocumentLoadInjector");
+    log.debug("OnDocumentLoadInjector");
     this.websiteReady().then(this.append.bind(this), captureException);
   }
 
@@ -137,31 +172,31 @@ class IntervalInjector extends BaseInjector {
   static key = INTERVAL_INJECTION;
 
   inject(windowAny: WindowWithDitec) {
-    console.log("IntervalInjector");
+    log.debug("IntervalInjector");
 
     windowAny.addEventListener("autogram-ditec-loaded", () => {
-      console.log("autogram-ditec-loaded");
+      log.debug("autogram-ditec-loaded");
       this.append();
     });
 
     const detectScript = this.createDetectScript();
-    console.log(detectScript);
+    log.debug(detectScript);
     this.doc.head.appendChild(detectScript);
-    console.log("detect script appended");
+    log.debug("detect script appended");
   }
 
   createDetectScript() {
     const url = browser.runtime.getURL(
       "autogram-injectIntervalDetectDitec.bundle.js"
     );
-    console.log(url);
+    log.debug("using script url", url);
 
     const script = document.createElement("script");
     script.src = url;
     script.type = "text/javascript";
 
     script.onload = function () {
-      console.log("detect script load");
+      log.debug("detect script load");
     };
     return script;
   }

@@ -1,3 +1,7 @@
+import { createLogger } from "./log";
+
+const log = createLogger("ag-ext.supported-sites");
+
 export const extensionId = "kbiiffakfklnmcideniiecbgkoocemif";
 
 /**
@@ -72,13 +76,13 @@ class SupportedSites {
   constructor() {}
 
   matchUrl(url: string): Site {
-    console.log("matchUrl", url);
+    log.debug("matchUrl", url);
     const site = this.sites.find((site) => site.matchUrl(url));
-    console.log("site", site);
+    log.debug("site", site);
     if (site) {
       return site;
     }
-    console.log(this.sites);
+    log.debug(this.sites);
     throw new Error(`Site ${url} is not supported`);
   }
 
@@ -149,8 +153,8 @@ for (const url of debugUrls) {
     url,
 
     /* injection type */
-    INTERVAL_INJECTION,
-    // ON_DOCUMENT_LOAD_INJECTION,
+    // INTERVAL_INJECTION,
+    ON_DOCUMENT_LOAD_INJECTION,
 
     /* conflict resolution */
     CONFLICT_RESOLUTION_REPLACE_ORIGINAL

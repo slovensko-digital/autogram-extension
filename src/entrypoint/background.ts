@@ -1,8 +1,15 @@
-import { AvmWorker } from "../dbridge_js/autogram/avm-worker";
+import { BackgroundWorker } from "../dbridge_js/autogram/background-worker";
 import browser from "webextension-polyfill";
 import { captureException } from "../sentry";
+import { createLogger } from "../log";
+
+const log = createLogger("ag-ext.ent.bg");
 try {
-  console.log("background");
+  log.debug("background");
+
+  log.info(
+    `Autogram extension ${__PACKAGE_VERSION__}(mv${__MANIFEST_VERSION__})`
+  );
 
   // browser.runtime.sendMessage({ bgRuntimeEvent: "init" });
 
@@ -25,17 +32,30 @@ try {
   // }
 
   browser.runtime.onInstalled.addListener(() => {
-    console.log(`onInstalled()`);
+    log.debug(`onInstalled()`);
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onInstalled" });
+
+    const worker = new BackgroundWorker();
+    worker.initListener();
   });
 
-  // browser.runtime.onUpdateAvailable.addListener(() => {
-  //   console.log(`onUpdateAvailable()`);
-  //   // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
-  // });
+  browser.runtime.onUpdateAvailable.addListener(() => {
+    log.debug(`onUpdateAvailable()`);
+    // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
+  });
 
-  const avmWorker = new AvmWorker();
-  avmWorker.initListener();
+  browser.runtime.onConnect.addListener((port) => {
+    log.debug(`onConnect()`, port);
+    // browser.runtime.sendMessage({ bgRuntimeEvent: "onConnect" });
+  });
+
+  browser.runtime.onMessage.addListener((message) => {
+    log.debug(`onMessage()`, message);
+    // browser.runtime.sendMessage({ bgRuntimeEvent: "onMessage" });
+  });
+
+  // const worker = new BackgroundWorker();
+  // worker.initListener();
 } catch (e) {
   captureException(e);
 }

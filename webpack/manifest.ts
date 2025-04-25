@@ -67,6 +67,7 @@ function generateManifest(
         ],
         background: {
           service_worker: entries.background[0],
+          type: "module",
         },
         action: {
           default_icon: {
@@ -129,7 +130,7 @@ function generateManifest(
 
         background: {
           scripts: entries.background,
-          persistent: true,
+          persistent: false,
         },
 
         permissions: [
@@ -154,10 +155,10 @@ function generateManifest(
           ...enabledUrls,
         ],
         // TODO check if this is needed
-        externally_connectable: {
-          // chrome only
-          matches: enabledUrls,
-        },
+        // externally_connectable: {
+        //   // chrome only
+        //   matches: enabledUrls,
+        // },
         options_page: "static/options.html",
         // browser_specific_settings: {
         //   gecko: {

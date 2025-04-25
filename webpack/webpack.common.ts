@@ -8,6 +8,7 @@ import ESLintPlugin from "eslint-webpack-plugin";
 import "webpack-dev-server";
 import { manifestOptions } from "./manifest";
 import { manifestVersion } from "./manifest-version";
+import packageJson from "../package.json";
 
 let commitHash;
 try {
@@ -110,7 +111,9 @@ const config: webpack.Configuration = {
     new webpack.DefinePlugin({
       __COMMIT_HASH__: JSON.stringify(commitHash),
       __MANIFEST_VERSION__: JSON.stringify(manifestVersion),
+      __PACKAGE_VERSION__: JSON.stringify(packageJson.version),
       __IS_PRODUCTION__: JSON.stringify(process.env.NODE_ENV === "production"),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     }),
     new CopyPlugin({
       patterns: [

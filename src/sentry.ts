@@ -28,7 +28,7 @@ if (!__IS_PRODUCTION__) {
   scope.setClient(client);
   client.init(); // initializing has to be done after setting the client on the scope
   // You can capture exceptions manually for this client like this:
-  scope.captureException(new Error("example"));
+  // scope.captureException(new Error("example"));
 }
 
 export function captureException(error: Error) {

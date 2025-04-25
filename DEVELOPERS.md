@@ -91,7 +91,8 @@ reason to do that.
 
 ### Safari
 
-To update app build in XCode should be enough - it sources the extension from `dist` folder, so don't forget to have correct build there.
+To update app build in XCode should be enough - it sources the extension from `dist` folder, so don't forget to have correct (manifest version 2) build there.
+Currently manifest version 3 background.service_worker does not work in Safari.
 
 Safari needs xcode project and associated app. We generate such app using
 

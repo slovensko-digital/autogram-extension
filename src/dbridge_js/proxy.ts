@@ -19,7 +19,6 @@ const ignoredProps: PropertyKey[] = [
 
 const logger = {
   push(...rest) {
-    // console.log(...rest);
     log.push(...rest);
   },
 };

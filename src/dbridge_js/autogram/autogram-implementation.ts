@@ -12,8 +12,15 @@ import {
   OnSuccessCallback,
   OnSuccessCallback1,
 } from "../ditecx/implementation";
-import { AvmChannelWeb } from "./avm-channel";
+import {
+  AutogramDesktopChannel,
+  AvmChannelWeb,
+  WebChannelCaller,
+} from "./channel/web";
 import { InputObject } from "../ditecx/types";
+import { createLogger } from "../../log";
+
+const log = createLogger("ag-ext.impl");
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 
@@ -38,8 +45,14 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   }
 
   public static async init(): Promise<DBridgeAutogramImpl> {
+    const webChannelCaller = new WebChannelCaller();
+    webChannelCaller.init();
     return new DBridgeAutogramImpl(
-      await CombinedClient.init(new AvmChannelWeb())
+      await CombinedClient.init(
+        new AvmChannelWeb(webChannelCaller),
+        new AutogramDesktopChannel(webChannelCaller),
+        () => {}
+      )
     );
   }
 
@@ -61,10 +74,9 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     callback: OnSuccessCallback & OnErrorCallback
   ): Promise<void> {
     if (this.signRequest.signingStatus !== SigningStatus.new) {
-      console.error("Signing non-new sign request");
+      log.error("Signing non-new sign request");
     }
 
-    // console.log(this.signatureParameters);
     this.signRequest.signatureId = signatureId;
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
@@ -75,16 +87,16 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   public addObject(obj: InputObject, callback: OnSuccessCallback): void {
     if (this.signRequest.signingStatus == SigningStatus.signed) {
-      console.warn("Resetting sign request");
+      log.warn("Resetting sign request");
       this.resetSignRequest();
     }
 
     if (this.signRequest.signingStatus !== SigningStatus.new) {
-      console.error("Adding object to non-new sign request");
+      log.error("Adding object to non-new sign request");
     }
-    console.log(obj);
+    log.info(obj);
     this.signRequest.addObject(obj);
-    console.log(callback);
+    log.debug(callback);
     callback.onSuccess();
   }
 
@@ -104,7 +116,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
       this.signRequest.signingStatus = SigningStatus.signed;
       callback.onSuccess(response.content);
     } catch (e) {
-      console.error(e);
+      log.error(e);
     }
   }
 
@@ -142,7 +154,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   private assertSignedRequest() {
     if (this.signRequest.signingStatus !== SigningStatus.signed) {
-      console.error("Signing request not signed");
+      log.error("Signing request not signed");
     }
   }
 }

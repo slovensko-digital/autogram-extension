@@ -4,6 +4,9 @@
 import { DSigXadesBpAdapter } from "./dsig-xades-bp-adapter";
 import { DSigXadesAdapter } from "./dsig-xades-adapter";
 import { DBridgeAutogramImpl } from "../autogram/autogram-implementation";
+import { createLogger } from "../../log";
+
+const log = createLogger("ag-ext.ditecx");
 
 class DummyClass {}
 
@@ -65,11 +68,11 @@ export async function constructDitecX() {
       ERROR_LAUNCH_FAILED: -202,
       ERROR_LAUNCH_FORBIDDEN: -203,
       isDitecError: function (error) {
-        console.log("isDitecError", error);
+        log.debug("isDitecError", error);
         return true;
       },
       extendClass: function (...args) {
-        console.log("extendClass", args);
+        log.debug("extendClass", args);
       },
     },
     versions: {},
@@ -80,6 +83,6 @@ export async function constructDitecX() {
     DginaJava: new Proxy(new DummyClass(), handler),
     AbstractJsCore: new Proxy(new DummyClass(), handler),
   };
-  console.log("ditecX", ditecX);
+  log.debug("ditecX", ditecX);
   return ditecX;
 }
