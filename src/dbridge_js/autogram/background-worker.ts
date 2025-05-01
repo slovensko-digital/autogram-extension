@@ -142,6 +142,7 @@ class AvmExecutor {
     get,
     set,
   });
+  // TODO: store this somewhere, so we can use it after worker is resumed??
   private documentRefs = new Map<SenderId, AVMIntegrationDocument>();
   private abortControllers = new Map<SenderId, AbortController>();
 
@@ -187,6 +188,19 @@ class AvmExecutor {
       // TODO abort when tab is closed
       const abortController = new AbortController();
       this.abortControllers.set(senderId, abortController);
+
+      // TODO: use alarms to abort when tab is closed
+      // const alarmName = "autogram-signature-timeout-" + senderId;
+      // browser.alarms.create(alarmName, {
+      //   delayInMinutes: 120,
+      // });
+      // browser.alarms.onAlarm.addListener((alarm) => {
+      //   if (alarm.name === alarmName) {
+      //     log.debug("Alarm triggered", alarm);
+      //     abortController.abort("Timeout");
+      //   }
+      // });
+
       const timeout = setTimeout(
         () => {
           abortController.abort("Timeout");
@@ -447,4 +461,8 @@ class KeepAlive {
  */
 export function isSafari(): boolean {
   return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
+
+export function isMacOS(): boolean {
+  return navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 }

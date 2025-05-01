@@ -14,7 +14,7 @@ try {
   // browser.runtime.sendMessage({ bgRuntimeEvent: "init" });
 
   browser.runtime.onStartup.addListener(() => {
-    console.log(`onStartup()`);
+    log.debug(`onStartup()`);
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
   });
 
@@ -42,6 +42,8 @@ try {
   browser.runtime.onUpdateAvailable.addListener(() => {
     log.debug(`onUpdateAvailable()`);
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
+    const worker = new BackgroundWorker();
+    worker.initListener();
   });
 
   browser.runtime.onConnect.addListener((port) => {
@@ -54,8 +56,13 @@ try {
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onMessage" });
   });
 
-  // const worker = new BackgroundWorker();
-  // worker.initListener();
+  browser.runtime.onStartup.addListener(() => {
+    log.debug(`onStartup()`);
+    // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
+  });
+
+  const worker = new BackgroundWorker();
+  worker.initListener();
 } catch (e) {
   captureException(e);
 }

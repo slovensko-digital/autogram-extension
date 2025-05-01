@@ -185,7 +185,7 @@ export class WebChannelCaller {
    */
   private responseEventHandler(evt: CustomEvent) {
     log.debug("responseEventHandler", this);
-    log.debug("web message response", evt.detail);
+    log.debug("web message response ⬅️", evt.detail);
 
     const data = ZChannelResponse.parse(evt.detail);
 
@@ -212,7 +212,7 @@ export class WebChannelCaller {
   public async sendMessage(data: Omit<ChannelMessage, "id">): Promise<unknown> {
     const id = randomUUID();
     const detail = { ...data, id };
-    log.debug(detail);
+    log.debug("Sending message ➡️", detail);
     try {
       const evt = new CustomEvent(EVENT_SEND_MESSAGE_INJ_TO_CS, {
         detail,

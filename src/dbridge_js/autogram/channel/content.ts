@@ -63,13 +63,16 @@ export class ContentChannelPassthrough {
     }
     this.hello();
     // Stupid solution to keep the port alive and the worker active
-    this.helloInterval = setInterval(() => {
-      this.hello();
-    }, 10000);
+    this.helloInterval = setInterval(
+      () => {
+        this.hello();
+      },
+      2 * 60 * 1000
+    );
   }
 
   postMessageToBackground(message: ChannelMessage, retryNumber = 0) {
-    log.debug("content post message", message, retryNumber);
+    log.debug("content post message ➡️", message, retryNumber);
     try {
       if (!this.portToBackground) {
         throw new Error("Port to background is not initialized");
@@ -112,7 +115,7 @@ export class ContentChannelPassthrough {
       EVENT_SEND_MESSAGE_INJ_TO_CS,
       (evt: CustomEvent) => {
         const data = ZChannelMessage.parse(evt.detail);
-        log.debug("recieved EVENT_SEND_MESSAGE", data);
+        log.debug("➡️ recieved EVENT_SEND_MESSAGE_INJ_TO_CS", data);
         this.postMessageToBackground(data);
       }
     );
@@ -124,7 +127,7 @@ export class ContentChannelPassthrough {
       return;
     }
     this.portToBackground.onMessage.addListener((message) => {
-      log.debug("content message", message);
+      log.debug("content message ⬅️", message);
       const data = ZChannelResponse.parse(message);
       if (data.id === "log") {
         log.debug("content log from background", data.result);

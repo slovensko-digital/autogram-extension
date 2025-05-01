@@ -109,6 +109,12 @@ https://developer.apple.com/documentation/safariservices/safari_web_extensions/r
 
 https://developer.apple.com/documentation/safariservices/safari_web_extensions/assessing_your_safari_web_extension_s_browser_compatibility
 
+#### Developing on Safari
+
+run `npm run start:manifest2` and `npm run example-usage` in separate terminal, open http://localhost:49675/ in Safari. Open XCode with extension project and run it. It will open "app" which is just a wrapper for extension. Open Safari, check Develop>Allow unsigned extensions, open settings and enable the extension. Open console in Safari and you should see logs from `example-usage` app.
+
+Every time you change something you need to "build"/run extension in XCode. 
+
 ## Otazky a odpovede
 
 ### Ako funguje extension
@@ -164,3 +170,8 @@ API dbridge_js funguje nasledovne:
 ## Autogram SDK
 
 Hlavná časť spojenia s Autogramom je v implementovaná cez [Autogram SDK](https://github.com/slovensko-digital/autogram-sdk) ktoré obsahuje aj UI na rozhodovanie sa medzi desktopovým a mobilným podpoisovačom.
+
+# Stranky na ktorych treba otestovat ci funguju spravne
+
+- https://portal.minv.sk/wps/myportal/domov/co2/podania/pobyt/
+- Colné vyhlásenie pre zásielku s nízkou hodnotou https://www.ecm.financnasprava.sk/Formular/Dovozne-CV-tovar-s-nizkou-hodnotou
