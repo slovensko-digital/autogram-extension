@@ -3,6 +3,7 @@ import {
   AVMDocumentToSign,
   AVMSignedDocument,
   randomUUID,
+  UserCancelledSigningException,
 } from "autogram-sdk";
 
 import {
@@ -196,7 +197,13 @@ export class WebChannelCaller {
     }
 
     if (data.error) {
-      promiseWithResolvers.reject(data.error);
+      // This is becuase if we try to move the error over serialized interface (postMessage) we lose the type
+      // TODO: instead of doing this, we should probably have either Result type that will be serializable?
+      if (data.error?.error?.name === "UserCancelledSigningException") {
+        promiseWithResolvers.reject(new UserCancelledSigningException());
+      } else {
+        promiseWithResolvers.reject(data.error);
+      }
     } else {
       promiseWithResolvers.resolve(data.result);
     }
