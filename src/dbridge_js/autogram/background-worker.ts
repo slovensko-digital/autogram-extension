@@ -21,119 +21,122 @@ export class BackgroundWorker {
 
   initListener() {
     log.debug("initListener");
-    const keepAlive = new KeepAlive();
 
-    browser.runtime.onConnect.addListener((newPort) => {
-      let port: browser.Runtime.Port | null = newPort;
-
-      const postMessage = (message: unknown) => {
-        try {
-          if (!port) {
-            log.debug("Port is null in postMessage");
-            return;
-          }
-          port.postMessage(message);
-        } catch (e) {
-          log.error("postMessage error", e);
-        }
-      };
-
-      log.debug("onConnect", port);
-      // const logListener = (
-      //   level: string,
-      //   message: string,
-      //   ...args: unknown[]
-      // ) => {
-      //   const logMessage = {
-      //     level,
-      //     message,
-      //     args,
-      //   };
-      //   postMessage({
-      //     id: "log",
-      //     result: logMessage,
-      //   });
-      // };
-      // this creates a loop
-      // log.addListener(logListener);
-
-      keepAlive.start();
-      log.debug("Connected .....", port);
-      const handleMessage = (request) => {
-        if (!port) {
-          log.error("Port is null in handleMessage");
-          return;
-        }
-        const sender = port.sender;
-        if (!sender) {
-          throw new Error("Sender not found");
-        }
-        // log.debug("background message", request);
-        const senderId = getSenderId(sender);
-        const data = ZChannelMessage.parse(request);
-        log.debug("background data", data);
-        // just to start the worker
-        if (data.method === "hello") {
-          return;
-        }
-
-        const app = data.app === "avm" ? this.avm : this.autogram;
-
-        app.run(data, senderId).then(
-          (result) => {
-            const response = {
-              id: data.id,
-              result: result ?? null,
-            };
-            log.debug(
-              "background response",
-              response,
-              JSON.stringify(response),
-              typeof response?.result
-            );
-            postMessage(response);
-          },
-          (error: Error) => {
-            log.error("background error", error);
-            // only serializable objects can be passed to postMessage
-            postMessage({
-              id: data.id,
-              error: JSON.parse(
-                JSON.stringify({
-                  message: error.message,
-                  name: error.name,
-                  cause: error.cause,
-                  error: error,
-                })
-              ),
-            });
-          }
-        );
-      };
-
-      port.onDisconnect.addListener((p) => {
-        log.debug("Disconnected .....", {
-          port,
-          p,
-          lastError: browser.runtime.lastError,
-        });
-        // log.removeListener(logListener);
-
-        keepAlive.stop();
-
-        if (!port) {
-          log.error("Port is null in onDisconnect");
-          return;
-        }
-        port.onMessage.removeListener(handleMessage);
-        port = null;
-      });
-
-      port.onMessage.addListener(handleMessage);
-    });
+    browser.runtime.onConnect.addListener(this.onConnectListener.bind(this));
     //   browser.runtime.onMessage.addListener((message) => {
     //     console.log("background message", message);
     //   });
+  }
+
+  onConnectListener(newPort: browser.Runtime.Port) {
+    let port: browser.Runtime.Port | null = newPort;
+    log.debug("onConnect", port);
+    
+    const keepAlive = new KeepAlive();
+
+    const postMessage = (message: unknown) => {
+      try {
+        if (!port) {
+          log.debug("Port is null in postMessage");
+          return;
+        }
+        port.postMessage(message);
+      } catch (e) {
+        log.error("postMessage error", e);
+      }
+    };
+
+    // const logListener = (
+    //   level: string,
+    //   message: string,
+    //   ...args: unknown[]
+    // ) => {
+    //   const logMessage = {
+    //     level,
+    //     message,
+    //     args,
+    //   };
+    //   postMessage({
+    //     id: "log",
+    //     result: logMessage,
+    //   });
+    // };
+    // this creates a loop
+    // log.addListener(logListener);
+
+    keepAlive.start();
+    log.debug("Connected .....", port);
+    const handleMessage = (request) => {
+      if (!port) {
+        log.error("Port is null in handleMessage");
+        return;
+      }
+      const sender = port.sender;
+      if (!sender) {
+        throw new Error("Sender not found");
+      }
+      // log.debug("background message", request);
+      const senderId = getSenderId(sender);
+      const data = ZChannelMessage.parse(request);
+      log.debug("background data", data);
+      // just to start the worker
+      if (data.method === "hello") {
+        return;
+      }
+
+      const app = data.app === "avm" ? this.avm : this.autogram;
+
+      app.run(data, senderId).then(
+        (result) => {
+          const response = {
+            id: data.id,
+            result: result ?? null,
+          };
+          log.debug(
+            "background response",
+            response,
+            JSON.stringify(response),
+            typeof response?.result
+          );
+          postMessage(response);
+        },
+        (error: Error) => {
+          log.error("background error", error);
+          // only serializable objects can be passed to postMessage
+          postMessage({
+            id: data.id,
+            error: JSON.parse(
+              JSON.stringify({
+                message: error.message,
+                name: error.name,
+                cause: error.cause,
+                error: error,
+              })
+            ),
+          });
+        }
+      );
+    };
+
+    port.onDisconnect.addListener((p) => {
+      log.debug("Disconnected .....", {
+        port,
+        p,
+        lastError: browser.runtime.lastError,
+      });
+      // log.removeListener(logListener);
+
+      keepAlive.stop();
+
+      if (!port) {
+        log.error("Port is null in onDisconnect");
+        return;
+      }
+      port.onMessage.removeListener(handleMessage);
+      port = null;
+    });
+
+    port.onMessage.addListener(handleMessage);
   }
 }
 

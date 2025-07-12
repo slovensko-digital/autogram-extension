@@ -18,32 +18,32 @@ try {
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
   });
 
-  // if (chrome.runtime.onSuspend) {
-  //   chrome.runtime.onSuspend.addListener(() => {
-  //     console.log(`onSuspend()`);
-  //     browser.runtime.sendMessage({ bgRuntimeEvent: "onSuspend" });
-  //   });
-  // }
-  // if (chrome.runtime.onRestartRequired) {
-  //   chrome.runtime.onRestartRequired.addListener(() => {
-  //     console.log(`onRestartRequired()`);
-  //     browser.runtime.sendMessage({ bgRuntimeEvent: "onRestartRequired" });
-  //   });
-  // }
+  if (chrome?.runtime?.onSuspend) {
+    chrome.runtime.onSuspend.addListener(() => {
+      console.log(`onSuspend()`);
+      browser.runtime.sendMessage({ bgRuntimeEvent: "onSuspend" });
+    });
+  }
+  if (chrome?.runtime?.onRestartRequired) {
+    chrome.runtime.onRestartRequired.addListener(() => {
+      console.log(`onRestartRequired()`);
+      browser.runtime.sendMessage({ bgRuntimeEvent: "onRestartRequired" });
+    });
+  }
 
   browser.runtime.onInstalled.addListener(() => {
     log.debug(`onInstalled()`);
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onInstalled" });
 
-    const worker = new BackgroundWorker();
-    worker.initListener();
+    // const worker = new BackgroundWorker();
+    // worker.initListener();
   });
 
   browser.runtime.onUpdateAvailable.addListener(() => {
     log.debug(`onUpdateAvailable()`);
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onUpdateAvailable" });
-    const worker = new BackgroundWorker();
-    worker.initListener();
+    // const worker = new BackgroundWorker();
+    // worker.initListener();
   });
 
   browser.runtime.onConnect.addListener((port) => {
@@ -61,6 +61,7 @@ try {
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
   });
 
+  log.debug("Initializing BackgroundWorker");
   const worker = new BackgroundWorker();
   worker.initListener();
 } catch (e) {
