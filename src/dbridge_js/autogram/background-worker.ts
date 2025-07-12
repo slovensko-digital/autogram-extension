@@ -245,6 +245,8 @@ class AutogramExecutor {
     let serverProtocol: "http" | "https" = "http";
     let serverHost = "localhost";
 
+    // TODO: there is problem that if we run http first (in chrome)  and then https in safari signing won't work
+    // also true in reverse. We sould check if upgrading to https 
     if (isSafari()) {
       // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http
       serverProtocol = "https";

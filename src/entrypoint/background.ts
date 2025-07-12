@@ -11,6 +11,11 @@ try {
     `Autogram extension ${__PACKAGE_VERSION__}(mv${__MANIFEST_VERSION__})`
   );
 
+  // TODO If I move this to bottom it will not work in Safari, why?
+  log.debug("Initializing BackgroundWorker");
+  const worker = new BackgroundWorker();
+  worker.initListener();
+
   // browser.runtime.sendMessage({ bgRuntimeEvent: "init" });
 
   browser.runtime.onStartup.addListener(() => {
@@ -60,10 +65,6 @@ try {
     log.debug(`onStartup()`);
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
   });
-
-  log.debug("Initializing BackgroundWorker");
-  const worker = new BackgroundWorker();
-  worker.initListener();
 } catch (e) {
   captureException(e);
 }
