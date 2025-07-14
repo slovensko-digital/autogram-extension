@@ -22,7 +22,7 @@ const RETRY_LIMIT = 5;
  */
 export class ContentChannelPassthrough {
   portToBackground: chrome.runtime.Port | null; // We use chrome.runtime here because `import browser from "webextension-polyfill"` is not working in web (page) script
-  helloInterval: number | NodeJS.Timeout | null;
+  // helloInterval: number | NodeJS.Timeout | null;
   reinitNumber = 0;
   isEventListenerInitialized = false;
   constructor() {
@@ -58,17 +58,17 @@ export class ContentChannelPassthrough {
         lastError: chrome.runtime.lastError,
       });
     });
-    if (this.helloInterval) {
-      clearInterval(this.helloInterval as number);
-    }
-    this.hello();
-    // Stupid solution to keep the port alive and the worker active
-    this.helloInterval = setInterval(
-      () => {
-        this.hello();
-      },
-      2 * 60 * 1000
-    );
+    // if (this.helloInterval) {
+    //   clearInterval(this.helloInterval as number);
+    // }
+    // this.hello();
+    // // Stupid solution to keep the port alive and the worker active
+    // this.helloInterval = setInterval(
+    //   () => {
+    //     this.hello();
+    //   },
+    //   2 * 60 * 1000
+    // );
   }
 
   postMessageToBackground(message: ChannelMessage, retryNumber = 0) {
@@ -97,14 +97,14 @@ export class ContentChannelPassthrough {
     }
   }
 
-  hello() {
-    this.postMessageToBackground({
-      id: "hello",
-      method: "hello",
-      args: null,
-      app: "avm",
-    });
-  }
+  // hello() {
+  //   this.postMessageToBackground({
+  //     id: "hello",
+  //     method: "hello",
+  //     args: null,
+  //     app: "avm",
+  //   });
+  // }
 
   initEventListener() {
     log.debug("initEventListener");

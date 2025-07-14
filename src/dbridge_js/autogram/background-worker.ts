@@ -31,8 +31,8 @@ export class BackgroundWorker {
   onConnectListener(newPort: browser.Runtime.Port) {
     let port: browser.Runtime.Port | null = newPort;
     log.debug("onConnect", port);
-    
-    const keepAlive = new KeepAlive();
+
+    // const keepAlive = new KeepAlive();
 
     const postMessage = (message: unknown) => {
       try {
@@ -64,7 +64,7 @@ export class BackgroundWorker {
     // this creates a loop
     // log.addListener(logListener);
 
-    keepAlive.start();
+    // keepAlive.start();
     log.debug("Connected .....", port);
     const handleMessage = (request) => {
       if (!port) {
@@ -80,9 +80,9 @@ export class BackgroundWorker {
       const data = ZChannelMessage.parse(request);
       log.debug("background data", data);
       // just to start the worker
-      if (data.method === "hello") {
-        return;
-      }
+      // if (data.method === "hello") {
+      //   return;
+      // }
 
       const app = data.app === "avm" ? this.avm : this.autogram;
 
@@ -126,7 +126,7 @@ export class BackgroundWorker {
       });
       // log.removeListener(logListener);
 
-      keepAlive.stop();
+      // keepAlive.stop();
 
       if (!port) {
         log.error("Port is null in onDisconnect");
@@ -246,7 +246,7 @@ class AutogramExecutor {
     let serverHost = "localhost";
 
     // TODO: there is problem that if we run http first (in chrome)  and then https in safari signing won't work
-    // also true in reverse. We sould check if upgrading to https 
+    // also true in reverse. We sould check if upgrading to https
     if (isSafari()) {
       // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http
       serverProtocol = "https";
@@ -436,29 +436,29 @@ function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
   return `${sender.tab?.id?.toString()}|${sender.frameId?.toString()}`;
 }
 
-/**
- * https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#keep-sw-alive
- *
- * Keep the service worker alive by periodically calling extension API to prevent it from being stopped.
- */
-class KeepAlive {
-  private interval: number | null = null;
+// /**
+//  * https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#keep-sw-alive
+//  *
+//  * Keep the service worker alive by periodically calling extension API to prevent it from being stopped.
+//  */
+// class KeepAlive {
+//   private interval: number | null = null;
 
-  start() {
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-    log.debug("KeepAlive start");
-    this.interval = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
-  }
+//   start() {
+//     if (this.interval) {
+//       clearInterval(this.interval);
+//     }
+//     log.debug("KeepAlive start");
+//     this.interval = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+//   }
 
-  stop() {
-    if (this.interval) {
-      log.debug("KeepAlive stop");
-      clearInterval(this.interval);
-    }
-  }
-}
+//   stop() {
+//     if (this.interval) {
+//       log.debug("KeepAlive stop");
+//       clearInterval(this.interval);
+//     }
+//   }
+// }
 
 /**
  *
