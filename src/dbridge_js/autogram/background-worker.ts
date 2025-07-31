@@ -146,7 +146,6 @@ class AvmExecutor {
     set,
   });
   // TODO: store this somewhere, so we can use it after worker is resumed??
-  private documentRefs = new Map<SenderId, AVMIntegrationDocument>();
   private abortControllers = new Map<SenderId, AbortController>();
 
   public async run(data: ChannelMessage, senderId: SenderId) {
@@ -165,11 +164,11 @@ class AvmExecutor {
       }
       await this.apiClient.loadOrRegister();
     },
-    getQrCodeUrl: (args: unknown, senderId: SenderId): Promise<string> => {
+    getQrCodeUrl: async (args: unknown, senderId: SenderId): Promise<string> => {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      const doc = this.documentRefs.get(senderId);
+      const doc = await get(`autogram:avm:documentRef:${senderId}`);
       if (!doc) {
         throw new Error("Document not found");
       }
@@ -180,11 +179,11 @@ class AvmExecutor {
       const documentRef = await this.apiClient.addDocument(
         documentToSign as unknown as AVMDocumentToSign
       );
-      this.documentRefs.set(senderId, documentRef);
+      await set(`autogram:avm:documentRef:${senderId}`, documentRef);
     },
 
     waitForSignature: async (args: unknown, senderId: SenderId) => {
-      const documentRef = this.documentRefs.get(senderId);
+      const documentRef = await get(`autogram:avm:documentRef:${senderId}`);
       if (!documentRef) {
         throw new Error("Document not found");
       }
@@ -193,31 +192,35 @@ class AvmExecutor {
       this.abortControllers.set(senderId, abortController);
 
       // TODO: use alarms to abort when tab is closed
-      // const alarmName = "autogram-signature-timeout-" + senderId;
-      // browser.alarms.create(alarmName, {
-      //   delayInMinutes: 120,
-      // });
-      // browser.alarms.onAlarm.addListener((alarm) => {
-      //   if (alarm.name === alarmName) {
-      //     log.debug("Alarm triggered", alarm);
-      //     abortController.abort("Timeout");
-      //   }
-      // });
-
-      const timeout = setTimeout(
-        () => {
+      const alarmName = "autogram-signature-timeout-" + senderId;
+      browser.alarms.create(alarmName, {
+        delayInMinutes: 120,
+      });
+      browser.alarms.onAlarm.addListener((alarm) => {
+        if (alarm.name === alarmName) {
+          log.debug("Alarm triggered", alarm);
           abortController.abort("Timeout");
-        },
-        1000 * 60 * 60 * 2 // 2 hours
-      );
+          browser.alarms.clear(alarmName);
+        }
+      });
+
+
+      // const timeout = setTimeout(
+      //   () => {
+      //     abortController.abort("Timeout");
+      //   },
+      //   1000 * 60 * 60 * 2 // 2 hours
+      // );
       abortController.signal.addEventListener("abort", () => {
-        clearTimeout(timeout);
+        // clearTimeout(timeout);
+        browser.alarms.clear(alarmName);
       });
       const res = await this.apiClient.waitForSignature(
         documentRef,
         abortController
       );
-      clearTimeout(timeout);
+      // clearTimeout(timeout);
+      browser.alarms.clear(alarmName);
       log.debug("res", res);
       return res;
     },
@@ -234,7 +237,10 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      this.documentRefs.delete(senderId);
+      await set(`autogram:avm:documentRef:${senderId}`, undefined);
+      // TODO: should we abort the request when resetting?
+      this.abortControllers.delete(senderId);
+      browser.alarms.clear("autogram-signature-timeout-" + senderId);
     },
   };
 }
