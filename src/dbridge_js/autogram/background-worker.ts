@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
   AutogramVMobileIntegration,
-  AVMIntegrationDocument,
   AVMDocumentToSign,
   desktopApiClient,
   DesktopSignResponseBody,
@@ -13,6 +12,7 @@ import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
 
 const log = createLogger("ag-ext.bg.worker");
+
 export class BackgroundWorker {
   constructor(
     private avm = new AvmExecutor(),
@@ -164,7 +164,10 @@ class AvmExecutor {
       }
       await this.apiClient.loadOrRegister();
     },
-    getQrCodeUrl: async (args: unknown, senderId: SenderId): Promise<string> => {
+    getQrCodeUrl: async (
+      args: unknown,
+      senderId: SenderId
+    ): Promise<string> => {
       if (args !== null) {
         throw new Error("Invalid args");
       }
@@ -203,7 +206,6 @@ class AvmExecutor {
           browser.alarms.clear(alarmName);
         }
       });
-
 
       // const timeout = setTimeout(
       //   () => {
