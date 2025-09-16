@@ -7,7 +7,7 @@ import {
 } from "../supported-sites";
 import { createLogger } from "../log";
 
-const log = createLogger("ag-ext.supported-sites");
+const log = createLogger("ag-ext.inject-ditec");
 
 type OriginalDitec = object;
 
