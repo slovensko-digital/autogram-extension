@@ -49,6 +49,7 @@ function generateManifest(
 
         permissions: [
           "storage",
+          "alarms",
           // "declarativeContent",
           // "webRequest",
           // "webNavigation",
@@ -135,6 +136,7 @@ function generateManifest(
 
         permissions: [
           "storage",
+          "alarms",
           // "declarativeContent", // chrome only - does not work in firefox
           ...enabledUrls,
         ],
