@@ -39,7 +39,11 @@ export class ContentChannelPassthrough {
     this.reinitNumber = retryNumber;
     if (this.portToBackground) {
       log.debug("Port to Background already initialized");
-      this.portToBackground.disconnect();
+      try {
+        this.portToBackground.disconnect();
+      } catch (e) {
+        log.error("Error disconnecting port", e);
+      }
       this.portToBackground = null;
     }
 
