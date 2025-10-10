@@ -11,6 +11,7 @@ try {
   const windowAny = window as WindowWithDitec;
 
   inject(windowAny);
+  injectCss(windowAny);
 
   log.debug("inject", {
     windowIsTop: window.top === window,
@@ -20,4 +21,12 @@ try {
   // debugger;
 } catch (e) {
   captureException(e);
+}
+
+function injectCss(window: Window) {
+  const style = document.createElement("style");
+  style.textContent = `/* special 🤪 Autogram CSS */`;
+
+  window.document.head.appendChild(style);
+  log.debug("injectCss");
 }
