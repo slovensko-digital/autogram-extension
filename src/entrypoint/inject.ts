@@ -11,7 +11,7 @@ try {
   const windowAny = window as WindowWithDitec;
 
   inject(windowAny);
-  injectCss(windowAny);
+  // injectCss(windowAny);
 
   log.debug("inject", {
     windowIsTop: window.top === window,
@@ -23,175 +23,175 @@ try {
   captureException(e);
 }
 
-function injectCss(window: Window) {
-  if (!window.location.hostname.endsWith("slovensko.sk")) return;
+// function injectCss(window: Window) {
+//   if (!window.location.hostname.endsWith("slovensko.sk")) return;
 
-  const style = document.createElement("style");
-  style.dataset.autogramExtension = "true";
-  style.textContent = `
+//   const style = document.createElement("style");
+//   style.dataset.autogramExtension = "true";
+//   style.textContent = `
 
-@media (max-width: 767px) {
-  .parent {
-      min-width: 0px !important;
-  }
+// @media (max-width: 767px) {
+//   .parent {
+//       min-width: 0px !important;
+//   }
 
-  .align-self-right {
-      margin-left: 0px !important;
-  }
+//   .align-self-right {
+//       margin-left: 0px !important;
+//   }
 
-  /* hide header */
-  #global-header .header-proposition {
-      display: none;
-  }
+//   /* hide header */
+//   #global-header .header-proposition {
+//       display: none;
+//   }
 
-  /** table **/
+//   /** table **/
 
-  /* hide table header */
-  tr[id*="DXHeadersRow0"] {
-      display: none !important;
-  }
+//   /* hide table header */
+//   tr[id*="DXHeadersRow0"] {
+//       display: none !important;
+//   }
 
-  .table td {
-      display: block;
-      width: 100%;
-      border-bottom: none !important;
-      border-top: none !important;
-      border: none;
-  }
+//   .table td {
+//       display: block;
+//       width: 100%;
+//       border-bottom: none !important;
+//       border-top: none !important;
+//       border: none;
+//   }
 
-  /* hide checkboxes in table */
-  tr > td[class="td_noclik_row dxgv"] {
-      display: none;
-  }
+//   /* hide checkboxes in table */
+//   tr > td[class="td_noclik_row dxgv"] {
+//       display: none;
+//   }
 
-  /* color cards */
-  table[id*="DXMainTable"] tr {
-      display: block;
-      background: #f7f7f7;
-      margin-bottom: 1rem;
-  }
+//   /* color cards */
+//   table[id*="DXMainTable"] tr {
+//       display: block;
+//       background: #f7f7f7;
+//       margin-bottom: 1rem;
+//   }
 
-  .table > tbody > tr > td.dxgv:last-child {
-      border-right-width: 0px !important;
-  }
+//   .table > tbody > tr > td.dxgv:last-child {
+//       border-right-width: 0px !important;
+//   }
 
-  tr[id*="DXDataRow"] > td:last-child {
-      text-align: left !important;
-  }
+//   tr[id*="DXDataRow"] > td:last-child {
+//       text-align: left !important;
+//   }
 
-  /* sidebar */
-  .app-layout__pane--left {
-      position: absolute;
-      left: 0;
-      z-index: 10;
-      width: 100%;
-      height: 100%;
-      visibility: hidden;
-  }
+//   /* sidebar */
+//   .app-layout__pane--left {
+//       position: absolute;
+//       left: 0;
+//       z-index: 10;
+//       width: 100%;
+//       height: 100%;
+//       visibility: hidden;
+//   }
 
-  aside[class="card card--underlined"] {
-      display: none;
-  }
+//   aside[class="card card--underlined"] {
+//       display: none;
+//   }
 
-  aside[class="card no-mrg-bottom"] {
-      display: none;
-  }
+//   aside[class="card no-mrg-bottom"] {
+//       display: none;
+//   }
 
-  /** upper bar toolbar **/
+//   /** upper bar toolbar **/
 
-  div[class="bar toolbar"] > div:nth-child(1) {
-      display: none;
-  }
+//   div[class="bar toolbar"] > div:nth-child(1) {
+//       display: none;
+//   }
 
-  div[class="bar toolbar"] > div > div[class*="align-items-right"] {
-      justify-content: flex-start;
-  }
+//   div[class="bar toolbar"] > div > div[class*="align-items-right"] {
+//       justify-content: flex-start;
+//   }
 
-  div[class="bar toolbar"] {
-      gap: 1rem;
-  }
+//   div[class="bar toolbar"] {
+//       gap: 1rem;
+//   }
 
-  div.bar.toolbar {
-      flex-wrap: wrap;
-  }
+//   div.bar.toolbar {
+//       flex-wrap: wrap;
+//   }
 
-  .btn-group--horizontal {
-      flex-wrap: wrap !important;
-  }
+//   .btn-group--horizontal {
+//       flex-wrap: wrap !important;
+//   }
 
-  .btn-layout--horizontal > * {
-      flex: initial !important;
-  }
+//   .btn-layout--horizontal > * {
+//       flex: initial !important;
+//   }
 
-  /* extend search menu button */
-  .no-pad-horizontal {
-      display: none;
-  }
+//   /* extend search menu button */
+//   .no-pad-horizontal {
+//       display: none;
+//   }
 
-  /** bottom bar toolbar **/
+//   /** bottom bar toolbar **/
 
-  section.toolbar > .bar__item {
-      margin-right: 0;
-  }
+//   section.toolbar > .bar__item {
+//       margin-right: 0;
+//   }
 
-  section.toolbar > .bar__item:has(> nav) {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      margin-bottom: 1rem;
-  }
+//   section.toolbar > .bar__item:has(> nav) {
+//       display: flex;
+//       justify-content: center;
+//       width: 100%;
+//       margin-bottom: 1rem;
+//   }
 
-  section.toolbar > div[class*="align-self-right"] {
-      margin-left: 0;
-  }
+//   section.toolbar > div[class*="align-self-right"] {
+//       margin-left: 0;
+//   }
 
-  /* remove "Strana X z Y strán" */
-  section.toolbar .btn-layout.paging .paging__text {
-      display: none;
-  }
+//   /* remove "Strana X z Y strán" */
+//   section.toolbar .btn-layout.paging .paging__text {
+//       display: none;
+//   }
 
-  /* text */
-  .text-ellipsis {
-      word-break: break-word !important;
-      white-space: normal !important;
-      overflow: visible !important;
-  }
+//   /* text */
+//   .text-ellipsis {
+//       word-break: break-word !important;
+//       white-space: normal !important;
+//       overflow: visible !important;
+//   }
 
-  .modal {
-      width: auto !important;
-  }
+//   .modal {
+//       width: auto !important;
+//   }
 
-  .display-flex {
-      flex-wrap: wrap;
-  }
+//   .display-flex {
+//       flex-wrap: wrap;
+//   }
 
-  .badge--plain {
-      color: white;
-      background-color: #13a02b;
-  }
+//   .badge--plain {
+//       color: white;
+//       background-color: #13a02b;
+//   }
 
-  /* pom's additions */
+//   /* pom's additions */
 
-  #header #loginPanel {
-        display: block !important;
-        width: 100%;
-        padding: 10px;
-        margin: 1em;
-        text-align: center;
-        background: unset;
-        border: #453b34 solid 3px;
-  }
+//   #header #loginPanel {
+//         display: block !important;
+//         width: 100%;
+//         padding: 10px;
+//         margin: 1em;
+//         text-align: center;
+//         background: unset;
+//         border: #453b34 solid 3px;
+//   }
 
-  #search {
-      display: none;
-  }
+//   #search {
+//       display: none;
+//   }
 
-  .modal--small {
-      width: 90% !important;
-    }
-}
-`;
+//   .modal--small {
+//       width: 90% !important;
+//     }
+// }
+// `;
 
-  window.document.head.appendChild(style);
-  log.debug("injectCss");
-}
+//   window.document.head.appendChild(style);
+//   log.debug("injectCss");
+// }
