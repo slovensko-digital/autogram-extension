@@ -29,7 +29,7 @@ function injectCss(window: Window) {
   const style = document.createElement("style");
   style.dataset.autogramExtension = "true";
   style.textContent = `
-  
+
 @media (max-width: 767px) {
   .parent {
       min-width: 0px !important;
@@ -40,7 +40,7 @@ function injectCss(window: Window) {
   }
 
   /* hide header */
-  #global-header {
+  #global-header .header-proposition {
       display: none;
   }
 
@@ -48,7 +48,7 @@ function injectCss(window: Window) {
 
   /* hide table header */
   tr[id*="DXHeadersRow0"] {
-      display: none;
+      display: none !important;
   }
 
   .table td {
@@ -56,11 +56,27 @@ function injectCss(window: Window) {
       width: 100%;
       border-bottom: none !important;
       border-top: none !important;
+      border: none;
   }
 
   /* hide checkboxes in table */
   tr > td[class="td_noclik_row dxgv"] {
       display: none;
+  }
+
+  /* color cards */
+  table[id*="DXMainTable"] tr {
+      display: block;
+      background: #f7f7f7;
+      margin-bottom: 1rem;
+  }
+
+  .table > tbody > tr > td.dxgv:last-child {
+      border-right-width: 0px !important;
+  }
+
+  tr[id*="DXDataRow"] > td:last-child {
+      text-align: left !important;
   }
 
   /* sidebar */
@@ -70,7 +86,7 @@ function injectCss(window: Window) {
       z-index: 10;
       width: 100%;
       height: 100%;
-      /*visibility: hidden;*/
+      visibility: hidden;
   }
 
   aside[class="card card--underlined"] {
@@ -140,6 +156,21 @@ function injectCss(window: Window) {
       white-space: normal !important;
       overflow: visible !important;
   }
+
+  .modal {
+      width: auto !important;
+  }
+
+  .display-flex {
+      flex-wrap: wrap;
+  }
+
+  .badge--plain {
+      color: white;
+      background-color: #13a02b;
+  }
+
+  /* pom's additions */
 
   #header #loginPanel {
         display: block !important;
