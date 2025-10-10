@@ -250,16 +250,8 @@ class AvmExecutor {
 class AutogramExecutor {
   private client: ReturnType<typeof desktopApiClient>;
   constructor() {
-    let serverProtocol: "http" | "https" = "http";
-    let serverHost = "localhost";
-
-    // TODO: there is problem that if we run http first (in chrome)  and then https in safari signing won't work
-    // also true in reverse. We sould check if upgrading to https
-    if (isSafari()) {
-      // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http
-      serverProtocol = "https";
-      serverHost = "loopback.autogram.slovensko.digital";
-    }
+    const serverProtocol: "http" | "https" = "http";
+    const serverHost = "localhost";
 
     this.client = desktopApiClient({
       serverProtocol,
@@ -467,15 +459,3 @@ function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
 //     }
 //   }
 // }
-
-/**
- *
- * @returns true if the browser is Safari (heuristic based on navigator.userAgent)
- */
-export function isSafari(): boolean {
-  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-}
-
-export function isMacOS(): boolean {
-  return navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-}
