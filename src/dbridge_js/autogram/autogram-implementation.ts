@@ -1,15 +1,10 @@
-import { Base64 } from "js-base64";
-import { SignResponseBody } from "../../autogram-api";
-import { UserCancelledSigningException } from "../../autogram-api/lib/apiClient";
-import { apiClient } from "../../client";
-import { AutogramRoot, createUI, SigningMethod } from "../../injected-ui";
-import { isSafari, TODO } from "../../util";
 import {
-  InputObject,
-  PartialSignerParameters,
-  SigningStatus,
-  SignRequest,
-} from "../ditecx/sign-request";
+  DesktopSignatureParameters,
+  DesktopSignResponseBody,
+} from "autogram-sdk";
+import { CombinedClient } from "autogram-sdk/with-ui";
+import { TODO } from "../../util";
+import { SigningStatus, SignRequest } from "../ditecx/sign-request";
 
 import {
   ImplementationInterface,
@@ -17,47 +12,48 @@ import {
   OnSuccessCallback,
   OnSuccessCallback1,
 } from "../ditecx/implementation";
-import { AvmChannelWeb } from "./avm-channel";
+import {
+  AutogramDesktopChannel,
+  AvmChannelWeb,
+  WebChannelCaller,
+} from "./channel/web";
+import { InputObject } from "../ditecx/types";
+import { createLogger } from "../../log";
+
+const log = createLogger("ag-ext.impl");
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 
 /**
+ * Implementation of signing using autogram-sdk
  *
+ * it means we can sign using both autogram and AVM
  */
 export class DBridgeAutogramImpl implements ImplementationInterface {
-  private client: ReturnType<typeof apiClient>;
-  private clientMobileIntegration: AvmChannelWeb;
   private signRequest: SignRequest;
   private language = "sk";
-  private signedObject: SignResponseBody;
+  private signedObject: DesktopSignResponseBody;
 
-  private signerIdentificationListeners: (() => void)[];
-  private signatureIndex = 1;
-  private ui: AutogramRoot;
+  private client: CombinedClient;
 
-  public constructor() {
-    let serverProtocol: "http" | "https" = "http";
-    let serverHost = "localhost";
-
-    if (isSafari()) {
-      // Quick hack - mozno je lepsie urobit to ako fallback ak nefunguje http
-      serverProtocol = "https";
-      serverHost = "loopback.autogram.slovensko.digital";
-    }
-
-    this.ui = createUI();
-
-    this.client = apiClient({
-      serverProtocol,
-      serverHost,
-      disableSecurity: true,
-      requestsOrigin: "*",
+  private constructor(client: CombinedClient) {
+    this.client = client;
+    this.signRequest = new SignRequest();
+    this.client.setResetSignRequestCallback(() => {
+      this.signRequest = new SignRequest();
     });
+  }
 
-    this.clientMobileIntegration = new AvmChannelWeb();
-    this.clientMobileIntegration.init();
-
-    this.resetSignRequest();
+  public static async init(): Promise<DBridgeAutogramImpl> {
+    const webChannelCaller = new WebChannelCaller();
+    webChannelCaller.init();
+    return new DBridgeAutogramImpl(
+      await CombinedClient.init(
+        new AvmChannelWeb(webChannelCaller),
+        new AutogramDesktopChannel(webChannelCaller),
+        () => {}
+      )
+    );
   }
 
   public async launch(callback: OnSuccessCallback): Promise<void> {
@@ -78,10 +74,9 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     callback: OnSuccessCallback & OnErrorCallback
   ): Promise<void> {
     if (this.signRequest.signingStatus !== SigningStatus.new) {
-      console.error("Signing non-new sign request");
+      log.error("Signing non-new sign request");
     }
 
-    // console.log(this.signatureParameters);
     this.signRequest.signatureId = signatureId;
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
@@ -92,35 +87,36 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   public addObject(obj: InputObject, callback: OnSuccessCallback): void {
     if (this.signRequest.signingStatus == SigningStatus.signed) {
-      console.warn("Resetting sign request");
+      log.warn("Resetting sign request");
       this.resetSignRequest();
     }
 
     if (this.signRequest.signingStatus !== SigningStatus.new) {
-      console.error("Adding object to non-new sign request");
+      log.error("Adding object to non-new sign request");
     }
-    console.log(obj);
+    log.info(obj);
     this.signRequest.addObject(obj);
-    console.log(callback);
+    log.debug(callback);
     callback.onSuccess();
   }
 
   public async getSignature(
-    parameters: PartialSignerParameters,
+    parameters: Partial<DesktopSignatureParameters>,
     callback: OnSuccessCallback1,
     decodeBase64 = false
   ): Promise<void> {
-    const signingMethod = await this.ui.startSigning();
-    if (signingMethod === SigningMethod.reader) {
-      const abortController = new AbortController();
-      this.ui.desktopSigning(abortController);
-      await this.launchDesktop(abortController);
-      return this.getSignatureDesktop(parameters, callback, decodeBase64);
-    } else if (signingMethod === SigningMethod.mobile) {
-      return this.getSignatureMobile(parameters, callback, decodeBase64);
-    } else {
-      console.log("Invalid signing method");
-      throw new Error("Invalid signing method");
+    try {
+      const response = await this.client.sign(
+        this.signRequest.document,
+        this.signRequest.signatureParameters(parameters),
+        this.signRequest.payloadMimeType,
+        decodeBase64
+      );
+      this.signedObject = response;
+      this.signRequest.signingStatus = SigningStatus.signed;
+      callback.onSuccess(response.content);
+    } catch (e) {
+      log.error(e);
     }
   }
 
@@ -129,7 +125,9 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     if (this.signedObject?.signedBy) {
       callback.onSuccess(this.signedObject?.signedBy);
     } else {
-      callback.onSuccess(`CN=(Používateľ Autogramu #${this.signatureIndex})`);
+      callback.onSuccess(
+        `CN=(Používateľ Autogramu #${this.client.getSignatureIndex()})`
+      );
     }
     // TODO skontrolovat ci preco nepouzivame takto riesene (asi si to pyta pred vypytanim si podpisu - kedze dsig podporuje taky flow)
     // this.signerIdentificationListeners.push(() => {
@@ -150,142 +148,13 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   // Private methods
 
-  private async launchDesktop(abortController?: AbortController) {
-    try {
-      const info = await this.client.info();
-      if (info.status != "READY") throw new Error("Wait for server");
-      console.log(`Autogram ${info.version} is ready`);
-    } catch (e) {
-      console.error(e);
-      const url = this.client.getLaunchURL();
-      console.log(`Opening "${url}"`);
-      window.location.assign(url);
-      try {
-        const info = await this.client.waitForStatus(
-          "READY",
-          100,
-          5,
-          abortController
-        );
-        console.log(`Autogram ${info.version} is ready`);
-      } catch (e) {
-        console.log("waiting for Autogram failed");
-        console.error(e);
-      }
-    }
-  }
-
-  private async getSignatureDesktop(
-    parameters: PartialSignerParameters,
-    callback: OnSuccessCallback1,
-    decodeBase64 = false
-  ): Promise<void> {
-    console.log("getSignatureDesktop");
-    this.client
-      .sign(
-        this.signRequest.document,
-        this.signRequest.signatureParameters(parameters),
-        this.signRequest.payloadMimeType
-      )
-      .then((signedObject) => {
-        TODO("restart SignRequest?");
-        this.signRequest.signingStatus = SigningStatus.signed;
-        this.signedObject = signedObject;
-
-        this.signerIdentificationListeners.forEach((cb) => cb());
-        this.signerIdentificationListeners = [];
-        this.signatureIndex++;
-
-        this.ui.hide();
-        this.ui.reset();
-
-        callback.onSuccess(
-          // TODO skontrolovat ci sa to niekedy moze pouzivat
-          decodeBase64
-            ? Base64.decode(this.signedObject.content)
-            : this.signedObject.content
-        );
-      })
-      .catch((reason) => {
-        if (reason instanceof UserCancelledSigningException) {
-          console.log("User cancelled request");
-        } else {
-          console.error(reason);
-          if (callback.onError) callback.onError(reason);
-        }
-      });
-  }
-
-  private async getSignatureMobile(
-    parameters: PartialSignerParameters,
-    callback: OnSuccessCallback1,
-    decodeBase64 = false
-  ): Promise<void> {
-    try {
-      const params = this.signRequest.signatureParameters(parameters);
-      const container =
-        params.container == null
-          ? null
-          : params.container == "ASiC_E"
-            ? "ASiC-E"
-            : "ASiC-S";
-
-      await this.clientMobileIntegration.loadOrRegister();
-      await this.clientMobileIntegration.addDocument({
-        document: this.signRequest.document,
-        parameters: {
-          ...params,
-          container: container ?? undefined,
-        },
-        payloadMimeType: this.signRequest.payloadMimeType,
-      });
-      const url = await this.clientMobileIntegration.getQrCodeUrl();
-      console.log({ url });
-      const abortController = new AbortController();
-      this.ui.showQRCode(url, abortController);
-      const signedObject =
-        await this.clientMobileIntegration.waitForSignature(abortController);
-      console.log({ signedObject });
-      if (signedObject === null || signedObject === undefined) {
-        throw new Error("Signing cancelled");
-      }
-
-      this.signRequest.signingStatus = SigningStatus.signed;
-      this.signedObject = {
-        content: signedObject.content,
-        signedBy:
-          signedObject.signers?.at(-1)?.signedBy ?? "Používateľ Autogramu",
-        issuedBy: signedObject.signers?.at(-1)?.issuedBy ?? "(neznámy)",
-      };
-
-      this.signerIdentificationListeners.forEach((cb) => cb());
-      this.signerIdentificationListeners = [];
-      this.signatureIndex++;
-
-      callback.onSuccess(
-        decodeBase64
-          ? Base64.decode(this.signedObject.content)
-          : this.signedObject.content
-      );
-
-      this.ui.hide();
-
-      this.clientMobileIntegration.reset();
-      this.ui.reset();
-    } catch (e) {
-      console.error(e);
-      if (callback.onError) callback.onError(e);
-    }
-  }
-
   private resetSignRequest() {
-    this.signerIdentificationListeners = [];
-    this.signRequest = new SignRequest();
+    this.client.resetSignRequest();
   }
 
   private assertSignedRequest() {
     if (this.signRequest.signingStatus !== SigningStatus.signed) {
-      console.error("Signing request not signed");
+      log.error("Signing request not signed");
     }
   }
 }

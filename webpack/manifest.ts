@@ -1,5 +1,5 @@
 import { ManifestPluginOptions as WMPOptions } from "webpack-manifest-plugin";
-import { enabledUrls } from "../src/constants";
+import { enabledUrls } from "../src/supported-sites";
 import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
 import { FileDescriptor } from "webpack-manifest-plugin/dist/helpers";
@@ -36,6 +36,7 @@ function generateManifest(
   };
 
   switch (manifestVersion) {
+    // MARK: manifest v3
     case 3:
       return <ManifestV3>{
         manifest_version: 3,
@@ -49,6 +50,8 @@ function generateManifest(
 
         permissions: [
           "storage",
+          "alarms",
+          "local-network-access",
           // "declarativeContent",
           // "webRequest",
           // "webNavigation",
@@ -62,10 +65,12 @@ function generateManifest(
             matches: enabledUrls,
             js: entries.content,
             all_frames: true,
+            run_at: "document_start",
           },
         ],
         background: {
           service_worker: entries.background[0],
+          type: "module",
         },
         action: {
           default_icon: {
@@ -81,8 +86,12 @@ function generateManifest(
         web_accessible_resources: [
           {
             resources: [
-              ...entries.inject.map((x) => [x, x + ".map"]).flat(),
-              ...entries.content.map((x) => [x, x + ".map"]).flat(),
+              // ...entries.inject.map((x) => [x, x + ".map"]).flat(),
+              // ...entries.content.map((x) => [x, x + ".map"]).flat(),
+
+              ...Object.keys(entries)
+                .map((key) => entries[key].map((x) => [x, x + ".map"]).flat())
+                .flat(),
               "static/logo.png",
             ],
             matches: enabledUrls,
@@ -95,6 +104,7 @@ function generateManifest(
         // },
       };
 
+    // MARK: manifest v2
     case 2:
     default:
       return <ManifestV2>{
@@ -124,11 +134,13 @@ function generateManifest(
 
         background: {
           scripts: entries.background,
-          persistent: true,
+          persistent: false,
         },
 
         permissions: [
           "storage",
+          "alarms",
+          "local-network-access",
           // "declarativeContent", // chrome only - does not work in firefox
           ...enabledUrls,
         ],
@@ -149,10 +161,10 @@ function generateManifest(
           ...enabledUrls,
         ],
         // TODO check if this is needed
-        externally_connectable: {
-          // chrome only
-          matches: enabledUrls,
-        },
+        // externally_connectable: {
+        //   // chrome only
+        //   matches: enabledUrls,
+        // },
         options_page: "static/options.html",
         // browser_specific_settings: {
         //   gecko: {

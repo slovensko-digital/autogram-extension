@@ -1,3 +1,51 @@
+# v2.0.4 (Fri Oct 10 2025)
+
+#### 🐛 Bug Fix
+
+- update css ([@pomali](https://github.com/pomali))
+- css!!!! ([@pomali](https://github.com/pomali))
+- add place for css injection ([@pomali](https://github.com/pomali))
+- add marks for better readability ([@pomali](https://github.com/pomali))
+- add `local-network-access` permission ([@pomali](https://github.com/pomali))
+- remove sentry in prod ([@pomali](https://github.com/pomali))
+- use http even in safari ([@pomali](https://github.com/pomali))
+- update autogram-sdk version ([@pomali](https://github.com/pomali))
+- fix problem with alarms ([@pomali](https://github.com/pomali))
+- cleanup ([@pomali](https://github.com/pomali))
+- add error handling ([@pomali](https://github.com/pomali))
+- fix logger name ([@pomali](https://github.com/pomali))
+- refactor: replace documentRefs Map with persistent storage for document references ([@pomali](https://github.com/pomali))
+- comment out hello and keepalive ([@pomali](https://github.com/pomali))
+- fix safari? ([@pomali](https://github.com/pomali))
+- fix: UserCancelledSigningException in WebChannelCaller ([@pomali](https://github.com/pomali))
+- fix listening to events twice ([@pomali](https://github.com/pomali))
+- Merge branch 'master' into advanced-conflict-resolver ([@pomali](https://github.com/pomali))
+- chore: update version to 2.0.4 and enhance Safari development instructions ([@pomali](https://github.com/pomali))
+- big fat commit ([@pomali](https://github.com/pomali))
+- docs: update developers guide with XCode build instructions for Safari ([@pomali](https://github.com/pomali))
+- fix safari build ([@pomali](https://github.com/pomali))
+- refactor: implement KeepAlive class to manage service worker lifecycle ([@pomali](https://github.com/pomali))
+- add keepalive on worker side, fix error loggin ([@pomali](https://github.com/pomali))
+- update sentry dsn ([@pomali](https://github.com/pomali))
+- Add IntervalInjector and support for bratislava.sk ([@pomali](https://github.com/pomali))
+- refactor: update versions type to object and simplify proxy injection logic ([@pomali](https://github.com/pomali))
+- Merge branch 'autogram-sdk' into advanced-conflict-resolver ([@pomali](https://github.com/pomali))
+- WIP feat: integrate Sentry for error handling and improve ESLint configuration ([@pomali](https://github.com/pomali))
+- Add formVersion to identifier if missing [#114](https://github.com/slovensko-digital/autogram-extension/pull/114) ([@celuchmarek](https://github.com/celuchmarek))
+- update sdk, cleanup, add retry for channel ([@pomali](https://github.com/pomali))
+- refactor: rename bundle files and update references to autogram SDK ([@pomali](https://github.com/pomali))
+- wip prechod na autogram-sdk ([@pomali](https://github.com/pomali))
+- add documentation, update proxy ([@pomali](https://github.com/pomali))
+- proof of concept pre obcan.justice.sk ([@pomali](https://github.com/pomali))
+- sync safari release at v2.0.3 [#97](https://github.com/slovensko-digital/autogram-extension/pull/97) ([@celuchmarek](https://github.com/celuchmarek))
+
+#### Authors: 2
+
+- [@pomali](https://github.com/pomali)
+- Marek Ceľuch ([@celuchmarek](https://github.com/celuchmarek))
+
+---
+
 # v2.0.3 (Thu Jun 27 2024)
 
 #### 🐛 Bug Fix

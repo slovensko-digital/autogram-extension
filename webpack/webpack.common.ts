@@ -8,6 +8,7 @@ import ESLintPlugin from "eslint-webpack-plugin";
 import "webpack-dev-server";
 import { manifestOptions } from "./manifest";
 import { manifestVersion } from "./manifest-version";
+import packageJson from "../package.json";
 
 let commitHash;
 try {
@@ -25,6 +26,8 @@ const config: webpack.Configuration = {
     background: "./src/entrypoint/background.ts",
     content: "./src/entrypoint/content.ts",
     inject: "./src/entrypoint/inject.ts",
+    injectIntervalDetectDitec:
+      "./src/entrypoint/inject-interval-detect-ditec.ts",
     popup: "./src/entrypoint/popup.ts",
     options: "./src/entrypoint/options.ts",
     redirect: "./src/entrypoint/redirect.ts",
@@ -40,25 +43,26 @@ const config: webpack.Configuration = {
     // },
   },
   output: {
-    filename: "[name].[contenthash].js",
+    filename: "autogram-[name].[contenthash].js",
     path: path.resolve(__dirname, "../dist"),
+    publicPath: "",
   },
   module: {
     rules: [
-      {
-        test: /\.module\.css$/i,
-        use: [
-          "style-loader",
-          {
-            loader: "css-loader",
-            options: {
-              importLoaders: 1,
-              modules: true,
-              exportType: "array",
-            },
-          },
-        ],
-      },
+      // {
+      //   test: /\.module\.css$/i,
+      //   use: [
+      //     "style-loader",
+      //     {
+      //       loader: "css-loader",
+      //       options: {
+      //         importLoaders: 1,
+      //         modules: true,
+      //         exportType: "array",
+      //       },
+      //     },
+      //   ],
+      // },
       {
         test: /\.css$/i,
         use: ["raw-loader"],
@@ -105,8 +109,11 @@ const config: webpack.Configuration = {
     // }),
 
     new webpack.DefinePlugin({
-      '__COMMIT_HASH__': JSON.stringify(commitHash),
-      '__MANIFEST_VERSION__': JSON.stringify(manifestVersion),
+      __COMMIT_HASH__: JSON.stringify(commitHash),
+      __MANIFEST_VERSION__: JSON.stringify(manifestVersion),
+      __PACKAGE_VERSION__: JSON.stringify(packageJson.version),
+      __IS_PRODUCTION__: JSON.stringify(process.env.NODE_ENV === "production"),
+      __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     }),
     new CopyPlugin({
       patterns: [

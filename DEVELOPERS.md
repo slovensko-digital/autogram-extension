@@ -1,4 +1,4 @@
-#  How to develop
+# How to develop
 
 We are using auto-it for releases so use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) commit message convention.
 
@@ -91,7 +91,10 @@ reason to do that.
 
 ### Safari
 
-Safari needs xcode project and associated app. We generate such app using 
+To update app build in XCode should be enough - it sources the extension from `dist` folder, so don't forget to have correct (manifest version 2) build there.
+Currently manifest version 3 background.service_worker does not work in Safari.
+
+Safari needs xcode project and associated app. We generate such app using
 
 ```
 npm run xcode-generate-safari-web-extension
@@ -105,6 +108,12 @@ https://developer.apple.com/documentation/safariservices/safari_web_extensions/c
 https://developer.apple.com/documentation/safariservices/safari_web_extensions/running_your_safari_web_extension
 
 https://developer.apple.com/documentation/safariservices/safari_web_extensions/assessing_your_safari_web_extension_s_browser_compatibility
+
+#### Developing on Safari
+
+run `npm run start:manifest2` and `npm run example-usage` in separate terminal, open http://localhost:49675/ in Safari. Open XCode with extension project and run it. It will open "app" which is just a wrapper for extension. Open Safari, check Develop>Allow unsigned extensions, open settings and enable the extension. Open console in Safari and you should see logs from `example-usage` app.
+
+Every time you change something you need to "build"/run extension in XCode. 
 
 ## Otazky a odpovede
 
@@ -137,8 +146,6 @@ API dbridge_js funguje nasledovne:
 ## Štruktúra codebase
 
 - `src` samotná aplikácia
-  - `autogram-api` - klientska kniznica pre komunikaciu s Autogramom (Desktop)
-  - `avm-api` - klientska kniznica pre komunikaciu s Autogram v Mobile (AVM)
   - `dbridge_js` - "hlavná časť"
     - `inject-ditec.ts` - samotne vkladanie objektu
     - `proxy.ts` - debugovacie interceptovanie/nahravanie pri pouzivani (WIP) (napr. na vyrabanie testov)
@@ -150,12 +157,21 @@ API dbridge_js funguje nasledovne:
   - `entrypoint` - vstupné skripty pre rôzne kontexty v ktorých beží extension
     - `content.ts` - časť spúšťajúca sa nad stránkou, vkladá `inject.ts`
     - `inject.ts` - časť spúšťaná vnútri stránky, injectuje samotnú funkcionalitu
+    - `inject-interval-detect-ditec.ts` - jednorázový skript, ktorý detekuje či bol injectnutý `ditec` objekt
     - `popup.ts` - správanie popup-u
     - ...
-  - `injected-ui` - UI komponenty vkladané do stránky
   - `img` - zdrojové obrázky na distribuciu (do store-u)
   - `options` - funkcionalita nastaveni ktora je zdielana medzi roznymi entrypointami
   - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
 - `example-usage` - sample aplikacia pouzivajuca dbrige_js (dsigner), kde sa da vyskusat funkcionalita extension-u
 - `scripts` - pomocné skripty
 - `webpack` - konfigurácie webpacku pre rôzne prostredia
+
+## Autogram SDK
+
+Hlavná časť spojenia s Autogramom je v implementovaná cez [Autogram SDK](https://github.com/slovensko-digital/autogram-sdk) ktoré obsahuje aj UI na rozhodovanie sa medzi desktopovým a mobilným podpoisovačom.
+
+# Stranky na ktorych treba otestovat ci funguju spravne
+
+- https://portal.minv.sk/wps/myportal/domov/co2/podania/pobyt/
+- Colné vyhlásenie pre zásielku s nízkou hodnotou https://www.ecm.financnasprava.sk/Formular/Dovozne-CV-tovar-s-nizkou-hodnotou
