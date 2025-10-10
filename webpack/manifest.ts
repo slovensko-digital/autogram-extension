@@ -36,6 +36,7 @@ function generateManifest(
   };
 
   switch (manifestVersion) {
+    // MARK: manifest v3
     case 3:
       return <ManifestV3>{
         manifest_version: 3,
@@ -103,6 +104,7 @@ function generateManifest(
         // },
       };
 
+    // MARK: manifest v2
     case 2:
     default:
       return <ManifestV2>{

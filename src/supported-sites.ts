@@ -99,11 +99,13 @@ class SupportedSites {
   }
 }
 
+// MARK: supported sites
 export const supportedSites = new SupportedSites();
 
 const basicUrls = [
   "https://www.slovensko.sk/*",
   "https://schranka.slovensko.sk/*",
+  "https://schranka.upvsfixnew.gov.sk/*",
   "https://pfseform.financnasprava.sk/*",
   "https://www.financnasprava.sk/*",
   "https://cep.financnasprava.sk/*",
@@ -111,6 +113,7 @@ const basicUrls = [
   "https://eformulare.socpoist.sk/*",
   "https://sluzby.orsr.sk/*",
 ];
+
 
 for (const url of basicUrls) {
   supportedSites.addSite(
