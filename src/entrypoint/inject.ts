@@ -1,6 +1,7 @@
 import { inject } from "../dbridge_js/inject-ditec";
 import { createLogger } from "../log";
 import { captureException } from "../sentry";
+import { isMobileDevice } from "../util";
 
 const log = createLogger("ag-ext.ent.inject");
 try {
@@ -12,6 +13,7 @@ try {
 
   inject(windowAny);
   // injectCss(windowAny);
+  maybeInsertUpvsFixes();
 
   log.debug("inject", {
     windowIsTop: window.top === window,
@@ -23,175 +25,289 @@ try {
   captureException(e);
 }
 
-// function injectCss(window: Window) {
-//   if (!window.location.hostname.endsWith("slovensko.sk")) return;
+function maybeInsertUpvsFixes() {
+  if (window.location.hostname.endsWith("slovensko.sk") && isMobileDevice()) {
+    injectCss();
+  }
 
-//   const style = document.createElement("style");
-//   style.dataset.autogramExtension = "true";
-//   style.textContent = `
+  if (
+    window.location.hostname.endsWith("schranka.slovensko.sk") &&
+    isMobileDevice()
+  ) {
+    if (document.querySelector(".app-layout__pane--left") != null) {
+      addHamburgerMenu();
+    }
 
-// @media (max-width: 767px) {
-//   .parent {
-//       min-width: 0px !important;
-//   }
+    removeEmptyAttachmentCells();
+  }
 
-//   .align-self-right {
-//       margin-left: 0px !important;
-//   }
+  function addHamburgerMenu() {
+    const parent = document.querySelector(".header-global");
 
-//   /* hide header */
-//   #global-header .header-proposition {
-//       display: none;
-//   }
+    const div = document.createElement("div");
+    div.className = "btn btn--plain no-mrg-bottom";
+    div.style = "margin: 0 15px; height: 2.5rem; margin-top: 1.35rem;";
+    div.onclick = () => {
+      document
+        .querySelector(".app-layout__pane--left")
+        ?.classList.toggle("open");
+    };
 
-//   /** table **/
+    const span = document.createElement("span");
 
-//   /* hide table header */
-//   tr[id*="DXHeadersRow0"] {
-//       display: none !important;
-//   }
+    div.innerHTML = `
+        <svg class="icon icon-plus" viewBox="0 0 24 24" role="img"
+             xmlns="http://www.w3.org/2000/svg" style="width: 1.5em; height: 1.5em;">
+          <path d="M4 18h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1Zm0-5h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1ZM3 7c0 .55.45 1 1 1h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1Z" fill="currentColor"></path>
+        </svg>
+    `;
 
-//   .table td {
-//       display: block;
-//       width: 100%;
-//       border-bottom: none !important;
-//       border-top: none !important;
-//       border: none;
-//   }
+    div.appendChild(span);
 
-//   /* hide checkboxes in table */
-//   tr > td[class="td_noclik_row dxgv"] {
-//       display: none;
-//   }
+    parent?.appendChild(div);
+  }
 
-//   /* color cards */
-//   table[id*="DXMainTable"] tr {
-//       display: block;
-//       background: #f7f7f7;
-//       margin-bottom: 1rem;
-//   }
+  function removeEmptyAttachmentCells() {
+    const cells = Array.from(
+      document.querySelectorAll(
+        '[id^="ctl00_ctl00_CphMasterMain_CphMain_phGvMessageList_gvMessage_tccell"][id$="_4"]'
+      )
+    );
 
-//   .table > tbody > tr > td.dxgv:last-child {
-//       border-right-width: 0px !important;
-//   }
+    cells
+      .filter((cell) => cell.textContent.trim() === "")
+      .forEach((cell) => {
+        if (cell instanceof HTMLElement) {
+          cell.style.display = "none";
+        }
+      });
+  }
 
-//   tr[id*="DXDataRow"] > td:last-child {
-//       text-align: left !important;
-//   }
+  function injectCss() {
+    const style = document.createElement("style");
+    style.dataset.autogramExtension = "true";
+    style.textContent = `
+@media (max-width: 767px) {
 
-//   /* sidebar */
-//   .app-layout__pane--left {
-//       position: absolute;
-//       left: 0;
-//       z-index: 10;
-//       width: 100%;
-//       height: 100%;
-//       visibility: hidden;
-//   }
+  .parent {
+      min-width: 0px !important;
+  }
 
-//   aside[class="card card--underlined"] {
-//       display: none;
-//   }
+  .align-self-right {
+      margin-left: 0px !important;
+  }
 
-//   aside[class="card no-mrg-bottom"] {
-//       display: none;
-//   }
+  .display-flex {
+      flex-wrap: wrap;
+  }
 
-//   /** upper bar toolbar **/
+  /* hide links in header */
+  #global-header .header-proposition {
+      display: none;
+  }
 
-//   div[class="bar toolbar"] > div:nth-child(1) {
-//       display: none;
-//   }
+  /** table **/
 
-//   div[class="bar toolbar"] > div > div[class*="align-items-right"] {
-//       justify-content: flex-start;
-//   }
+  /* hide table header */
+  tr[id*="DXHeadersRow0"] {
+      display: none !important;
+  }
 
-//   div[class="bar toolbar"] {
-//       gap: 1rem;
-//   }
+  .table td {
+      display: block;
+      width: 100%;
+      border-bottom: none !important;
+      border-top: none !important;
+      border: none;
+  }
 
-//   div.bar.toolbar {
-//       flex-wrap: wrap;
-//   }
+  /* hide checkboxes in table */
+  tr > td[class="td_noclik_row dxgv"] {
+      display: none;
+  }
 
-//   .btn-group--horizontal {
-//       flex-wrap: wrap !important;
-//   }
+  /* color cards */
+  table[id*="DXMainTable"] tr {
+      display: block;
+      background: #f7f7f7;
+      margin-bottom: 1rem;
+  }
 
-//   .btn-layout--horizontal > * {
-//       flex: initial !important;
-//   }
+  .table > tbody > tr > td.dxgv:last-child {
+      border-right-width: 0px !important;
+  }
 
-//   /* extend search menu button */
-//   .no-pad-horizontal {
-//       display: none;
-//   }
+  tr[id*="DXDataRow"] > td:last-child {
+      text-align: left !important;
+  }
 
-//   /** bottom bar toolbar **/
+  .message-table__row > td {
+      max-width: unset !important;
+  }
 
-//   section.toolbar > .bar__item {
-//       margin-right: 0;
-//   }
+  /** sidebar **/
+  .app-layout__pane--left {
+      position: absolute;
+      left: 0;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      visibility: hidden;
+  }
 
-//   section.toolbar > .bar__item:has(> nav) {
-//       display: flex;
-//       justify-content: center;
-//       width: 100%;
-//       margin-bottom: 1rem;
-//   }
+  .app-layout__pane--left {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+  }
 
-//   section.toolbar > div[class*="align-self-right"] {
-//       margin-left: 0;
-//   }
+  .app-layout__pane--left.open {
+      transform: translateX(0);
+      visibility: visible;
+  }
 
-//   /* remove "Strana X z Y strán" */
-//   section.toolbar .btn-layout.paging .paging__text {
-//       display: none;
-//   }
+  /* remove three-column view button */
+  aside.card:last-child {
+      display: none;
+  }
 
-//   /* text */
-//   .text-ellipsis {
-//       word-break: break-word !important;
-//       white-space: normal !important;
-//       overflow: visible !important;
-//   }
+  /** upper bar toolbar **/
 
-//   .modal {
-//       width: auto !important;
-//   }
+  div[class="bar toolbar"] > div:nth-child(1) {
+      display: none;
+  }
 
-//   .display-flex {
-//       flex-wrap: wrap;
-//   }
+  div[class="bar toolbar"] > div > div[class*="align-items-right"] {
+      justify-content: flex-start;
+  }
 
-//   .badge--plain {
-//       color: white;
-//       background-color: #13a02b;
-//   }
+  div[class="bar toolbar"] {
+      gap: 1rem;
+  }
 
-//   /* pom's additions */
+  div.bar.toolbar {
+      flex-wrap: wrap;
+  }
 
-//   #header #loginPanel {
-//         display: block !important;
-//         width: 100%;
-//         padding: 10px;
-//         margin: 1em;
-//         text-align: center;
-//         background: unset;
-//         border: #453b34 solid 3px;
-//   }
+  .btn-group--horizontal {
+      flex-wrap: wrap !important;
+  }
 
-//   #search {
-//       display: none;
-//   }
+  .btn-layout--horizontal > * {
+      flex: initial !important;
+  }
 
-//   .modal--small {
-//       width: 90% !important;
-//     }
-// }
-// `;
+  /* extend search menu button */
+  .no-pad-horizontal {
+      display: none;
+  }
 
-//   window.document.head.appendChild(style);
-//   log.debug("injectCss");
-// }
+  /* message - remove unnecessary tools */
+  div[id*="callbackPanelMessageDetail"] div[class="bar toolbar"] div:nth-child(2) {
+      display: none;
+  }
+
+  /** bottom bar toolbar **/
+
+  section.toolbar > .bar__item {
+      margin-right: 0;
+  }
+
+  section.toolbar > .bar__item:has(> nav) {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 1rem;
+  }
+
+  section.toolbar > div[class*="align-self-right"] {
+      margin-left: 0;
+  }
+
+  /* remove "Strana X z Y strán" */
+  section.toolbar .btn-layout.paging .paging__text {
+      display: none;
+  }
+
+  /* text */
+  .text-ellipsis {
+      overflow: unset !important;
+      text-overflow: unset !important;
+      white-space: unset !important;
+  }
+
+  /* modal */
+
+  .modal {
+      width: auto !important;
+  }
+
+  .modal .carousel .js_slide {
+      width: auto !important;
+  }
+
+  /* badge */
+  .badge--plain {
+      color: white;
+      background-color: #13a02b;
+  }
+
+  /* warning box */
+  .idsk-warning-text {
+      padding: 1.5em;
+  }
+
+  div[class*="idsk-warning-text"] .text-space-left {
+      margin-left: unset !important;
+  }
+
+  /* iframe */
+  .layoutMain {
+      width: auto !important;
+  }
+
+  .fieldContent {
+      display: block;
+      padding-right: 10px;
+      width: unset !important;
+  }
+
+  #subject, #text {
+      width: 100% !important;
+      box-sizing: border-box !important;
+  }
+
+  /* pom's additions */
+
+  #header #loginPanel {
+        display: block !important;
+        width: 80%;
+        padding: 10px;
+        margin: 1em auto;
+        text-align: center;
+        background: unset;
+        border: #453b34 solid 3px;
+        float: unset !important;
+  }
+
+  #header .inner {
+    height: unset !important;
+  }
+
+  #search {
+      margin-top: 10px !important;
+  }
+
+  #boxBanner img {
+    max-width: 100% !important;
+  }
+
+  .modal--small {
+      width: 90% !important;
+    }
+}
+`;
+
+    window.document.head.appendChild(style);
+    log.debug("injectCss");
+  }
+}
