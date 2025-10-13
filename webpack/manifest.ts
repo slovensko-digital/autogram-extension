@@ -92,7 +92,7 @@ function generateManifest(
               ...Object.keys(entries)
                 .map((key) => entries[key].map((x) => [x, x + ".map"]).flat())
                 .flat(),
-              "static/logo.png",
+              "static/logo-64.png",
             ],
             matches: enabledUrls,
           },
@@ -157,7 +157,7 @@ function generateManifest(
           ...Object.keys(entries)
             .map((key) => entries[key].map((x) => [x, x + ".map"]).flat())
             .flat(),
-          "static/logo.png",
+          "static/logo-64.png",
           ...enabledUrls,
         ],
         // TODO check if this is needed
