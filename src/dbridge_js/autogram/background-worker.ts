@@ -5,6 +5,7 @@ import {
   desktopApiClient,
   DesktopSignResponseBody,
   DesktopServerInfo,
+  AVMIntegrationDocument,
 } from "autogram-sdk";
 import { ChannelMessage, ZChannelMessage } from "./channel/common";
 import { get, set } from "idb-keyval";
@@ -244,6 +245,60 @@ class AvmExecutor {
       this.abortControllers.delete(senderId);
       browser.alarms.clear("autogram-signature-timeout-" + senderId);
     },
+
+    useRestorePoint: async (
+      args: unknown,
+      senderId: SenderId
+    ): Promise<boolean> => {
+      const { restorePoint } = ZUseRestorePointArgs.parse(args);
+      const restoreKey = `restorePoint:${restorePoint}`;
+
+      // Try to load the saved document reference
+      const savedDocumentRef = await get<AVMIntegrationDocument>(restoreKey);
+
+      const documentRef = await get(`autogram:avm:documentRef:${senderId}`);
+      if (!savedDocumentRef) {
+        // No restore point found, save current state if we have a document
+        if (documentRef) {
+          await set(restoreKey, documentRef);
+          log.info("Created new restore point", restorePoint);
+        }
+        return false;
+      }
+
+      // Restore point found, check if document is already signed
+      try {
+        if (!savedDocumentRef.guid || !savedDocumentRef.encryptionKey) {
+          log.debug("Invalid saved document reference", savedDocumentRef);
+          return false;
+        }
+
+        // Check document status without polling
+        const documentResult =
+          await this.apiClient.checkDocumentStatus(savedDocumentRef);
+
+        if (documentResult.status === "signed") {
+          // Document is signed, restore state and return true
+          await set(`autogram:avm:documentRef:${senderId}`, savedDocumentRef);
+          log.info(
+            "Restore point used - document already signed",
+            restorePoint
+          );
+          // Clean up restore point
+          await set(restoreKey, undefined);
+          return true;
+        } else {
+          // TODO: does this make sense?
+          // Document not signed yet, restore state for continued signing
+          await set(`autogram:avm:documentRef:${senderId}`, savedDocumentRef);
+          log.info("Restore point used - document pending", restorePoint);
+          return false;
+        }
+      } catch (error) {
+        log.error("Error checking restore point", error);
+        return false;
+      }
+    },
   };
 }
 
@@ -362,6 +417,10 @@ const ZDocumentToSign = z.object({
 
 const ZAddDocumentArgs = z.object({
   documentToSign: ZDocumentToSign,
+});
+
+const ZUseRestorePointArgs = z.object({
+  restorePoint: z.string(),
 });
 
 /**

@@ -25,6 +25,37 @@ const log = createLogger("ag-ext.impl");
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 
 /**
+ * Creates a hash-based restore point ID from sign request data and page URL
+ * This ensures the same signing session can be resumed after page reload
+ */
+async function createRestorePointHash(
+  signRequest: SignRequest,
+  pageUrl: string
+): Promise<string> {
+  const subtleCrypto = globalThis.crypto?.subtle;
+  if (!subtleCrypto) {
+    throw new Error("SubtleCrypto not available");
+  }
+
+  const persistentData = {
+    signatureId: signRequest.signatureId,
+    digestAlgUri: signRequest.digestAlgUri,
+    signaturePolicyIdentifier: signRequest.signaturePolicyIdentifier,
+    object: signRequest.object,
+    url: pageUrl,
+  };
+
+  const dataString = JSON.stringify(persistentData, null, 0);
+  const hash = await subtleCrypto.digest(
+    "SHA-256",
+    new TextEncoder().encode(dataString)
+  );
+  return `autogram-ext-rp-${Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+/**
  * Implementation of signing using autogram-sdk
  *
  * it means we can sign using both autogram and AVM
@@ -77,9 +108,18 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
       log.error("Signing non-new sign request");
     }
 
+    // Set the sign request properties first so they can be used for hash generation
     this.signRequest.signatureId = signatureId;
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
+
+    const restorePoint = await createRestorePointHash(
+      this.signRequest,
+      window.location.href
+    );
+
+    this.client.useRestorePoint(restorePoint);
+
     this.signRequest.signingStatus = SigningStatus.started;
     // this.launch(callback);
     callback.onSuccess();

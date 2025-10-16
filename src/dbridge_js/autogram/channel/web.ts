@@ -152,6 +152,15 @@ export class AvmChannelWeb
       app: "avm",
     });
   }
+
+  async useRestorePoint(restorePoint: string): Promise<boolean> {
+    const obj = await this.channel.sendMessage({
+      method: "useRestorePoint",
+      args: { restorePoint },
+      app: "avm",
+    });
+    return obj as boolean;
+  }
 }
 
 /**
