@@ -136,7 +136,7 @@ export function maybeInsertUpvsCssFixes(theWindow: Window) {
       display: none !important;
   }
 
-  .table td {
+  table[id*="DXMainTable"] td {
       display: block;
       width: 100%;
       border-bottom: none !important;
@@ -156,12 +156,20 @@ export function maybeInsertUpvsCssFixes(theWindow: Window) {
       margin-bottom: 1rem;
   }
 
+  .table > tbody > tr > td.dxgv:first-child {
+      border-left-width: 0px !important;
+  }
+
   .table > tbody > tr > td.dxgv:last-child {
       border-right-width: 0px !important;
   }
 
   tr[id*="DXDataRow"] > td:last-child {
       text-align: left !important;
+  }
+
+  .table__col--actions-wide {
+      min-width: unset !important;
   }
 
   .message-table__row > td {
@@ -175,17 +183,16 @@ export function maybeInsertUpvsCssFixes(theWindow: Window) {
       z-index: 10;
       width: 100%;
       height: 100%;
-      visibility: hidden;
-  }
-
-  .app-layout__pane--left {
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
   .app-layout__pane--left.open {
       transform: translateX(0);
-      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
   }
 
   /* remove three-column view button */
@@ -259,6 +266,9 @@ export function maybeInsertUpvsCssFixes(theWindow: Window) {
   }
 
   /* modal */
+  span {
+      word-break: break-word !important;
+  }
 
   .modal {
       width: auto !important;
@@ -297,6 +307,10 @@ export function maybeInsertUpvsCssFixes(theWindow: Window) {
   #subject, #text {
       width: 100% !important;
       box-sizing: border-box !important;
+  }
+
+  html, body {
+      min-width: unset !important;
   }
 }
 `;
