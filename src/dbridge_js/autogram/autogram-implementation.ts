@@ -37,22 +37,31 @@ async function createRestorePointHash(
     throw new Error("SubtleCrypto not available");
   }
 
+
+  // TODO: check if restore works
   const persistentData = {
-    signatureId: signRequest.signatureId,
+    // signatureId: signRequest.signatureId,
     digestAlgUri: signRequest.digestAlgUri,
     signaturePolicyIdentifier: signRequest.signaturePolicyIdentifier,
-    object: signRequest.object,
+    objectId: signRequest.object.objectId,
+    objectType: signRequest.object.type,
+    objectDescription: signRequest.object.objectDescription,
+    documentContent: signRequest.document.content,
+    documentFilename: signRequest.document.filename,
+
     url: pageUrl,
   };
+
+  log.debug("createRestorePointHash", persistentData);
 
   const dataString = JSON.stringify(persistentData, null, 0);
   const hash = await subtleCrypto.digest(
     "SHA-256",
     new TextEncoder().encode(dataString)
   );
-  return `autogram-ext-rp-${Array.from(new Uint8Array(hash))
+  return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")}`;
+    .join("");
 }
 
 /**

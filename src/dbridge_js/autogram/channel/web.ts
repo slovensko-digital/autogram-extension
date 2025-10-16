@@ -154,6 +154,7 @@ export class AvmChannelWeb
   }
 
   async useRestorePoint(restorePoint: string): Promise<boolean> {
+    log.debug("useRestorePoint", restorePoint);
     const obj = await this.channel.sendMessage({
       method: "useRestorePoint",
       args: { restorePoint },

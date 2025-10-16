@@ -172,7 +172,7 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      const doc = await get(`autogram:avm:documentRef:${senderId}`);
+      const doc = await get(dbKeyDocumentRef(senderId));
       if (!doc) {
         throw new Error("Document not found");
       }
@@ -183,11 +183,11 @@ class AvmExecutor {
       const documentRef = await this.apiClient.addDocument(
         documentToSign as unknown as AVMDocumentToSign
       );
-      await set(`autogram:avm:documentRef:${senderId}`, documentRef);
+      await set(dbKeyDocumentRef(senderId), documentRef);
     },
 
     waitForSignature: async (args: unknown, senderId: SenderId) => {
-      const documentRef = await get(`autogram:avm:documentRef:${senderId}`);
+      const documentRef = await get(dbKeyDocumentRef(senderId));
       if (!documentRef) {
         throw new Error("Document not found");
       }
@@ -240,7 +240,7 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      await set(`autogram:avm:documentRef:${senderId}`, undefined);
+      await set(dbKeyDocumentRef(senderId), undefined);
       // TODO: should we abort the request when resetting?
       this.abortControllers.delete(senderId);
       browser.alarms.clear("autogram-signature-timeout-" + senderId);
@@ -251,16 +251,16 @@ class AvmExecutor {
       senderId: SenderId
     ): Promise<boolean> => {
       const { restorePoint } = ZUseRestorePointArgs.parse(args);
-      const restoreKey = `restorePoint:${restorePoint}`;
+      const dbKeyRestorePoint = `autogram:avm:restorePoint:${restorePoint}`;
 
       // Try to load the saved document reference
-      const savedDocumentRef = await get<AVMIntegrationDocument>(restoreKey);
+      const savedDocumentRef = await get<AVMIntegrationDocument>(dbKeyRestorePoint);
 
-      const documentRef = await get(`autogram:avm:documentRef:${senderId}`);
+      const documentRef = await get(dbKeyDocumentRef(senderId));
       if (!savedDocumentRef) {
         // No restore point found, save current state if we have a document
         if (documentRef) {
-          await set(restoreKey, documentRef);
+          await set(dbKeyRestorePoint, documentRef);
           log.info("Created new restore point", restorePoint);
         }
         return false;
@@ -279,18 +279,18 @@ class AvmExecutor {
 
         if (documentResult.status === "signed") {
           // Document is signed, restore state and return true
-          await set(`autogram:avm:documentRef:${senderId}`, savedDocumentRef);
+          await set(dbKeyDocumentRef(senderId), savedDocumentRef);
           log.info(
             "Restore point used - document already signed",
             restorePoint
           );
           // Clean up restore point
-          await set(restoreKey, undefined);
+          await set(dbKeyRestorePoint, undefined);
           return true;
         } else {
           // TODO: does this make sense?
           // Document not signed yet, restore state for continued signing
-          await set(`autogram:avm:documentRef:${senderId}`, savedDocumentRef);
+          await set(dbKeyDocumentRef(senderId), savedDocumentRef);
           log.info("Restore point used - document pending", restorePoint);
           return false;
         }
@@ -518,3 +518,8 @@ function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
 //     }
 //   }
 // }
+
+
+function dbKeyDocumentRef(senderId: SenderId) {
+  return `autogram:avm:documentRef:${senderId}`;
+}
