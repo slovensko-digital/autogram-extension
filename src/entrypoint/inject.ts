@@ -290,6 +290,35 @@ function maybeInsertUpvsFixes() {
   html, body {
       min-width: unset !important;
   }
+
+  /* pom's additions */
+
+  #header #loginPanel {
+        display: block !important;
+        width: 80%;
+        padding: 10px;
+        margin: 1em auto;
+        text-align: center;
+        background: unset;
+        border: #453b34 solid 3px;
+        float: unset !important;
+  }
+
+  #header .inner {
+    height: unset !important;
+  }
+
+  #search {
+      margin-top: 10px !important;
+  }
+
+  #boxBanner img {
+    max-width: 100% !important;
+  }
+
+  .modal--small {
+      width: 90% !important;
+    }
 }
 `;
 
