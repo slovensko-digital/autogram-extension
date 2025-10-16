@@ -92,59 +92,67 @@ function maybeInsertUpvsFixes() {
   .parent {
       min-width: 0px !important;
   }
-
+  
   .align-self-right {
       margin-left: 0px !important;
   }
-
+  
   .display-flex {
       flex-wrap: wrap;
   }
-
+  
   /* hide links in header */
   #global-header .header-proposition {
       display: none;
   }
-
+  
   /** table **/
-
+  
   /* hide table header */
   tr[id*="DXHeadersRow0"] {
       display: none !important;
   }
-
-  .table td {
+  
+  table[id*="DXMainTable"] td {
       display: block;
       width: 100%;
       border-bottom: none !important;
       border-top: none !important;
       border: none;
   }
-
+  
   /* hide checkboxes in table */
   tr > td[class="td_noclik_row dxgv"] {
       display: none;
   }
-
+  
   /* color cards */
   table[id*="DXMainTable"] tr {
       display: block;
       background: #f7f7f7;
       margin-bottom: 1rem;
   }
-
+  
+  .table > tbody > tr > td.dxgv:first-child {
+      border-left-width: 0px !important;
+  }
+  
   .table > tbody > tr > td.dxgv:last-child {
       border-right-width: 0px !important;
   }
-
+  
+  .table__col--actions-wide {
+      min-width: unset !important;
+  }
+  
   tr[id*="DXDataRow"] > td:last-child {
       text-align: left !important;
   }
-
+  
   .message-table__row > td {
       max-width: unset !important;
   }
-
+  
   /** sidebar **/
   .app-layout__pane--left {
       position: absolute;
@@ -152,158 +160,136 @@ function maybeInsertUpvsFixes() {
       z-index: 10;
       width: 100%;
       height: 100%;
-      visibility: hidden;
-  }
-
-  .app-layout__pane--left {
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s ease, opacity 0.3s ease;
   }
-
+  
   .app-layout__pane--left.open {
       transform: translateX(0);
-      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
   }
-
+  
   /* remove three-column view button */
   aside.card:last-child {
       display: none;
   }
-
+  
   /** upper bar toolbar **/
-
+  
   div[class="bar toolbar"] > div:nth-child(1) {
       display: none;
   }
-
+  
   div[class="bar toolbar"] > div > div[class*="align-items-right"] {
       justify-content: flex-start;
   }
-
+  
   div[class="bar toolbar"] {
       gap: 1rem;
   }
-
+  
   div.bar.toolbar {
       flex-wrap: wrap;
   }
-
+  
   .btn-group--horizontal {
       flex-wrap: wrap !important;
   }
-
+  
   .btn-layout--horizontal > * {
       flex: initial !important;
   }
-
+  
   /* extend search menu button */
   .no-pad-horizontal {
       display: none;
   }
-
+  
   /* message - remove unnecessary tools */
   div[id*="callbackPanelMessageDetail"] div[class="bar toolbar"] div:nth-child(2) {
       display: none;
   }
-
+  
   /** bottom bar toolbar **/
-
+  
   section.toolbar > .bar__item {
       margin-right: 0;
   }
-
+  
   section.toolbar > .bar__item:has(> nav) {
       display: flex;
       justify-content: center;
       width: 100%;
       margin-bottom: 1rem;
   }
-
+  
   section.toolbar > div[class*="align-self-right"] {
       margin-left: 0;
   }
-
+  
   /* remove "Strana X z Y strán" */
   section.toolbar .btn-layout.paging .paging__text {
       display: none;
   }
-
+  
   /* text */
   .text-ellipsis {
       overflow: unset !important;
       text-overflow: unset !important;
       white-space: unset !important;
   }
-
+  
+  span {
+      word-break: break-word !important;
+  }
+  
   /* modal */
-
+  
   .modal {
       width: auto !important;
   }
-
+  
   .modal .carousel .js_slide {
       width: auto !important;
   }
-
+  
   /* badge */
   .badge--plain {
       color: white;
       background-color: #13a02b;
   }
-
+  
   /* warning box */
   .idsk-warning-text {
       padding: 1.5em;
   }
-
+  
   div[class*="idsk-warning-text"] .text-space-left {
       margin-left: unset !important;
   }
-
+  
   /* iframe */
   .layoutMain {
       width: auto !important;
   }
-
+  
   .fieldContent {
       display: block;
       padding-right: 10px;
       width: unset !important;
   }
-
+  
   #subject, #text {
       width: 100% !important;
       box-sizing: border-box !important;
   }
-
-  /* pom's additions */
-
-  #header #loginPanel {
-        display: block !important;
-        width: 80%;
-        padding: 10px;
-        margin: 1em auto;
-        text-align: center;
-        background: unset;
-        border: #453b34 solid 3px;
-        float: unset !important;
+  
+  html, body {
+      min-width: unset !important;
   }
-
-  #header .inner {
-    height: unset !important;
-  }
-
-  #search {
-      margin-top: 10px !important;
-  }
-
-  #boxBanner img {
-    max-width: 100% !important;
-  }
-
-  .modal--small {
-      width: 90% !important;
-    }
 }
 `;
 
