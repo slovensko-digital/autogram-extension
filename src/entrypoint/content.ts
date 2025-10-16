@@ -16,7 +16,7 @@ const { version } = packageJson;
 
 import { captureException } from "../sentry";
 import { createLogger } from "../log";
-// import { isMobileDevice } from "../util";
+import { maybeInsertUpvsCssFixes } from "../upvs-fixes";
 
 const log = createLogger("ag-ext.ent.content");
 
@@ -50,7 +50,7 @@ isExtensionEnabled()
         `Autogram extension ${version}(mv${__MANIFEST_VERSION__}) is enabled`
       );
 
-      // maybeInsertUpvsFixes();
+      maybeInsertUpvsCssFixes(window);
 
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
