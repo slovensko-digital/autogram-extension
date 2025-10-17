@@ -51,6 +51,7 @@ export class ContentChannelPassthrough {
       this.portToBackground = chrome.runtime.connect({
         name: "autogram-extension",
       });
+      log.debug("Port to Background initialized", this.portToBackground);
     } catch (e) {
       log.debug("initPort error");
       log.error(e);
