@@ -46,8 +46,8 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
   function removeEmptyAttachmentCells() {
     const cells = Array.from(
       document.querySelectorAll(
-        '[id^="ctl00_ctl00_CphMasterMain_CphMain_phGvMessageList_gvMessage_tccell"][id$="_4"]'
-      )
+        '[id^="ctl00_ctl00_CphMasterMain_CphMain_phGvMessageList_gvMessage_tccell"][id$="_4"]',
+      ),
     );
 
     cells
@@ -265,11 +265,15 @@ export function maybeInsertUpvsCssFixes(theWindow: Window) {
       white-space: unset !important;
   }
 
-  /* modal */
   span {
       word-break: break-word !important;
   }
 
+  span.contentVis {
+      width: auto !important;
+  }
+
+  /* modal */
   .modal {
       width: auto !important;
   }
