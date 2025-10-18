@@ -129,6 +129,8 @@ export class ContentChannelPassthrough {
 
     if (!this.portToBackground) {
       log.error("Port to background is not initialized");
+
+      this.initPortToBackground();
       return;
     }
     this.portToBackground.onMessage.addListener((message) => {

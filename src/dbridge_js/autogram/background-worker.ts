@@ -33,6 +33,12 @@ export class BackgroundWorker {
     let port: browser.Runtime.Port | null = newPort;
     log.debug("onConnect", port);
 
+    // TODO problem with SDK not responding to button clicks is probably somewhere here
+    // how to test it - open demo site with extension, open extension options page, open background worker devtools, 
+    // open extension options page devtools - show Application>Service Workers - and stop the worker
+    // now when you open extension modal and click on button either QR code is not shown or desktop app is not opened
+    // seems like messages are not delivered to the worker when it is started again
+
     // const keepAlive = new KeepAlive();
 
     const postMessage = (message: unknown) => {
