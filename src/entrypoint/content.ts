@@ -42,12 +42,6 @@ if ((window as any).autogramContentScriptLock !== undefined) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).autogramContentScriptLock = new Date().toISOString();
 
-window.addEventListener("load", (event) => {
-  log.info("window load event", event);
-});
-
-log.debug("Checking if extension is enabled");
-
 isExtensionEnabled()
   .then((enabled) => {
     if (enabled) {
