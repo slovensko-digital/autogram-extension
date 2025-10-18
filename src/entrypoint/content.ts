@@ -16,7 +16,6 @@ const { version } = packageJson;
 
 import { captureException } from "../sentry";
 import { createLogger } from "../log";
-import { maybeInsertUpvsCssFixes } from "../upvs-fixes";
 
 const log = createLogger("ag-ext.ent.content");
 
@@ -43,6 +42,12 @@ if ((window as any).autogramContentScriptLock !== undefined) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).autogramContentScriptLock = new Date().toISOString();
 
+window.addEventListener("load", (event) => {
+  log.info("window load event", event);
+});
+
+log.debug("Checking if extension is enabled");
+
 isExtensionEnabled()
   .then((enabled) => {
     if (enabled) {
@@ -50,7 +55,7 @@ isExtensionEnabled()
         `Autogram extension ${version}(mv${__MANIFEST_VERSION__}) is enabled`
       );
 
-      maybeInsertUpvsCssFixes(window);
+      // maybeInsertUpvsCssFixes(window);
 
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
