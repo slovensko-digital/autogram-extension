@@ -34,7 +34,7 @@ export class BackgroundWorker {
     log.debug("onConnect", port);
 
     // TODO problem with SDK not responding to button clicks is probably somewhere here
-    // how to test it - open demo site with extension, open extension options page, open background worker devtools, 
+    // how to test it - open demo site with extension, open extension options page, open background worker devtools,
     // open extension options page devtools - show Application>Service Workers - and stop the worker
     // now when you open extension modal and click on button either QR code is not shown or desktop app is not opened
     // seems like messages are not delivered to the worker when it is started again
@@ -95,17 +95,23 @@ export class BackgroundWorker {
 
       app.run(data, senderId).then(
         (result) => {
-          const response = {
+          log.debug("background result", result);
+          log.debug("background id", data.id);
+          const dataResponse = {
             id: data.id,
             result: result ?? null,
           };
           log.debug(
             "background response",
-            response,
-            JSON.stringify(response),
-            typeof response?.result
+            dataResponse,
+            typeof dataResponse?.result
           );
-          postMessage(response);
+          try {
+            log.debug("response json", JSON.stringify(dataResponse));
+          } catch (e) {
+            log.error("response json error", e);
+          }
+          postMessage(dataResponse);
         },
         (error: Error) => {
           log.error("background error", error);
@@ -260,7 +266,8 @@ class AvmExecutor {
       const dbKeyRestorePoint = `autogram:avm:restorePoint:${restorePoint}`;
 
       // Try to load the saved document reference
-      const savedDocumentRef = await get<AVMIntegrationDocument>(dbKeyRestorePoint);
+      const savedDocumentRef =
+        await get<AVMIntegrationDocument>(dbKeyRestorePoint);
 
       const documentRef = await get(dbKeyDocumentRef(senderId));
       if (!savedDocumentRef) {
@@ -294,6 +301,7 @@ class AvmExecutor {
           await set(dbKeyRestorePoint, undefined);
           return true;
         } else {
+          // `not found` or `pending`
           // TODO: does this make sense?
           // Document not signed yet, restore state for continued signing
           await set(dbKeyDocumentRef(senderId), savedDocumentRef);
@@ -524,7 +532,6 @@ function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
 //     }
 //   }
 // }
-
 
 function dbKeyDocumentRef(senderId: SenderId) {
   return `autogram:avm:documentRef:${senderId}`;
