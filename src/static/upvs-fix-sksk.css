@@ -1,4 +1,5 @@
-@media (max-width: 767px) {
+/* Mobile only */
+@media only screen and (((hover: none) and (pointer: coarse)) or (max-width: 767px)) {
   #header #loginPanel {
     display: block !important;
     width: 80%;
