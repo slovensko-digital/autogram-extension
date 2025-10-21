@@ -265,17 +265,26 @@ class AvmExecutor {
       const { restorePoint } = ZUseRestorePointArgs.parse(args);
       const dbKeyRestorePoint = `autogram:avm:restorePoint:${restorePoint}`;
 
-      // Try to load the saved document reference
-      const savedDocumentRef =
-        await get<AVMIntegrationDocument>(dbKeyRestorePoint);
+      // TODO fix this method
 
-      const documentRef = await get(dbKeyDocumentRef(senderId));
-      if (!savedDocumentRef) {
+      // Try to load the saved document reference
+      const savedDocumentRefKey = await get<string>(dbKeyRestorePoint);
+
+      if (!savedDocumentRefKey) {
+        const documentRefKey = dbKeyDocumentRef(senderId);
         // No restore point found, save current state if we have a document
-        if (documentRef) {
-          await set(dbKeyRestorePoint, documentRef);
+        if (documentRefKey) {
+          await set(dbKeyRestorePoint, documentRefKey);
           log.info("Created new restore point", restorePoint);
         }
+        return false;
+      }
+
+      const savedDocumentRef =
+        await get<AVMIntegrationDocument>(savedDocumentRefKey);
+
+      if (!savedDocumentRef) {
+        log.debug("No saved document reference found for restore point");
         return false;
       }
 
@@ -289,6 +298,8 @@ class AvmExecutor {
         // Check document status without polling
         const documentResult =
           await this.apiClient.checkDocumentStatus(savedDocumentRef);
+
+        log.debug("Document status from restore point", documentResult);
 
         if (documentResult.status === "signed") {
           // Document is signed, restore state and return true
