@@ -25,6 +25,8 @@ export class ContentChannelPassthrough {
   // helloInterval: number | NodeJS.Timeout | null;
   reinitNumber = 0;
   isEventListenerInitialized = false;
+  private messageListener: ((message: unknown) => void) | null = null;
+
   constructor() {
     this.initPortToBackground();
   }
@@ -40,6 +42,10 @@ export class ContentChannelPassthrough {
     if (this.portToBackground) {
       log.debug("Port to Background already initialized");
       try {
+        // Remove the old message listener before disconnecting
+        if (this.messageListener) {
+          this.portToBackground.onMessage.removeListener(this.messageListener);
+        }
         this.portToBackground.disconnect();
       } catch (e) {
         log.error("Error disconnecting port", e);
@@ -63,6 +69,13 @@ export class ContentChannelPassthrough {
         lastError: chrome.runtime.lastError,
       });
     });
+
+    // Re-attach the message listener to the new port if it was already initialized
+    if (this.messageListener) {
+      log.debug("Re-attaching message listener to new port");
+      this.portToBackground.onMessage.addListener(this.messageListener);
+    }
+
     // if (this.helloInterval) {
     //   clearInterval(this.helloInterval as number);
     // }
@@ -115,6 +128,7 @@ export class ContentChannelPassthrough {
     log.debug("initEventListener");
     if (this.isEventListenerInitialized) {
       log.warn("Event listener already initialized");
+      return;
     }
     window.addEventListener(
       EVENT_SEND_MESSAGE_INJ_TO_CS,
@@ -133,7 +147,9 @@ export class ContentChannelPassthrough {
       this.initPortToBackground();
       return;
     }
-    this.portToBackground.onMessage.addListener((message) => {
+
+    // Store the message listener so we can re-attach it when port is reinitialized
+    this.messageListener = (message) => {
       log.debug("content message ⬅️", message);
       const data = ZChannelResponse.parse(message);
       if (data.id === "log") {
@@ -155,6 +171,8 @@ export class ContentChannelPassthrough {
         composed: true,
       });
       window.dispatchEvent(evt);
-    });
+    };
+
+    this.portToBackground.onMessage.addListener(this.messageListener);
   }
 }

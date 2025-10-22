@@ -30,8 +30,7 @@ export class BackgroundWorker {
   }
 
   onConnectListener(newPort: browser.Runtime.Port) {
-    let port: browser.Runtime.Port | null = newPort;
-    log.debug("onConnect", port);
+    log.debug("onConnect", newPort);
 
     // TODO problem with SDK not responding to button clicks is probably somewhere here
     // how to test it - open demo site with extension, open extension options page, open background worker devtools,
@@ -40,18 +39,6 @@ export class BackgroundWorker {
     // seems like messages are not delivered to the worker when it is started again
 
     // const keepAlive = new KeepAlive();
-
-    const postMessage = (message: unknown) => {
-      try {
-        if (!port) {
-          log.debug("Port is null in postMessage");
-          return;
-        }
-        port.postMessage(message);
-      } catch (e) {
-        log.error("postMessage error", e);
-      }
-    };
 
     // const logListener = (
     //   level: string,
@@ -72,12 +59,8 @@ export class BackgroundWorker {
     // log.addListener(logListener);
 
     // keepAlive.start();
-    log.debug("Connected .....", port);
-    const handleMessage = (request) => {
-      if (!port) {
-        log.error("Port is null in handleMessage");
-        return;
-      }
+    log.debug("Connected .....", newPort);
+    const handleMessage = (request, port: browser.Runtime.Port) => {
       const sender = port.sender;
       if (!sender) {
         throw new Error("Sender not found");
@@ -111,29 +94,36 @@ export class BackgroundWorker {
           } catch (e) {
             log.error("response json error", e);
           }
-          postMessage(dataResponse);
+          try {
+            port.postMessage(dataResponse);
+          } catch (e) {
+            log.error("postMessage error", e);
+          }
         },
         (error: Error) => {
           log.error("background error", error);
           // only serializable objects can be passed to postMessage
-          postMessage({
-            id: data.id,
-            error: JSON.parse(
-              JSON.stringify({
-                message: error.message,
-                name: error.name,
-                cause: error.cause,
-                error: error,
-              })
-            ),
-          });
+          try {
+            port.postMessage({
+              id: data.id,
+              error: JSON.parse(
+                JSON.stringify({
+                  message: error.message,
+                  name: error.name,
+                  cause: error.cause,
+                  error: error,
+                })
+              ),
+            });
+          } catch (e) {
+            log.error("postMessage error", e);
+          }
         }
       );
     };
 
-    port.onDisconnect.addListener((p) => {
+    newPort.onDisconnect.addListener((p) => {
       log.debug("Disconnected .....", {
-        port,
         p,
         lastError: browser.runtime.lastError,
       });
@@ -141,15 +131,10 @@ export class BackgroundWorker {
 
       // keepAlive.stop();
 
-      if (!port) {
-        log.error("Port is null in onDisconnect");
-        return;
-      }
-      port.onMessage.removeListener(handleMessage);
-      port = null;
+      newPort.onMessage.removeListener(handleMessage);
     });
 
-    port.onMessage.addListener(handleMessage);
+    newPort.onMessage.addListener(handleMessage);
   }
 }
 
@@ -203,6 +188,9 @@ class AvmExecutor {
       if (!documentRef) {
         throw new Error("Document not found");
       }
+
+      // TODO: what to do when worker is stopped while waiting? can that even happen?
+
       // TODO abort when tab is closed
       const abortController = new AbortController();
       this.abortControllers.set(senderId, abortController);
