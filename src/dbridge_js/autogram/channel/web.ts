@@ -4,6 +4,7 @@ import {
   AVMSignedDocument,
   randomUUID,
   UserCancelledSigningException,
+  AutogramSdkException,
 } from "autogram-sdk";
 
 import {
@@ -46,11 +47,18 @@ export class AutogramDesktopChannel
     return response;
   }
   async info(): Promise<DesktopServerInfo> {
-    const obj = await this.channel.sendMessage({
-      method: "info",
-      args: {},
-      app: "autogram",
-    });
+    const obj = await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "info",
+        args: {},
+        app: "autogram",
+      })
+    ).catch(
+      mapTimeoutToSdkException(
+        "Časový limit načítania informácií o serveri vypršal"
+      )
+    );
     const response = ZWaitForStatusResponse.parse(obj);
     return response;
   }
@@ -60,14 +68,23 @@ export class AutogramDesktopChannel
     delay?: number
     // abortController?: AbortController
   ): Promise<DesktopServerInfo> {
-    const obj = await this.channel.sendMessage({
+    let promise = this.channel.sendMessage({
       method: "waitForStatus",
       args: { status, timeout, delay },
       app: "autogram",
     });
+    if (timeout !== undefined) {
+      promise = withTimeout(timeout + 1000, promise).catch(
+        mapTimeoutToSdkException(
+          `Časový limit čakania na stav '${status}' vypršal`
+        )
+      );
+    }
+    const obj = await promise;
     const response = ZWaitForStatusResponse.parse(obj);
     return response;
   }
+
   async sign(
     document: DesktopAutogramDocument,
     signatureParameters?: DesktopSignatureParameters,
@@ -95,28 +112,43 @@ export class AvmChannelWeb
   async init() {}
 
   async loadOrRegister(): Promise<void> {
-    await this.channel.sendMessage({
-      method: "loadOrRegister",
-      args: null,
-      app: "avm",
-    });
+    await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "loadOrRegister",
+        args: null,
+        app: "avm",
+      })
+    ).catch(
+      mapTimeoutToSdkException("Časový limit registrácie rozšírenia vypršal")
+    );
   }
 
   async getQrCodeUrl(): Promise<string> {
-    const obj = await this.channel.sendMessage({
-      method: "getQrCodeUrl",
-      args: null,
-      app: "avm",
-    });
+    const obj = await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "getQrCodeUrl",
+        args: null,
+        app: "avm",
+      })
+    ).catch(
+      mapTimeoutToSdkException("Časový limit vytvorenia QR kódu vypršal")
+    );
     const response = ZGetQrCodeUrlResponse.parse(obj);
     return response;
   }
   async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
-    await this.channel.sendMessage({
-      method: "addDocument",
-      args: { documentToSign },
-      app: "avm",
-    });
+    await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "addDocument",
+        args: { documentToSign },
+        app: "avm",
+      })
+    ).catch(
+      mapTimeoutToSdkException("Časový limit pridania dokumentu vypršal")
+    );
   }
   async waitForSignature(
     abortController?: AbortController
@@ -146,20 +178,30 @@ export class AvmChannelWeb
     }
   }
   async reset(): Promise<void> {
-    await this.channel.sendMessage({
-      method: "reset",
-      args: null,
-      app: "avm",
-    });
+    await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "reset",
+        args: null,
+        app: "avm",
+      })
+    ).catch(mapTimeoutToSdkException("Časový limit na reset vypršal"));
   }
 
   async useRestorePoint(restorePoint: string): Promise<boolean> {
     log.debug("useRestorePoint", restorePoint);
-    const obj = await this.channel.sendMessage({
-      method: "useRestorePoint",
-      args: { restorePoint },
-      app: "avm",
-    });
+    const obj = await withTimeout(
+      2_000,
+      this.channel.sendMessage({
+        method: "useRestorePoint",
+        args: { restorePoint },
+        app: "avm",
+      })
+    ).catch(
+      mapTimeoutToSdkException(
+        "Časový limit na zapamätané podpisovanie vypršal"
+      )
+    );
     return obj as boolean;
   }
 }
@@ -252,6 +294,16 @@ export class WebChannelCaller {
   }
 }
 
+async function withTimeout<T>(timeoutMs: number, promise: Promise<T>) {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      reject(new AutogramTimeoutError("Timeout waiting for response"));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
+}
+
 function promiseWithResolversPolyfill<T>() {
   let resolve: (value: T) => void = () => {
       console.log("too soon");
@@ -265,4 +317,37 @@ function promiseWithResolversPolyfill<T>() {
   });
 
   return { promise, resolve, reject };
+}
+
+class AutogramTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AutogramTimeoutError";
+  }
+}
+
+function mapTimeoutToSdkException<T>(contextMessage: string) {
+  return (error: unknown): T => {
+    log.debug(
+      "mapTimeoutToSdkException",
+      error,
+      contextMessage,
+      error instanceof AutogramTimeoutError,
+      error instanceof Error,
+      typeof error,
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (error as any)?.name === "AutogramTimeoutError"
+    );
+    log.debug(error);
+    // Check by name instead of instanceof because errors lose their type when serialized
+    if (
+      error instanceof AutogramTimeoutError ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (error as any)?.name === "AutogramTimeoutError"
+    ) {
+      throw new AutogramSdkException(contextMessage);
+    }
+    throw error;
+  };
 }
