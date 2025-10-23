@@ -74,7 +74,7 @@ export class AutogramDesktopChannel
       app: "autogram",
     });
     if (timeout !== undefined) {
-      promise = withTimeout(timeout + 1000, promise).catch(
+      promise = withTimeout((timeout + 1) * 1000, promise).catch(
         mapTimeoutToSdkException(
           `Časový limit čakania na stav '${status}' vypršal`
         )
