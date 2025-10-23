@@ -1,3 +1,19 @@
+# v3.0.1 (Thu Oct 23 2025)
+
+#### 🐛 Bug Fix
+
+- Pokracovanie v predoslom podpisovani po reloade stranky na mobiloch [#122](https://github.com/slovensko-digital/autogram-extension/pull/122) ([@pomali](https://github.com/pomali) [@celuchmarek](https://github.com/celuchmarek) [@xhyrom](https://github.com/xhyrom))
+- iOS Safari Extension [#124](https://github.com/slovensko-digital/autogram-extension/pull/124) ([@pomali](https://github.com/pomali) [@xhyrom](https://github.com/xhyrom) [@celuchmarek](https://github.com/celuchmarek))
+- UPVS css and js fixes for mobile support [#121](https://github.com/slovensko-digital/autogram-extension/pull/121) ([@pomali](https://github.com/pomali) [@xhyrom](https://github.com/xhyrom) [@celuchmarek](https://github.com/celuchmarek))
+
+#### Authors: 3
+
+- [@pomali](https://github.com/pomali)
+- Jozef Steinhübl ([@xhyrom](https://github.com/xhyrom))
+- Marek Ceľuch ([@celuchmarek](https://github.com/celuchmarek))
+
+---
+
 # v2.0.4 (Fri Oct 10 2025)
 
 #### 🐛 Bug Fix
