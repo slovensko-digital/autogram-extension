@@ -26,7 +26,9 @@
     "webext:run": "web-ext build -s 'dist' --overwrite-dest ",
     "xcode-generate-safari-web-extension": "/Applications/Xcode.app/Contents/Developer/usr/bin/safari-web-extension-converter --macos-only --app-name autogram-extension --bundle-identifier digital.slovensko.autogram.extension --project-location ./safari/ ./dist/",
     "example-usage": "cd example-usage && vite --port 49675",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "run:firefox": "web-ext run -s 'dist' --start-url 'http://localhost:49675/' --devtools --keep-profile-changes --firefox-profile=autogram-ext-dev",
+    "run:firefox-android": "web-ext run -s 'dist' --start-url 'http://localhost:49675/' --target=firefox-android --devtools --keep-profile-changes --firefox-profile=autogram-ext-dev"
   },
   "author": "pom",
   "license": "EUPL-1.2",

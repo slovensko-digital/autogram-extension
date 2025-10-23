@@ -19,6 +19,7 @@ import {
 } from "./channel/web";
 import { InputObject } from "../ditecx/types";
 import { createLogger } from "../../log";
+import { defaultOptionsStorage } from "../../options/default";
 
 const log = createLogger("ag-ext.impl");
 
@@ -75,15 +76,23 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   private client: CombinedClient;
 
-  private constructor(client: CombinedClient) {
+  private autogramOptions: typeof defaultOptionsStorage.options;
+
+  private constructor(
+    client: CombinedClient,
+    autogramOptions: typeof defaultOptionsStorage.options
+  ) {
     this.client = client;
     this.signRequest = new SignRequest();
     this.client.setResetSignRequestCallback(() => {
       this.signRequest = new SignRequest();
     });
+    this.autogramOptions = autogramOptions;
   }
 
-  public static async init(): Promise<DBridgeAutogramImpl> {
+  public static async init(
+    autogramOptions: typeof defaultOptionsStorage.options
+  ): Promise<DBridgeAutogramImpl> {
     const webChannelCaller = new WebChannelCaller();
     webChannelCaller.init();
     return new DBridgeAutogramImpl(
@@ -91,7 +100,8 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
         new AvmChannelWeb(webChannelCaller),
         new AutogramDesktopChannel(webChannelCaller),
         () => {}
-      )
+      ),
+      autogramOptions
     );
   }
 
@@ -147,10 +157,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     decodeBase64 = false
   ): Promise<void> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      log.debug("options", (window as any).autogramOptions);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((window as any).autogramOptions.restorePointEnabled) {
+      if (this.autogramOptions.restorePointEnabled) {
         log.debug("Creating restore point for signing session");
         const restorePoint = await createRestorePointHash(
           this.signRequest,
