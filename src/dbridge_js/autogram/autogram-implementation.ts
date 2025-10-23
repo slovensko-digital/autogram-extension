@@ -148,7 +148,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   ): Promise<void> {
     try {
       // TODO: get real restorePointEnabled value
-      let restorePointEnabled = false;
+      const restorePointEnabled = false;
       if (restorePointEnabled) {
         log.debug("Creating restore point for signing session");
         const restorePoint = await createRestorePointHash(
