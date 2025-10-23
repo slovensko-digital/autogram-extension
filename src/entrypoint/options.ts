@@ -1,8 +1,6 @@
 import browser from "webextension-polyfill";
 import {
   getOptions,
-  isExtensionEnabled,
-  isRestorePointEnabled,
 } from "../options/content";
 import { createLogger } from "../log";
 

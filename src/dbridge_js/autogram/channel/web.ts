@@ -188,7 +188,7 @@ export class AvmChannelWeb
     ).catch(mapTimeoutToSdkException("Časový limit na reset vypršal"));
   }
 
-  async useRestorePoint(restorePoint: string): Promise<boolean> {
+  async useRestorePoint(restorePoint: string) {
     log.debug("useRestorePoint", restorePoint);
     const obj = await withTimeout(
       2_000,
@@ -202,7 +202,8 @@ export class AvmChannelWeb
         "Časový limit na zapamätané podpisovanie vypršal"
       )
     );
-    return obj as boolean;
+    const response = ZSignResponse.nullable().parse(obj);
+    return response;
   }
 }
 

@@ -121,18 +121,6 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    log.debug("options", (window as any).autogramOptions);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).autogramOptions.restorePointEnabled) {
-      log.debug("Creating restore point for signing session");
-      const restorePoint = await createRestorePointHash(
-        this.signRequest,
-        window.location.href
-      );
-      this.client.useRestorePoint(restorePoint);
-    }
-
     this.signRequest.signingStatus = SigningStatus.started;
     // this.launch(callback);
     callback.onSuccess();
@@ -159,6 +147,26 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     decodeBase64 = false
   ): Promise<void> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      log.debug("options", (window as any).autogramOptions);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((window as any).autogramOptions.restorePointEnabled) {
+        log.debug("Creating restore point for signing session");
+        const restorePoint = await createRestorePointHash(
+          this.signRequest,
+          window.location.href
+        );
+
+        const restored = await this.client.useRestorePoint(restorePoint);
+        if (restored) {
+          log.info("We can restore previous signing session");
+          this.signedObject = restored;
+          this.signRequest.signingStatus = SigningStatus.signed;
+          callback.onSuccess(restored.content);
+          return;
+        }
+      }
+
       const response = await this.client.sign(
         this.signRequest.document,
         this.signRequest.signatureParameters(parameters),

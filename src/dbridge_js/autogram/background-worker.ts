@@ -11,6 +11,8 @@ import { ChannelMessage, ZChannelMessage } from "./channel/common";
 import { get, set } from "idb-keyval";
 import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
+import { SignedDocument } from "autogram-sdk/avm-api";
+import { SignedObject } from "autogram-sdk/with-ui";
 
 const log = createLogger("ag-ext.bg.worker");
 
@@ -60,6 +62,60 @@ export class BackgroundWorker {
 
     // keepAlive.start();
     log.debug("Connected .....", newPort);
+
+    const sendResultBack = (
+      port: browser.Runtime.Port,
+      dataId: ChannelMessage["id"]
+    ) => {
+      return (result) => {
+        log.debug("background result", result);
+        log.debug("background id", dataId);
+        const dataResponse = {
+          id: dataId,
+          result: result ?? null,
+        };
+        log.debug(
+          "background response",
+          dataResponse,
+          typeof dataResponse?.result
+        );
+        try {
+          log.debug("response json", JSON.stringify(dataResponse));
+        } catch (e) {
+          log.error("response json error", e);
+        }
+        try {
+          port.postMessage(dataResponse);
+        } catch (e) {
+          log.error("postMessage error", e);
+        }
+      };
+    };
+    const sendErrorBack = (
+      port: browser.Runtime.Port,
+      dataId: ChannelMessage["id"]
+    ) => {
+      return (error: Error) => {
+        log.error("background error", error);
+        // only serializable objects can be passed to postMessage
+        try {
+          port.postMessage({
+            id: dataId,
+            error: JSON.parse(
+              JSON.stringify({
+                message: error.message,
+                name: error.name,
+                cause: error.cause,
+                error: error,
+              })
+            ),
+          });
+        } catch (e) {
+          log.error("postMessage error", e);
+        }
+      };
+    };
+
     const handleMessage = (request, port: browser.Runtime.Port) => {
       const sender = port.sender;
       if (!sender) {
@@ -70,66 +126,50 @@ export class BackgroundWorker {
       const data = ZChannelMessage.parse(request);
       log.debug("background data", data);
       // just to start the worker
-      // if (data.method === "hello") {
-      //   return;
-      // }
+      if (data.method === "hello") {
+        return;
+      }
 
       const app = data.app === "avm" ? this.avm : this.autogram;
 
-      app.run(data, senderId).then(
-        (result) => {
-          log.debug("background result", result);
-          log.debug("background id", data.id);
-          const dataResponse = {
-            id: data.id,
-            result: result ?? null,
-          };
-          log.debug(
-            "background response",
-            dataResponse,
-            typeof dataResponse?.result
-          );
-          try {
-            log.debug("response json", JSON.stringify(dataResponse));
-          } catch (e) {
-            log.error("response json error", e);
-          }
-          try {
-            port.postMessage(dataResponse);
-          } catch (e) {
-            log.error("postMessage error", e);
-          }
-        },
-        (error: Error) => {
-          log.error("background error", error);
-          // only serializable objects can be passed to postMessage
-          try {
-            port.postMessage({
-              id: data.id,
-              error: JSON.parse(
-                JSON.stringify({
-                  message: error.message,
-                  name: error.name,
-                  cause: error.cause,
-                  error: error,
-                })
-              ),
-            });
-          } catch (e) {
-            log.error("postMessage error", e);
-          }
-        }
-      );
+      app
+        .run(data, senderId)
+        .then(sendResultBack(port, data.id), sendErrorBack(port, data.id));
     };
+
+    if (newPort.sender) {
+      this.avm
+        .resumeWaitingForSignature(getSenderId(newPort.sender))
+        .then(
+          (result) => {
+            if (result) {
+              sendResultBack(newPort, result.messageId)(result.signedDocument);
+            }
+          },
+          (reason) => {
+            if (reason?.messageId && reason?.error) {
+              sendErrorBack(newPort, reason.messageId)(reason.error);
+            }
+          }
+        )
+        .catch((e) => {
+          log.error("Error while resuming AVM waitForSignature", e);
+        });
+    }
 
     newPort.onDisconnect.addListener((p) => {
       log.debug("Disconnected .....", {
         p,
         lastError: browser.runtime.lastError,
       });
-      // log.removeListener(logListener);
 
       // keepAlive.stop();
+
+      if (newPort.sender) {
+        const senderId = getSenderId(newPort.sender);
+        this.avm.abortSenderRequests(senderId);
+        this.autogram.abortSenderRequests(senderId);
+      }
 
       newPort.onMessage.removeListener(handleMessage);
     });
@@ -147,13 +187,91 @@ class AvmExecutor {
   private abortControllers = new Map<SenderId, AbortController>();
 
   public async run(data: ChannelMessage, senderId: SenderId) {
-    return this.methods[data.method](data.args, senderId);
+    return this.methods[data.method](data.args, senderId, data.id);
+  }
+
+  public abortSenderRequests(senderId: SenderId) {
+    const abortController = this.abortControllers.get(senderId);
+    if (abortController) {
+      abortController.abort("Worker stopped");
+      this.abortControllers.delete(senderId);
+    }
+  }
+
+  public async resumeWaitingForSignature(senderId: SenderId): Promise<{
+    signedDocument: SignedDocument;
+    messageId: ChannelMessage["id"];
+  } | null> {
+    const waitingForSignature = await get<WaitingForSignatureRecord>(
+      dbKeyWaitingForSignature(senderId)
+    );
+    if (waitingForSignature) {
+      const documentRef = await get<AVMIntegrationDocument>(
+        waitingForSignature.documentRefDbKey
+      );
+      if (documentRef) {
+        log.debug(
+          "Resuming waiting for signature after worker resume",
+          senderId,
+          documentRef
+        );
+        try {
+          await this.apiClient.loadOrRegister();
+
+          return {
+            signedDocument: await this.waitForSignatureSubroutine(
+              documentRef,
+              senderId
+            ),
+            messageId: waitingForSignature.messageId,
+          };
+        } catch (e) {
+          log.error("Error while resuming waitForSignature", e);
+          throw { error: e, messageId: waitingForSignature.messageId };
+        }
+      }
+    }
+    return null;
+  }
+
+  private async waitForSignatureSubroutine(
+    documentRef: AVMIntegrationDocument,
+    senderId: SenderId
+  ) {
+    const abortController = new AbortController();
+    this.abortControllers.set(senderId, abortController);
+
+    const alarmName = "autogram-signature-timeout-" + senderId;
+    browser.alarms.create(alarmName, {
+      delayInMinutes: 120,
+    });
+    browser.alarms.onAlarm.addListener((alarm) => {
+      if (alarm.name === alarmName) {
+        log.debug("Alarm triggered", alarm);
+        abortController.abort("Timeout");
+        browser.alarms.clear(alarmName);
+      }
+    });
+
+    abortController.signal.addEventListener("abort", () => {
+      browser.alarms.clear(alarmName);
+      set(dbKeyWaitingForSignature(senderId), undefined);
+    });
+    const res = await this.apiClient.waitForSignature(
+      documentRef,
+      abortController
+    );
+
+    browser.alarms.clear(alarmName);
+    log.debug("res", res);
+    return res;
   }
 
   private methods: {
     [methodName: string]: (
       args: unknown,
-      senderId: SenderId
+      senderId: SenderId,
+      messageId: ChannelMessage["id"]
     ) => Promise<unknown>;
   } = {
     loadOrRegister: async (args: unknown) => {
@@ -183,49 +301,31 @@ class AvmExecutor {
       await set(dbKeyDocumentRef(senderId), documentRef);
     },
 
-    waitForSignature: async (args: unknown, senderId: SenderId) => {
+    waitForSignature: async (
+      args: unknown,
+      senderId: SenderId,
+      messageId: ChannelMessage["id"]
+    ) => {
       const documentRef = await get(dbKeyDocumentRef(senderId));
       if (!documentRef) {
         throw new Error("Document not found");
       }
 
+      // TODO: maybe this should happen only when the worker is suspended?
+      await set(dbKeyWaitingForSignature(senderId), <WaitingForSignatureRecord>{
+        documentRefDbKey: dbKeyDocumentRef(senderId),
+        messageId: messageId,
+      });
+
       // TODO: what to do when worker is stopped while waiting? can that even happen?
 
-      // TODO abort when tab is closed
-      const abortController = new AbortController();
-      this.abortControllers.set(senderId, abortController);
-
-      // TODO: use alarms to abort when tab is closed
-      const alarmName = "autogram-signature-timeout-" + senderId;
-      browser.alarms.create(alarmName, {
-        delayInMinutes: 120,
-      });
-      browser.alarms.onAlarm.addListener((alarm) => {
-        if (alarm.name === alarmName) {
-          log.debug("Alarm triggered", alarm);
-          abortController.abort("Timeout");
-          browser.alarms.clear(alarmName);
+      return this.waitForSignatureSubroutine(documentRef, senderId).then(
+        (res) => {
+          // clear waiting for signature record
+          set(dbKeyWaitingForSignature(senderId), undefined);
+          return res;
         }
-      });
-
-      // const timeout = setTimeout(
-      //   () => {
-      //     abortController.abort("Timeout");
-      //   },
-      //   1000 * 60 * 60 * 2 // 2 hours
-      // );
-      abortController.signal.addEventListener("abort", () => {
-        // clearTimeout(timeout);
-        browser.alarms.clear(alarmName);
-      });
-      const res = await this.apiClient.waitForSignature(
-        documentRef,
-        abortController
       );
-      // clearTimeout(timeout);
-      browser.alarms.clear(alarmName);
-      log.debug("res", res);
-      return res;
     },
 
     abortWaitForSignature: async (args: unknown, senderId: SenderId) => {
@@ -249,7 +349,7 @@ class AvmExecutor {
     useRestorePoint: async (
       args: unknown,
       senderId: SenderId
-    ): Promise<boolean> => {
+    ): Promise<SignedObject | null> => {
       const { restorePoint } = ZUseRestorePointArgs.parse(args);
       const dbKeyRestorePoint = `autogram:avm:restorePoint:${restorePoint}`;
 
@@ -265,7 +365,7 @@ class AvmExecutor {
           await set(dbKeyRestorePoint, documentRefKey);
           log.info("Created new restore point", restorePoint);
         }
-        return false;
+        return null;
       }
 
       const savedDocumentRef =
@@ -273,14 +373,14 @@ class AvmExecutor {
 
       if (!savedDocumentRef) {
         log.debug("No saved document reference found for restore point");
-        return false;
+        return null;
       }
 
       // Restore point found, check if document is already signed
       try {
         if (!savedDocumentRef.guid || !savedDocumentRef.encryptionKey) {
           log.debug("Invalid saved document reference", savedDocumentRef);
-          return false;
+          return null;
         }
 
         // Check document status without polling
@@ -297,19 +397,29 @@ class AvmExecutor {
             restorePoint
           );
           // Clean up restore point
-          await set(dbKeyRestorePoint, undefined);
-          return true;
+          // await set(dbKeyRestorePoint, undefined);
+          return {
+            content: documentResult.document.content,
+            issuedBy:
+              documentResult.document.signers
+                ?.map((s) => s.issuedBy || "")
+                .join(", ") || "",
+            signedBy:
+              documentResult.document.signers
+                ?.map((s) => s.signedBy || "")
+                .join(", ") || "",
+          };
         } else {
           // `not found` or `pending`
           // TODO: does this make sense?
           // Document not signed yet, restore state for continued signing
           await set(dbKeyDocumentRef(senderId), savedDocumentRef);
           log.info("Restore point used - document pending", restorePoint);
-          return false;
+          return null;
         }
       } catch (error) {
         log.error("Error checking restore point", error);
-        return false;
+        return null;
       }
     },
   };
@@ -334,6 +444,14 @@ class AutogramExecutor {
 
   public async run(data: ChannelMessage, senderId: SenderId) {
     return this.methods[data.method](data.args, senderId);
+  }
+
+  public abortSenderRequests(senderId: SenderId) {
+    const abortController = this.abortControllers.get(senderId);
+    if (abortController) {
+      abortController.abort("Worker stopped");
+      this.abortControllers.delete(senderId);
+    }
   }
 
   private methods: {
@@ -534,4 +652,13 @@ function getSenderId(sender: browser.Runtime.MessageSender): SenderId {
 
 function dbKeyDocumentRef(senderId: SenderId) {
   return `autogram:avm:documentRef:${senderId}`;
+}
+
+function dbKeyWaitingForSignature(senderId: SenderId) {
+  return `autogram:avm:waitingForSignature:${senderId}`;
+}
+
+interface WaitingForSignatureRecord {
+  documentRefDbKey: string;
+  messageId: ChannelMessage["id"];
 }
