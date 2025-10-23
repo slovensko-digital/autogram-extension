@@ -147,10 +147,9 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     decodeBase64 = false
   ): Promise<void> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      log.debug("options", (window as any).autogramOptions);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((window as any).autogramOptions.restorePointEnabled) {
+      // TODO: get real restorePointEnabled value
+      let restorePointEnabled = false;
+      if (restorePointEnabled) {
         log.debug("Creating restore point for signing session");
         const restorePoint = await createRestorePointHash(
           this.signRequest,
