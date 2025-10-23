@@ -1,5 +1,9 @@
 import browser from "webextension-polyfill";
-import { isExtensionEnabled } from "../options/content";
+import {
+  getOptions,
+  isExtensionEnabled,
+  isRestorePointEnabled,
+} from "../options/content";
 import { createLogger } from "../log";
 
 const log = createLogger("ag-ext.ent.options");
@@ -11,10 +15,16 @@ function save_options() {
   const extensionEnabled = (
     document.getElementById("extensionEnabled") as HTMLInputElement
   ).checked;
+
+  const restorePointEnabled = (
+    document.getElementById("restorePointEnabled") as HTMLInputElement
+  ).checked;
+
   browser.storage.local
     .set({
       options: {
         extensionEnabled,
+        restorePointEnabled,
       },
     })
     .then(function () {
@@ -33,9 +43,14 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
   log.debug("restoring options");
-  isExtensionEnabled().then((extensionEnabled) => {
+
+  getOptions().then((options) => {
     (document.getElementById("extensionEnabled") as HTMLInputElement).checked =
-      extensionEnabled;
+      options.extensionEnabled;
+
+    (
+      document.getElementById("restorePointEnabled") as HTMLInputElement
+    ).checked = options.restorePointEnabled;
   });
 }
 document.addEventListener("DOMContentLoaded", restore_options);

@@ -11,6 +11,14 @@ try {
 
   const windowAny = window as WindowWithDitec;
 
+  // Listen for options from the content script
+  window.addEventListener("autogram-extension-options", (event: Event) => {
+    const customEvent = event as CustomEvent;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).autogramOptions = customEvent.detail;
+    log.debug("Received autogram options", customEvent.detail);
+  });
+
   maybeInsertUpvsJsFixes(windowAny);
 
   inject(windowAny);

@@ -37,7 +37,6 @@ async function createRestorePointHash(
     throw new Error("SubtleCrypto not available");
   }
 
-
   // TODO: check if restore works
   const persistentData = {
     // signatureId: signRequest.signatureId,
@@ -122,12 +121,17 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
 
-    const restorePoint = await createRestorePointHash(
-      this.signRequest,
-      window.location.href
-    );
-
-    this.client.useRestorePoint(restorePoint);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    log.debug("options", (window as any).autogramOptions);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).autogramOptions.restorePointEnabled) {
+      log.debug("Creating restore point for signing session");
+      const restorePoint = await createRestorePointHash(
+        this.signRequest,
+        window.location.href
+      );
+      this.client.useRestorePoint(restorePoint);
+    }
 
     this.signRequest.signingStatus = SigningStatus.started;
     // this.launch(callback);
