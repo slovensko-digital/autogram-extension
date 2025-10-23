@@ -66,6 +66,8 @@ Communication between content script and background script is using messaging an
 
 Options are saved into `browser.storage.local`
 
+Use options page to view IndexedDB content for background worker - it's because DevTools won't show it in background worker DevTools.
+
 ## CSS
 
 CSS is implemented using CSS modules inserted directly into page.

@@ -2,8 +2,10 @@ import { AVMGetDocumentsResponse } from "autogram-sdk";
 
 import { z } from "zod";
 
-export const EVENT_SEND_MESSAGE_INJ_TO_CS = "autogram-send-message-injected-to-content-script" as const;
-export const EVENT_MESSAGE_RESPONSE_CS_TO_INJ = "autogram-message-response-content-script-to-injected" as const;
+export const EVENT_SEND_MESSAGE_INJ_TO_CS =
+  "autogram-send-message-injected-to-content-script" as const;
+export const EVENT_MESSAGE_RESPONSE_CS_TO_INJ =
+  "autogram-message-response-content-script-to-injected" as const;
 
 export const ZChannelMessage = z.object({
   id: z.string(),

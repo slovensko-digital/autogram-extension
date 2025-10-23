@@ -1,4 +1,4 @@
-import { isExtensionEnabled } from "../options/content";
+import { getOptions } from "../options/content";
 import browser from "webextension-polyfill";
 import packageJson from "../../package.json";
 import { ContentChannelPassthrough } from "../dbridge_js/autogram/channel/content";
@@ -42,8 +42,15 @@ if ((window as any).autogramContentScriptLock !== undefined) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).autogramContentScriptLock = new Date().toISOString();
 
-isExtensionEnabled()
-  .then((enabled) => {
+window.addEventListener("load", (event) => {
+  log.info("window load event", event);
+});
+
+log.debug("Checking if extension is enabled");
+
+getOptions()
+  .then((extensionOptions) => {
+    const enabled = extensionOptions.extensionEnabled;
     if (enabled) {
       log.info(
         `Autogram extension ${version}(mv${__MANIFEST_VERSION__}) is enabled`
@@ -53,7 +60,7 @@ isExtensionEnabled()
 
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
-      insertInjectScript(document);
+      insertInjectScript(document, extensionOptions);
 
       // TODO: probably this should be conditional, based on the website
       const iframe = document.getElementById(
@@ -61,7 +68,7 @@ isExtensionEnabled()
       ) as HTMLIFrameElement;
       if (iframe && iframe.contentDocument) {
         log.debug("workdeskIframe found");
-        insertInjectScript(iframe.contentDocument);
+        insertInjectScript(iframe.contentDocument, extensionOptions);
       } else {
         log.debug("workdeskIframe not found");
       }
@@ -70,7 +77,7 @@ isExtensionEnabled()
   }, captureException)
   .catch(captureException);
 
-function insertInjectScript(doc: Document) {
+function insertInjectScript(doc: Document, extensionOptions: object) {
   const site = supportedSites.matchUrl(doc.location.href);
   let injector: BaseInjector | null = null;
 
@@ -87,7 +94,7 @@ function insertInjectScript(doc: Document) {
         InjectorClass,
         InjectorClass.key
       );
-      injector = new InjectorClass(doc);
+      injector = new InjectorClass(doc, extensionOptions);
       break;
     }
   }
@@ -102,7 +109,10 @@ function insertInjectScript(doc: Document) {
 class BaseInjector {
   public static readonly key: string;
   protected script: HTMLScriptElement;
-  constructor(protected doc: Document) {
+  constructor(
+    protected doc: Document,
+    protected extensionOptions: object
+  ) {
     this.script = this.createScript();
   }
 
@@ -125,8 +135,15 @@ class BaseInjector {
     script.src = url;
     script.type = "text/javascript";
 
+    const extensionOptions = this.extensionOptions;
     script.onload = function () {
       log.debug("script loaded");
+
+      // Pass options via a custom event to avoid CSP issues with inline scripts
+      const event = new CustomEvent("autogram-extension-options", {
+        detail: extensionOptions,
+      });
+      window.dispatchEvent(event);
     };
     return script;
   }

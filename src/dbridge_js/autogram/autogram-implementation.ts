@@ -19,10 +19,50 @@ import {
 } from "./channel/web";
 import { InputObject } from "../ditecx/types";
 import { createLogger } from "../../log";
+import { defaultOptionsStorage } from "../../options/default";
 
 const log = createLogger("ag-ext.impl");
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
+
+/**
+ * Creates a hash-based restore point ID from sign request data and page URL
+ * This ensures the same signing session can be resumed after page reload
+ */
+async function createRestorePointHash(
+  signRequest: SignRequest,
+  pageUrl: string
+): Promise<string> {
+  const subtleCrypto = globalThis.crypto?.subtle;
+  if (!subtleCrypto) {
+    throw new Error("SubtleCrypto not available");
+  }
+
+  // TODO: check if restore works
+  const persistentData = {
+    // signatureId: signRequest.signatureId,
+    digestAlgUri: signRequest.digestAlgUri,
+    signaturePolicyIdentifier: signRequest.signaturePolicyIdentifier,
+    objectId: signRequest.object.objectId,
+    objectType: signRequest.object.type,
+    objectDescription: signRequest.object.objectDescription,
+    documentContent: signRequest.document.content,
+    documentFilename: signRequest.document.filename,
+
+    url: pageUrl,
+  };
+
+  log.debug("createRestorePointHash", persistentData);
+
+  const dataString = JSON.stringify(persistentData, null, 0);
+  const hash = await subtleCrypto.digest(
+    "SHA-256",
+    new TextEncoder().encode(dataString)
+  );
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 /**
  * Implementation of signing using autogram-sdk
@@ -36,15 +76,23 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   private client: CombinedClient;
 
-  private constructor(client: CombinedClient) {
+  private autogramOptions: typeof defaultOptionsStorage.options;
+
+  private constructor(
+    client: CombinedClient,
+    autogramOptions: typeof defaultOptionsStorage.options
+  ) {
     this.client = client;
     this.signRequest = new SignRequest();
     this.client.setResetSignRequestCallback(() => {
       this.signRequest = new SignRequest();
     });
+    this.autogramOptions = autogramOptions;
   }
 
-  public static async init(): Promise<DBridgeAutogramImpl> {
+  public static async init(
+    autogramOptions: typeof defaultOptionsStorage.options
+  ): Promise<DBridgeAutogramImpl> {
     const webChannelCaller = new WebChannelCaller();
     webChannelCaller.init();
     return new DBridgeAutogramImpl(
@@ -52,7 +100,8 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
         new AvmChannelWeb(webChannelCaller),
         new AutogramDesktopChannel(webChannelCaller),
         () => {}
-      )
+      ),
+      autogramOptions
     );
   }
 
@@ -77,9 +126,11 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
       log.error("Signing non-new sign request");
     }
 
+    // Set the sign request properties first so they can be used for hash generation
     this.signRequest.signatureId = signatureId;
     this.signRequest.digestAlgUri = digestAlgUri;
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
+
     this.signRequest.signingStatus = SigningStatus.started;
     // this.launch(callback);
     callback.onSuccess();
@@ -106,6 +157,23 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     decodeBase64 = false
   ): Promise<void> {
     try {
+      if (this.autogramOptions.restorePointEnabled) {
+        log.debug("Creating restore point for signing session");
+        const restorePoint = await createRestorePointHash(
+          this.signRequest,
+          window.location.href
+        );
+
+        const restored = await this.client.useRestorePoint(restorePoint);
+        if (restored) {
+          log.info("We can restore previous signing session");
+          this.signedObject = restored;
+          this.signRequest.signingStatus = SigningStatus.signed;
+          callback.onSuccess(restored.content);
+          return;
+        }
+      }
+
       const response = await this.client.sign(
         this.signRequest.document,
         this.signRequest.signatureParameters(parameters),
