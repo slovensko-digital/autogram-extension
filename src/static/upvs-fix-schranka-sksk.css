@@ -63,7 +63,14 @@
     max-width: unset !important;
   }
 
-  /** sidebar **/
+  /** layout **/
+
+  .app-layout__pane {
+    padding-left: .75em;
+    padding-right: .75em;
+  }
+
+  /* sidebar */
   .app-layout__pane--left {
     position: absolute;
     left: 0;
@@ -76,6 +83,8 @@
     transition:
       transform 0.3s ease,
       opacity 0.3s ease;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .app-layout__pane--left.open {
