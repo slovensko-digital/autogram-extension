@@ -40,3 +40,10 @@ function restore_options() {
 }
 document.addEventListener("DOMContentLoaded", restore_options);
 document.getElementById("save")?.addEventListener("click", save_options);
+
+navigator.permissions
+  .query({ name: "local-network-access" } as unknown as PermissionDescriptor)
+  .then((result) => {
+    console.log("Local network access permission state:", result.state);
+    console.log(result);
+  });

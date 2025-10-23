@@ -49,6 +49,8 @@ isExtensionEnabled()
         `Autogram extension ${version}(mv${__MANIFEST_VERSION__}) is enabled`
       );
 
+      // maybeInsertUpvsCssFixes(window);
+
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
       insertInjectScript(document);

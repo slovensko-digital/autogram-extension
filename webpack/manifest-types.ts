@@ -34,13 +34,14 @@ export interface ManifestV2 {
 
   content_security_policy?: "script-src 'self' https://example.com; object-src 'self'";
 
-  content_scripts?: [
-    {
-      exclude_matches?: string[];
-      matches: string[];
-      js: string[];
-    }
-  ];
+  content_scripts?: {
+    exclude_matches?: string[];
+    matches: string[];
+    js?: string[];
+    css?: StringPath[];
+    all_frames?: boolean;
+    run_at?: "document_start" | "document_end" | "document_idle";
+  }[];
 
   default_locale?: string;
 

@@ -67,6 +67,23 @@ function generateManifest(
             all_frames: true,
             run_at: "document_start",
           },
+
+          {
+            matches: ["*://*.slovensko.sk/*", "*://slovensko.sk/*"],
+            css: ["static/upvs-fix-sksk.css"],
+            all_frames: true,
+            run_at: "document_start",
+          },
+
+          {
+            matches: [
+              "*://*.schranka.slovensko.sk/*",
+              "*://schranka.slovensko.sk/*",
+            ],
+            css: ["static/upvs-fix-schranka-sksk.css"],
+            all_frames: true,
+            run_at: "document_start",
+          },
         ],
         background: {
           service_worker: entries.background[0],
@@ -92,7 +109,7 @@ function generateManifest(
               ...Object.keys(entries)
                 .map((key) => entries[key].map((x) => [x, x + ".map"]).flat())
                 .flat(),
-              "static/logo.png",
+              "static/logo-64.png",
             ],
             matches: enabledUrls,
           },
@@ -149,6 +166,21 @@ function generateManifest(
             matches: enabledUrls,
             js: entries.content,
           },
+          {
+            matches: ["*://*.slovensko.sk/*", "*://slovensko.sk/*"],
+            css: ["static/upvs-fix-sksk.css"],
+            all_frames: true,
+            run_at: "document_start",
+          },
+          {
+            matches: [
+              "*://*.schranka.slovensko.sk/*",
+              "*://schranka.slovensko.sk/*",
+            ],
+            css: ["static/upvs-fix-schranka-sksk.css"],
+            all_frames: true,
+            run_at: "document_start",
+          },
         ],
         web_accessible_resources: [
           // ...entries.inject.map((x) => [x, x + ".map"]).flat(),
@@ -157,7 +189,7 @@ function generateManifest(
           ...Object.keys(entries)
             .map((key) => entries[key].map((x) => [x, x + ".map"]).flat())
             .flat(),
-          "static/logo.png",
+          "static/logo-64.png",
           ...enabledUrls,
         ],
         // TODO check if this is needed
