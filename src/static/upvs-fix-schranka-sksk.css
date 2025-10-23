@@ -1,4 +1,4 @@
-@media (max-width: 767px) {
+@media only screen and (((hover: none) and (pointer: coarse)) or (max-width: 767px)) {
   .parent {
     min-width: 0px !important;
   }
