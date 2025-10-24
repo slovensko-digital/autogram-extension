@@ -30,6 +30,7 @@ try {
     inject(windowAny, extensionOptions);
   });
 } catch (e) {
+  log.error("Error during inject", e);
   captureException(e);
 }
 

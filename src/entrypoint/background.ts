@@ -66,5 +66,6 @@ try {
     // browser.runtime.sendMessage({ bgRuntimeEvent: "onStartup" });
   });
 } catch (e) {
+  log.error("Error during background script execution", e);
   captureException(e);
 }
