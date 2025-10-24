@@ -31,16 +31,20 @@ const AVAILABLE_LANGUAGES = ["sk", "en"];
  */
 async function createRestorePointHash(
   signRequest: SignRequest,
-  pageUrl: string
+  pageUrl: string,
+  parameters: Partial<DesktopSignatureParameters>
 ): Promise<string> {
   const subtleCrypto = globalThis.crypto?.subtle;
   if (!subtleCrypto) {
     throw new Error("SubtleCrypto not available");
   }
 
+  log.debug("createRestorePointHash", { signRequest, pageUrl });
+
   // TODO: check if restore works
   const persistentData = {
     // signatureId: signRequest.signatureId,
+    signatureParams: signRequest.signatureParameters(parameters),
     digestAlgUri: signRequest.digestAlgUri,
     signaturePolicyIdentifier: signRequest.signaturePolicyIdentifier,
     objectId: signRequest.object.objectId,
@@ -163,7 +167,8 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
         log.debug("Creating restore point for signing session");
         const restorePoint = await createRestorePointHash(
           this.signRequest,
-          window.location.href
+          window.location.href,
+          parameters
         );
 
         const restored = await this.client.useRestorePoint(restorePoint);
