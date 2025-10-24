@@ -4,3 +4,6 @@ export const defaultOptionsStorage = {
     restorePointEnabled: false,
   },
 };
+
+export type ExtensionOptions = typeof defaultOptionsStorage.options;
+export type ExtensionOptionsString = string;
