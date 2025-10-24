@@ -1,4 +1,4 @@
-# Rozšírenie Autogram 🇸🇰
+# Rozšírenie "Autogram na štátnych weboch" 🇸🇰
 
 Rozšírenie do prehliadačov, nahrádzajúce DSigner za [Autogram](https://github.com/slovensko-digital/autogram) alebo [Autogram v Mobile](https://sluzby.slovensko.digital/autogram-v-mobile/) na vybraných štátnych weboch
 
@@ -19,7 +19,7 @@ Alebo si viete stiahnuť zip z podstránky [Releases](https://github.com/slovens
 
 Ak máte záujem o podporu na iných weboch vytvorte [novú issue](https://github.com/slovensko-digital/autogram-extension/issues/new)
 
-# Autogram Extension (en)
+# Browser Extension "Autogram on Government Websites" (en)
 
 Browser extension replacing DSigner with [Autogram](https://github.com/slovensko-digital/autogram) as signer on select government websites.
 
