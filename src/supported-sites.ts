@@ -104,6 +104,7 @@ export const supportedSites = new SupportedSites();
 
 const basicUrls = [
   "https://www.slovensko.sk/*",
+  "https://prihlasenie.slovensko.sk/*",
   "https://schranka.slovensko.sk/*",
   "https://schranka.upvsfixnew.gov.sk/*",
   "https://pfseform.financnasprava.sk/*",

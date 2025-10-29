@@ -9,6 +9,13 @@ import cssSlovenskoSk from "./static/upvs-fix-sksk.css";
 const log = createLogger("ag-ext.upvs-fixes");
 export function maybeInsertUpvsJsFixes(theWindow: Window) {
   if (
+    theWindow.location.hostname.endsWith("prihlasenie.slovensko.sk") &&
+    isMobileDevice()
+  ) {
+    insertMobileLoginInfoBox()
+  }
+  
+  if (
     theWindow.location.hostname.endsWith("schranka.slovensko.sk") &&
     isMobileDevice()
   ) {
@@ -17,6 +24,36 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
     }
 
     removeEmptyAttachmentCells();
+  }
+  
+  function insertMobileLoginInfoBox() {
+    const container = document.querySelector("main > div.grid-row");
+    if (!container) return;
+  
+    const infoColumn = document.createElement('div');
+    infoColumn.className = 'column-one-half';
+  
+    infoColumn.innerHTML = `
+        <div class="box box--dark flexContainer">
+          <div class="box__content">
+            <h2 class="heading-medium mt-0">Chcete sa prihlásiť z mobilu?</h2>
+              <p>
+                  Ak sa chcete prihlásiť z mobilného zariadenia, máte niekoľko možností,
+                  no každá z nich vyžaduje prvotné nastavenie. Nasledujúci návod vám vysvetlí,
+                  aké máte možnosti.
+              </p>
+          </div>
+          <div class="flexSpan">
+            <button class="button button--wider"
+                onclick="window.location.href='https://navody.digital/prihlasovanie-cez-mobil'">
+              Ako sa prihlásiť cez mobil?
+            </button>
+          </div>
+        </div>
+    `;
+  
+    const column = container.querySelector('.column-one-half');
+    container.insertBefore(infoColumn, column);
   }
 
   function addHamburgerMenu() {
