@@ -48,15 +48,7 @@ export type DitecX = {
   AbstractJsCore: DummyClass;
 };
 
-let autogramOptions = defaultOptionsStorage.options;
-window.addEventListener("autogram-extension-options", (event: Event) => {
-  const customEvent = event as CustomEvent;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  autogramOptions = customEvent.detail;
-  log.debug("Received autogram options", customEvent.detail);
-});
-
-export async function constructDitecX() {
+export async function constructDitecX(autogramOptions) {
   const implementation = await DBridgeAutogramImpl.init(autogramOptions);
 
   /**

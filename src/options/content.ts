@@ -1,12 +1,10 @@
 import browser from "webextension-polyfill";
-import { defaultOptionsStorage } from "./default";
+import { defaultOptionsStorage, ExtensionOptions } from "./default";
 import { createLogger } from "../log";
 
 const log = createLogger("ag-ext.options");
 
-export async function getOptions(): Promise<
-  typeof defaultOptionsStorage.options
-> {
+export async function getOptions(): Promise<ExtensionOptions> {
   const data = await browser.storage.local.get(defaultOptionsStorage);
   log.debug(data);
   return data.options;

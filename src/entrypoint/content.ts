@@ -16,6 +16,8 @@ const { version } = packageJson;
 
 import { captureException } from "../sentry";
 import { createLogger } from "../log";
+import { createAutogramOptionsCustomEvent } from "../util";
+import { ExtensionOptions } from "../options/default";
 
 const log = createLogger("ag-ext.ent.content");
 
@@ -77,7 +79,7 @@ getOptions()
   }, captureException)
   .catch(captureException);
 
-function insertInjectScript(doc: Document, extensionOptions: object) {
+function insertInjectScript(doc: Document, extensionOptions: ExtensionOptions) {
   const site = supportedSites.matchUrl(doc.location.href);
   let injector: BaseInjector | null = null;
 
@@ -111,7 +113,7 @@ class BaseInjector {
   protected script: HTMLScriptElement;
   constructor(
     protected doc: Document,
-    protected extensionOptions: object
+    protected extensionOptions: ExtensionOptions
   ) {
     this.script = this.createScript();
   }
@@ -140,9 +142,7 @@ class BaseInjector {
       log.debug("script loaded");
 
       // Pass options via a custom event to avoid CSP issues with inline scripts
-      const event = new CustomEvent("autogram-extension-options", {
-        detail: extensionOptions,
-      });
+      const event = createAutogramOptionsCustomEvent(extensionOptions);
       window.dispatchEvent(event);
     };
     return script;

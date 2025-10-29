@@ -19,7 +19,7 @@ import {
 } from "./channel/web";
 import { InputObject } from "../ditecx/types";
 import { createLogger } from "../../log";
-import { defaultOptionsStorage } from "../../options/default";
+import { ExtensionOptions } from "../../options/default";
 
 const log = createLogger("ag-ext.impl");
 
@@ -31,16 +31,20 @@ const AVAILABLE_LANGUAGES = ["sk", "en"];
  */
 async function createRestorePointHash(
   signRequest: SignRequest,
-  pageUrl: string
+  pageUrl: string,
+  parameters: Partial<DesktopSignatureParameters>
 ): Promise<string> {
   const subtleCrypto = globalThis.crypto?.subtle;
   if (!subtleCrypto) {
     throw new Error("SubtleCrypto not available");
   }
 
+  log.debug("createRestorePointHash", { signRequest, pageUrl });
+
   // TODO: check if restore works
   const persistentData = {
     // signatureId: signRequest.signatureId,
+    signatureParams: signRequest.signatureParameters(parameters),
     digestAlgUri: signRequest.digestAlgUri,
     signaturePolicyIdentifier: signRequest.signaturePolicyIdentifier,
     objectId: signRequest.object.objectId,
@@ -76,22 +80,23 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
   private client: CombinedClient;
 
-  private autogramOptions: typeof defaultOptionsStorage.options;
+  private extensionOptions: ExtensionOptions;
 
   private constructor(
     client: CombinedClient,
-    autogramOptions: typeof defaultOptionsStorage.options
+    extensionOptions: ExtensionOptions
   ) {
     this.client = client;
     this.signRequest = new SignRequest();
     this.client.setResetSignRequestCallback(() => {
       this.signRequest = new SignRequest();
     });
-    this.autogramOptions = autogramOptions;
+    this.extensionOptions = extensionOptions;
+    log.debug("Autogram options in constructor", extensionOptions);
   }
 
   public static async init(
-    autogramOptions: typeof defaultOptionsStorage.options
+    extensionOptions: ExtensionOptions
   ): Promise<DBridgeAutogramImpl> {
     const webChannelCaller = new WebChannelCaller();
     webChannelCaller.init();
@@ -101,7 +106,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
         new AutogramDesktopChannel(webChannelCaller),
         () => {}
       ),
-      autogramOptions
+      extensionOptions
     );
   }
 
@@ -157,11 +162,13 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     decodeBase64 = false
   ): Promise<void> {
     try {
-      if (this.autogramOptions.restorePointEnabled) {
+      log.debug("Options in getSignature", this.extensionOptions);
+      if (this.extensionOptions.restorePointEnabled) {
         log.debug("Creating restore point for signing session");
         const restorePoint = await createRestorePointHash(
           this.signRequest,
-          window.location.href
+          window.location.href,
+          parameters
         );
 
         const restored = await this.client.useRestorePoint(restorePoint);

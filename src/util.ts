@@ -1,3 +1,5 @@
+import { ExtensionOptions, ExtensionOptionsString } from "./options/default";
+
 export function TODO(...rest: unknown[]): void {
   // eslint-disable-next-line prefer-rest-params
   console.debug("TODO:", rest, arguments);
@@ -25,4 +27,12 @@ export function isMobileDevice(): boolean {
 
   // Consider it mobile if it matches user agent OR (has touch + small screen + mobile features)
   return isMobileUA || (isTouchDevice && isSmallScreen && hasMobileFeatures);
+}
+
+export function createAutogramOptionsCustomEvent(
+  extensionOptions: ExtensionOptions
+) {
+  return new CustomEvent<ExtensionOptionsString>("autogram-extension-options", {
+    detail: JSON.stringify(extensionOptions),
+  });
 }

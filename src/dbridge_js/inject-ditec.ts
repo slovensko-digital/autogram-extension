@@ -6,17 +6,22 @@ import {
   supportedSites,
 } from "../supported-sites";
 import { createLogger } from "../log";
+import { ExtensionOptions } from "../options/default";
 
 const log = createLogger("ag-ext.inject-ditec");
 
 type OriginalDitec = object;
 
-export function inject(windowAny: {
-  ditec?: OriginalDitec;
-  location: Location;
-}): void {
+export function inject(
+  windowAny: {
+    ditec?: OriginalDitec;
+    location: Location;
+  },
+  extensionOptions: ExtensionOptions
+): void {
   log.debug("inject-ditec", {
     windowIsTop: window.top === window,
+    extensionOptions,
   });
   log.debug("Start inject", {
     manifestVersion: __MANIFEST_VERSION__,
@@ -42,20 +47,23 @@ export function inject(windowAny: {
       `Unsupported conflict resolution strategy ${site.conflictResolution}`
     );
   }
-  conflictResolver.inject(windowAny);
+  conflictResolver.inject(windowAny, extensionOptions);
 
   log.debug("End inject", windowAny.ditec);
 }
 
 abstract class ConflictResolver {
   public static readonly key: string;
-  abstract inject(windowAny: { [key: string]: unknown }): void;
+  abstract inject(
+    windowAny: { [key: string]: unknown },
+    extensionOptions: ExtensionOptions
+  ): void;
 }
 
 class ProxyConflictResolver extends ConflictResolver {
   public static readonly key = CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
-  inject(windowAny) {
-    Promise.all([import("./proxy"), constructDitecX()]).then(
+  inject(windowAny, extensionOptions) {
+    Promise.all([import("./proxy"), constructDitecX(extensionOptions)]).then(
       ([{ wrapWithProxy }, ditecX]) => {
         windowAny.ditec = wrapWithProxy(ditecX);
       }
@@ -74,9 +82,9 @@ class ProxyOriginalRecorderConflictResolver extends ConflictResolver {
 
 class ReplaceOriginalConflictResolver extends ConflictResolver {
   public static readonly key = CONFLICT_RESOLUTION_REPLACE_ORIGINAL;
-  inject(windowAny) {
+  inject(windowAny, extensionOptions) {
     if (windowAny.ditec) {
-      constructDitecX().then((ditecX) => {
+      constructDitecX(extensionOptions).then((ditecX) => {
         windowAny.ditec = ditecX;
       });
     } else {
