@@ -36,17 +36,16 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
     infoColumn.innerHTML = `
         <div class="box box--dark flexContainer">
           <div class="box__content">
-            <h2 class="heading-medium mt-0">Chcete sa prihlásiť z mobilu?</h2>
+            <h2 class="heading-medium mt-0">Ste tu prvýkrát a chcete sa prihlásiť z&nbsp;mobilu?</h2>
               <p>
-                  Ak sa chcete prihlásiť z mobilného zariadenia, máte niekoľko možností,
-                  no každá z nich vyžaduje prvotné nastavenie. Nasledujúci návod vám vysvetlí,
-                  aké máte možnosti.
+                  Máte niekoľko možností, no každá z nich vyžaduje prvotné nastavenie.
+                  Prečítajte si návod, ktorý vám vysvetlí, aké máte možnosti.
               </p>
           </div>
           <div class="flexSpan">
             <button class="button button--wider"
                 onclick="window.location.href='https://navody.digital/ako-zacat-komunikovat-elektronicky#prihlasovanie-cez-mobil'">
-              Ako sa prihlásiť cez mobil?
+              Zobraziť návod
             </button>
           </div>
         </div>
