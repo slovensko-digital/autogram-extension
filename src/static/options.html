@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -13,6 +13,7 @@
         line-height: 1.31579;
         -webkit-font-smoothing: antialiased;
         font-size: 16px;
+        margin-bottom: 50px;
       }
 
       button {
@@ -108,7 +109,13 @@
 
       .wrapper {
         margin: 0 auto;
-        padding: 100px 0 0;
+        padding: 100px 0 0 20px;
+        max-width: 600px;
+      }
+
+      .section {
+        margin: 40px auto;
+        padding: 0 20px;
         max-width: 600px;
       }
 
@@ -142,18 +149,24 @@
     <div class="wrapper">
       <header class="header"><div class="header__tricolor"></div></header>
 
-      <h1>Autogram nastavenia</h1>
+      <div style="font-weight: 600; margin-bottom: -21px;">Nastavenia rozšírenia</div>
+      <h1>Autogram na štátnych weboch</h1>
       <label class="checkbox">
         <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
         <span class="checkbox__checkmark"></span>
         <span class="checkbox__label">Zapnúť rozšírenie.</span>
       </label>
 
-
       <label class="checkbox">
-        <input type="checkbox" id="restorePointEnabled" class="checkbox__input" />
+        <input
+          type="checkbox"
+          id="restorePointEnabled"
+          class="checkbox__input"
+        />
         <span class="checkbox__checkmark"></span>
-        <span class="checkbox__label">⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span>
+        <span class="checkbox__label"
+          >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
+        >
       </label>
 
       <div id="status"></div>
@@ -179,10 +192,50 @@
         </li>
       </ul> -->
     </div>
-    <div class="wrapper">
-      <h2>Viac o Autograme</h2>
-      Zdrojový kód nájdete na <a href="https://github.com/slovensko-digital/autogram-extension" target="_blank">GitHub-e</a>, kde môžete aj <a href="https://github.com/slovensko-digital/autogram-extension/issues" target="_blank">nahlásiť problémy</a> .
+    <div class="section">
+      <h2>Viac o rozšírení "Autogram na štátnych weboch"</h2>
+      Zdrojový kód nájdete na
+      <a
+        href="https://github.com/slovensko-digital/autogram-extension"
+        target="_blank"
+        >GitHub-e</a
+      >, kde môžete aj
+      <a
+        href="https://github.com/slovensko-digital/autogram-extension/issues"
+        target="_blank"
+        >nahlásiť problémy</a
+      >
+      .
     </div>
+
+    <div class="section">
+      <h2>Viac o programe "Autogram"</h2>
+      - desktop aplikácia, nájdete na stránke
+      <a
+        href="https://sluzby.slovensko.digital/autogram/?utm_source=extension&utm_medium=options&utm_campaign=extension"
+        target="_blank"
+        >Autogram</a
+      >, zdrojový kód na
+      <a href="https://github.com/slovensko-digital/autogram" target="_blank"
+        >GitHub-e</a
+      >.
+    </div>
+
+    <div class="section">
+      <h2>Viac o programe "Autogram v Mobile"</h2>
+      - mobilná aplikácia pre iOS a Android, nájdete na stránke
+      <a
+        href="https://sluzby.slovensko.digital/autogram-v-mobile/?utm_source=extension&utm_medium=options&utm_campaign=extension"
+        target="_blank"
+        >Autogram v Mobile</a
+      >, zdrojový kód na
+      <a
+        href="https://github.com/slovensko-digital/avm-app-flutter"
+        target="_blank"
+        >GitHub-e</a
+      >.
+    </div>
+
     <script src="/autogram-options.bundle.js"></script>
   </body>
 </html>
