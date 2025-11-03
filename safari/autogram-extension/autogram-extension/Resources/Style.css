@@ -17,29 +17,111 @@ html {
 body {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     flex-direction: column;
 
     gap: var(--spacing);
     margin: 0 calc(var(--spacing) * 2);
     height: 100%;
+    overflow-y: auto;
+    padding: 20px 0;
 
     font: -apple-system-short-body;
     text-align: center;
 }
 
-body:not(.state-on, .state-off) :is(.state-on, .state-off) {
+body:not(.state-on, .state-off, .state-ios) :is(.state-on, .state-off, .state-ios) {
     display: none;
 }
 
-body.state-on :is(.state-off, .state-unknown) {
+body.state-on :is(.state-off, .state-unknown, .state-ios) {
     display: none;
 }
 
-body.state-off :is(.state-on, .state-unknown) {
+body.state-off :is(.state-on, .state-unknown, .state-ios) {
     display: none;
+}
+
+body.state-ios :is(.state-on, .state-off, .state-unknown) {
+    display: none;
+}
+
+body.state-ios .open-preferences {
+    display: none;
+}
+
+body:not(.state-ios) .open-safari {
+    display: none;
+}
+
+body:not(.state-ios) .tutorial-container {
+    display: none;
+}
+
+h2 {
+    margin: 10px 0;
+    font: -apple-system-headline;
+}
+
+.tutorial-container {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--spacing) * 0.75);
+    width: 100%;
+    max-width: 500px;
+    padding: 10px 0;
+}
+
+.tutorial-step {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(128, 128, 128, 0.1);
+    border-radius: 12px;
+}
+
+.step-number {
+    width: 28px;
+    height: 28px;
+    background: #007AFF;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.step-text {
+    margin: 0;
+    text-align: left;
+    font: -apple-system-body;
+    line-height: 1.4;
+}
+
+.tutorial-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    align-self: center;
 }
 
 button {
     font-size: 1em;
+    padding: 12px 24px;
+    border-radius: 8px;
+    background: #007AFF;
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+    .tutorial-step {
+        background: rgba(255, 255, 255, 0.1);
+    }
 }

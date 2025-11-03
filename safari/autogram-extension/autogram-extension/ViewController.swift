@@ -45,8 +45,24 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
         print("CSS URL: \(String(describing: cssURL))")
         print("JS URL: \(String(describing: jsURL))")
         
+        // Helper function to convert UIImage to base64 data URL
+        func imageToDataURL(_ imageName: String) -> String {
+            if let image = UIImage(named: imageName),
+               let imageData = image.pngData() {
+                return "data:image/png;base64,\(imageData.base64EncodedString())"
+            }
+            return ""
+        }
+        
         if let cssURL = cssURL, let jsURL = jsURL {
             let iconPath = iconURL?.absoluteString ?? ""
+            let tutorial1 = imageToDataURL("Tutorial1")
+            let tutorial2 = imageToDataURL("Tutorial2")
+            let tutorial3 = imageToDataURL("Tutorial3")
+            let tutorial4 = imageToDataURL("Tutorial4")
+            let tutorial5 = imageToDataURL("Tutorial5")
+            let tutorial6 = imageToDataURL("Tutorial6")
+            let tutorial7 = imageToDataURL("Tutorial7")
             
             let htmlContent = """
             <!DOCTYPE html>
@@ -58,11 +74,50 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
                 <script src="\(jsURL.absoluteString)" defer></script>
             </head>
             <body>
-                <img src="\(iconPath)" width="128" height="128" alt="autogram-extension Icon">
+                <img src="\(iconPath)" width="80" height="80" alt="autogram-extension Icon">
+                <h2 class="state-ios">Ako zapnúť rozšírenie Autogram na štýtnych weboch</h2>
                 <p class="state-unknown">You can turn on autogram-extension's extension in Safari Extensions preferences.</p>
                 <p class="state-on">autogram-extension's extension is currently on. You can turn it off in Safari Extensions preferences.</p>
                 <p class="state-off">autogram-extension's extension is currently off. You can turn it on in Safari Extensions preferences.</p>
+                <div class="state-ios tutorial-container">
+                    <div class="tutorial-step">
+                        <div class="step-number">1</div>
+                        <p class="step-text">Navštívte <strong>slovensko.sk</strong> v Safari a kliknite na ikonu v adresnom riadku</p>
+                        \(tutorial1.isEmpty ? "" : "<img src=\"\(tutorial1)\" class=\"tutorial-image\" alt=\"Krok 1\">")
+                    </div>
+                    <div class="tutorial-step">
+                        <div class="step-number">2</div>
+                        <p class="step-text">Vyberte <strong>Spravovať rozšírenia</strong></p>
+                        \(tutorial2.isEmpty ? "" : "<img src=\"\(tutorial2)\" class=\"tutorial-image\" alt=\"Krok 2\">")
+                    </div>
+                    <div class="tutorial-step">
+                        <div class="step-number">3</div>
+                        <p class="step-text">Nájdite rozšírenie <strong>Autogram na štátnych weboch</strong> v zozname</p>
+                        \(tutorial3.isEmpty ? "" : "<img src=\"\(tutorial3)\" class=\"tutorial-image\" alt=\"Krok 3\">")
+                    </div>
+                    <div class="tutorial-step">
+                        <div class="step-number">4</div>
+                        <p class="step-text">Zapnite prepínač vedľa rozšírenia</p>
+                        \(tutorial4.isEmpty ? "" : "<img src=\"\(tutorial4)\" class=\"tutorial-image\" alt=\"Krok 4\">")
+                    </div>
+                    <div class="tutorial-step">
+                        <div class="step-number">5</div>
+                        <p class="step-text">Potvrďte, že chcete povoliť rozšírenie</p>
+                        \(tutorial5.isEmpty ? "" : "<img src=\"\(tutorial5)\" class=\"tutorial-image\" alt=\"Krok 5\">")
+                    </div>
+                    <div class="tutorial-step">
+                        <div class="step-number">6</div>
+                        <p class="step-text">Vyberte <strong>Vždy povoliť na tejto webstránke</strong> alebo <strong>Vždy povoliť na všetkých webových stránkach</strong></p>
+                        \(tutorial6.isEmpty ? "" : "<img src=\"\(tutorial6)\" class=\"tutorial-image\" alt=\"Krok 6\">")
+                    </div>
+                    <div class="tutorial-step">
+                        <div class="step-number">7</div>
+                        <p class="step-text">Rozšírenie je teraz povolené a pripravené na použitie</p>
+                        \(tutorial7.isEmpty ? "" : "<img src=\"\(tutorial7)\" class=\"tutorial-image\" alt=\"Krok 7\">")
+                    </div>
+                </div>
                 <button class="open-preferences">Quit and Open Safari Extensions Preferences…</button>
+                <button class="open-safari">Otvoriť slovensko.sk v Safari</button>
             </body>
             </html>
             """
@@ -98,30 +153,34 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
             }
         }
         #else
-        // On iOS, extensions are managed through Settings app
+        // On iOS, extensions are enabled per-site in Safari
         DispatchQueue.main.async {
-            webView.evaluateJavaScript("show(true, true)")
+            webView.evaluateJavaScript("showIOS()")
         }
         #endif
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if (message.body as! String != "open-preferences") {
-            return;
+        guard let messageBody = message.body as? String else {
+            return
         }
-
-        #if os(macOS)
-        SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
-            DispatchQueue.main.async {
-                NSApplication.shared.terminate(nil)
+        
+        if messageBody == "open-preferences" {
+            #if os(macOS)
+            SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
+                DispatchQueue.main.async {
+                    NSApplication.shared.terminate(nil)
+                }
             }
+            #endif
+        } else if messageBody == "open-safari" {
+            #if os(iOS)
+            // Open slovensko.sk in Safari on iOS
+            if let slovenkoUrl = URL(string: "https://slovensko.sk") {
+                UIApplication.shared.open(slovenkoUrl)
+            }
+            #endif
         }
-        #else
-        // On iOS, open Settings app
-        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(settingsUrl)
-        }
-        #endif
     }
 
 }
