@@ -45,7 +45,7 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
           </div>
           <div class="flexSpan">
             <button class="button button--wider"
-                onclick="window.location.href='https://navody.digital/prihlasovanie-cez-mobil'">
+                onclick="window.location.href='https://navody.digital/ako-zacat-komunikovat-elektronicky#prihlasovanie-cez-mobil'">
               Ako sa prihlásiť cez mobil?
             </button>
           </div>
