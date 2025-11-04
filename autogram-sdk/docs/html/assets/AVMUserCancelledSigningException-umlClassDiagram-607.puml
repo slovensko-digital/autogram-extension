@@ -1,0 +1,16 @@
+@startuml
+skinparam ClassFontStyle bold
+skinparam ClassBackgroundColor fcf2cc
+skinparam ClassBorderColor 5a0000
+skinparam RoundCorner 0
+skinparam ClassBorderThickness 2
+hide empty fields
+hide empty methods
+skinparam Shadowing true
+skinparam BackgroundColor transparent
+class "AVMUserCancelledSigningException" {
+}
+class "Error"
+hide "Error" circle
+"Error" <|-- "AVMUserCancelledSigningException"
+@enduml
