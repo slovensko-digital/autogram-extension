@@ -1,6 +1,7 @@
 {
   "name": "autogram-sdk",
   "version": "0.1.0",
+  "private": false,
   "description": "SDK for Autogram signer",
   "main": "dist/index.js",
   "exports": {
