@@ -874,7 +874,7 @@
 				DEVELOPMENT_TEAM = 44U4JSRX4Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "autogram-extension/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Autorgam na štátnych weboch";
+				INFOPLIST_KEY_CFBundleDisplayName = "Autogram na štátnych weboch";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_UILaunchStoryboardName = "Main-iOS";
