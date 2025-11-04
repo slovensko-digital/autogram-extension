@@ -1,0 +1,35 @@
+{
+  "name": "autogram-extension-monorepo",
+  "version": "3.2.0",
+  "description": "Monorepo for Autogram Extension",
+  "workspaces": [
+    "autogram-extension",
+    "autogram-sdk"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slovensko-digital/autogram-extension.git"
+  },
+  "keywords": [
+    "autogram",
+    "slovensko.digital",
+    "slovensko",
+    "upvs",
+    "slovensko.sk",
+    "eidas",
+    "eID",
+    "electronic",
+    "signature",
+    "PAdES",
+    "XAdE"
+  ],
+  "author": "pomali",
+  "license": "EUPL-1.2",
+  "bugs": {
+    "url": "https://github.com/slovensko-digital/autogram-extension/issues"
+  },
+  "homepage": "https://github.com/slovensko-digital/autogram-extension#readme"
+}

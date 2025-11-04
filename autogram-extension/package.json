@@ -1,6 +1,6 @@
 {
   "name": "autogram-extension",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "Rozšírenie umožnuje používať podpisovač Autogram od Slovensko.Digital na štátnych portáloch.",
   "type": "module",
   "main": "./webpack/manifest.ts",
@@ -30,7 +30,24 @@
     "run:firefox": "web-ext run -s 'dist' --start-url 'http://localhost:49675/' --devtools --keep-profile-changes --firefox-profile=autogram-ext-dev",
     "run:firefox-android": "web-ext run -s 'dist' --start-url 'http://localhost:49675/' --target=firefox-android --devtools --keep-profile-changes --firefox-profile=autogram-ext-dev"
   },
-  "author": "pom",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slovensko-digital/autogram-extension.git"
+  },
+  "author": "pomali",
+  "keywords": [
+    "autogram",
+    "slovensko.digital",
+    "slovensko",
+    "upvs",
+    "slovensko.sk",
+    "eidas",
+    "eID",
+    "electronic",
+    "signature",
+    "PAdES",
+    "XAdE"
+  ],
   "license": "EUPL-1.2",
   "devDependencies": {
     "@auto-it/conventional-commits": "^11.1.6",
@@ -91,5 +108,8 @@
     "vm-browserify": "^1.1.2",
     "webextension-polyfill": "^0.8.0",
     "zod": "^3.23.3"
+  },
+  "directories": {
+    "test": "tests"
   }
 }
