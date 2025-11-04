@@ -8,15 +8,5 @@
 	<string>15.4</string>
 	<key>UIApplicationSupportsMultipleScenes</key>
 	<false/>
-	<key>UIMainStoryboardFile</key>
-	<string>Main-iOS</string>
-	<key>UILaunchStoryboardName</key>
-	<string>Main-iOS</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
 </dict>
 </plist>
