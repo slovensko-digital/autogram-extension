@@ -78,8 +78,8 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
       container.insertBefore(infoColumn, column);
     }
     
-    insertMobileLoginInfoBox(container);
     lastLoginCard(container);
+    insertMobileLoginInfoBox(container);
   }
   
   function addHamburgerMenu() {
