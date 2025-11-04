@@ -12,7 +12,7 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
     theWindow.location.hostname.endsWith("prihlasenie.slovensko.sk") &&
     isMobileDevice()
   ) {
-    insertMobileLoginInfoBox()
+    enhanceLoginPage();
   }
   
   if (
@@ -26,35 +26,62 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
     removeEmptyAttachmentCells();
   }
   
-  function insertMobileLoginInfoBox() {
+  function enhanceLoginPage() {
     const container = document.querySelector("main > div.grid-row");
     if (!container) return;
+    
+    function lastLoginCard(container: Element) {
+      const lastId = localStorage.getItem("age-lastLoginCardId");
+      if (lastId) {
+        const lastCard = document.querySelector(`#${lastId}`)?.closest(".column-one-half");
+        if (lastCard && container.contains(lastCard)) {
+          container.prepend(lastCard);
+        }
+      }
+      
+      const boxes = container.querySelectorAll(".column-one-half");
+      boxes.forEach((box) => {
+        const form = box.querySelector("form");
+        const button = box.querySelector("button.button--wider");
   
-    const infoColumn = document.createElement('div');
-    infoColumn.className = 'column-one-half';
+        if (button && form) {
+          button.addEventListener("click", () => localStorage.setItem("age-lastLoginCardId", form.id));
+        }
+      });
+    }
   
-    infoColumn.innerHTML = `
-        <div class="box box--dark flexContainer">
-          <div class="box__content">
-            <h2 class="heading-medium mt-0">Ste tu prvýkrát a chcete sa prihlásiť z&nbsp;mobilu?</h2>
-              <p>
-                  Máte niekoľko možností, no každá z nich vyžaduje prvotné nastavenie.
-                  Prečítajte si návod, ktorý vám vysvetlí, aké máte možnosti.
-              </p>
+    function insertMobileLoginInfoBox(container: Element) {
+      if (localStorage.getItem("age-lastLoginCardId")) return;
+      
+      const infoColumn = document.createElement("div");
+      infoColumn.className = "column-one-half";
+    
+      infoColumn.innerHTML = `
+          <div class="box box--dark flexContainer">
+            <div class="box__content">
+              <h2 class="heading-medium mt-0">Ste tu prvýkrát a chcete sa prihlásiť z&nbsp;mobilu?</h2>
+                <p>
+                    Máte niekoľko možností, no každá z nich vyžaduje prvotné nastavenie.
+                    Prečítajte si návod, ktorý vám vysvetlí, aké máte možnosti.
+                </p>
+            </div>
+            <div class="flexSpan">
+              <button class="button button--wider"
+                  onclick="window.location.href='https://navody.digital/ako-zacat-komunikovat-elektronicky#prihlasovanie-cez-mobil'">
+                Zobraziť návod
+              </button>
+            </div>
           </div>
-          <div class="flexSpan">
-            <button class="button button--wider"
-                onclick="window.location.href='https://navody.digital/ako-zacat-komunikovat-elektronicky#prihlasovanie-cez-mobil'">
-              Zobraziť návod
-            </button>
-          </div>
-        </div>
-    `;
-  
-    const column = container.querySelector('.column-one-half');
-    container.insertBefore(infoColumn, column);
+      `;
+    
+      const column = container.querySelector(".column-one-half");
+      container.insertBefore(infoColumn, column);
+    }
+    
+    lastLoginCard(container);
+    insertMobileLoginInfoBox(container);
   }
-
+  
   function addHamburgerMenu() {
     const parent = document.querySelector(".header-global");
 
