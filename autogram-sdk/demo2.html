@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autogram SDK</title>
+  </head>
+  <body>
+    <h1>Welcome to Autogram SDK</h1>
+    <p>This is a basic HTML template.</p>
+    <!-- <script src="dist/demo.global.js" type="module"></script> -->
+    <script src="dist/index-all.global.js"></script>
+    <script>
+      function showSignedObject(signedObject, name) {
+        console.log("Signed object:", signedObject);
+
+        // Display a success message to the user
+        alert("File signed successfully!");
+
+        const a = document.createElement("a");
+        const blob = new Blob([signedObject.content], {
+          type: "text/plain",
+        });
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.download = `${name}.asice`;
+        a.text = `Download ${a.download}`;
+        document.body.appendChild(a);
+      }
+
+      async function main() {
+        const client = await AutogramSDK.CombinedClient.init();
+        client
+          .sign(
+            {
+              content: "Hello, World!",
+              filename: "hello.txt",
+            },
+            {
+              level: "XAdES_BASELINE_B",
+              container: "ASiC_E",
+            },
+            "text/plain",
+            true
+          )
+          .then((signedObject) => {
+            showSignedObject(signedObject, "hello.txt");
+          });
+        const filePicker = document.createElement("input");
+        filePicker.type = "file";
+        filePicker.addEventListener("change", async (e) => {
+          const file = filePicker.files?.[0];
+          if (!file) return;
+
+          const signedObject = await client.sign(
+            {
+              content: await file.text(),
+              filename: file.name,
+            },
+            {
+              level: "XAdES_BASELINE_B",
+              container: "ASiC_E",
+            },
+            file.type,
+            true
+          );
+          showSignedObject(signedObject, file.name);
+        });
+
+        document.body.appendChild(filePicker);
+      }
+
+      main().then(
+        () => console.log("done"),
+        (err) => console.error(err)
+      );
+    </script>
+  </body>
+</html>

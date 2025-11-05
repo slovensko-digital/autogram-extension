@@ -1,0 +1,77 @@
+{
+  "name": "autogram-sdk",
+  "version": "0.1.0",
+  "private": false,
+  "description": "SDK for Autogram signer",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./with-ui": {
+      "types": "./dist/with-ui.d.ts",
+      "import": "./dist/with-ui.mjs",
+      "require": "./dist/with-ui.js",
+      "default": "./dist/with-ui.mjs"
+    },
+    "./autogram-api": {
+      "types": "./dist/autogram-api/index.d.ts",
+      "import": "./dist/autogram-api/index.mjs",
+      "require": "./dist/autogram-api/index.js"
+    },
+    "./avm-api": {
+      "types": "./dist/avm-api/index.d.ts",
+      "import": "./dist/avm-api/index.mjs",
+      "require": "./dist/avm-api/index.js"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsup",
+    "build:watch": "npm run build -- --watch",
+    "build:release": "NODE_ENV=production $(rm -r dist || true) && npm run build -- --env.NODE_ENV production",
+    "generate-autogram-api-types": "npx openapi-typescript http://localhost:37200/docs/server.yml --default-non-nullable false --output src/autogram-api/lib/autogram-api.generated.ts && npx prettier --write src/autogram-api/lib/autogram-api.generated.ts",
+    "generate-avm-api-types": "npx openapi-typescript https://autogram.slovensko.digital/openapi.yaml --output src/avm-api/lib/avm-api.generated.ts && npx jscodeshift -t src/avm-api/lib/avm-api.codemod.ts src/avm-api/lib/avm-api.generated.ts --extension=ts && npx prettier --write src/avm-api/lib/avm-api.generated.ts",
+    "generate-docs": "npx typedoc",
+    "serve-docs": "npx http-server -c-1 -p 8080 -a 127.0.0.1 ./docs",
+    "demo": "npx http-server -c-1 -p 8080 -a 127.0.0.1 ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slovensko-digital/autogram-extension.git"
+  },
+  "keywords": [
+    "slovensko.digital",
+    "autogram",
+    "eidas",
+    "eID",
+    "electronic signature",
+    "PAdES",
+    "XAdES"
+  ],
+  "author": "pomali",
+  "license": "EUPL-1.2",
+  "bugs": {
+    "url": "https://github.com/slovensko-digital/autogram-sdk/issues"
+  },
+  "homepage": "https://github.com/slovensko-digital/autogram-sdk#readme",
+  "devDependencies": {
+    "@types/bwip-js": "^3.2.3",
+    "tsup": "^8.3.5",
+    "typedoc": "^0.27.6",
+    "typedoc-plugin-markdown": "^4.4.1",
+    "typedoc-umlclass": "^0.10.1"
+  },
+  "dependencies": {
+    "@bwip-js/generic": "^4.5.1",
+    "@peculiar/webcrypto": "^1.5.0",
+    "cross-fetch": "^4.0.0",
+    "jose": "^5.9.6",
+    "lit": "^3.1.2"
+  },
+  "directories": {
+    "doc": "docs"
+  }
+}

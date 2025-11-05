@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "outDir": "./dist/",
+    "moduleResolution": "bundler",
+    // "noImplicitAny": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "module": "ESNext",
+    "target": "ES6",
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "lib": ["ES5", "ES2023", "DOM", "ESNext"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["spec", "dist", "**/*.test.ts", "**/*.codemod.ts"]
+}

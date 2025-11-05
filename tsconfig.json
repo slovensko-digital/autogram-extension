@@ -1,26 +1,7 @@
 {
-  "compilerOptions": {
-    "jsx": "react",
-    "outDir": "./dist/",
-    "moduleResolution": "bundler",
-    // "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true, // because of webpack config
-    "esModuleInterop": true, // because of webpack config
-    "sourceMap": true,
-    "strictNullChecks": true,
-    "module": "ESNext",
-    "target": "ES5",
-    "allowJs": true,
-    "experimentalDecorators": true,
-    "lib": ["ES5", "ES2023", "DOM", "ESNext"],
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true
-  },
-  "exclude": ["spec"],
-  "ts-node": {
-    "compilerOptions": {
-      "esm": true
-    }
-  }
+  "files": [],
+  "references": [
+    { "path": "./autogram-sdk" },
+    { "path": "./autogram-extension" }
+  ]
 }
