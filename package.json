@@ -8,7 +8,18 @@
     "autogram-sdk"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run build --workspaces",
+    "build:sdk": "npm run build -w autogram-sdk",
+    "build:extension": "npm run build:prod -w autogram-extension",
+    "build:dev": "npm run build:dev -w autogram-extension",
+    "watch:mv2": "run-p \"start:mv2 -w autogram-extension\" \"build:watch -w autogram-sdk\"",
+    "watch:mv3": "run-p \"start:mv3 -w autogram-extension\" \"build:watch -w autogram-sdk\"",
+    "test": "npm test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "start": "npm start -w autogram-extension",
+    "postinstall": "npm run build:sdk"
   },
   "repository": {
     "type": "git",
@@ -32,5 +43,27 @@
   "bugs": {
     "url": "https://github.com/slovensko-digital/autogram-extension/issues"
   },
-  "homepage": "https://github.com/slovensko-digital/autogram-extension#readme"
+  "homepage": "https://github.com/slovensko-digital/autogram-extension#readme",
+  "dependencies": {
+    "crypto-browserify": "^3.12.0",
+    "idb-keyval": "^6.2.1",
+    "js-base64": "^3.7.7",
+    "loglevel": "^1.9.2",
+    "loglevel-plugin-prefix": "^0.8.4",
+    "stream-browserify": "^3.0.0",
+    "vm-browserify": "^1.1.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.12",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "npm-run-all": "^4.1.5",
+    "openapi-typescript": "^6.7.4",
+    "prettier": "^3.2.5",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
 }
