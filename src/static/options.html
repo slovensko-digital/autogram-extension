@@ -107,6 +107,18 @@
         font-size: 19px;
       }
 
+      fieldset {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      legend {
+        font-weight: 600;
+        padding: 0;
+        margin-bottom: 10px;
+      }
+
       .wrapper {
         margin: 0 auto;
         padding: 100px 0 0 20px;
@@ -149,28 +161,33 @@
     <div class="wrapper">
       <header class="header"><div class="header__tricolor"></div></header>
 
-      <div style="font-weight: 600; margin-bottom: -21px;">Nastavenia rozšírenia</div>
       <h1>Autogram na štátnych weboch</h1>
-      <label class="checkbox">
-        <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
-        <span class="checkbox__checkmark"></span>
-        <span class="checkbox__label">Zapnúť rozšírenie.</span>
-      </label>
+      <form>
+        <fieldset>
+          <legend>Nastavenia rozšírenia</legend>
 
-      <label class="checkbox">
-        <input
-          type="checkbox"
-          id="restorePointEnabled"
-          class="checkbox__input"
-        />
-        <span class="checkbox__checkmark"></span>
-        <span class="checkbox__label"
-          >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
-        >
-      </label>
+          <label class="checkbox">
+            <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label">Zapnúť rozšírenie.</span>
+          </label>
 
-      <div id="status"></div>
-      <button id="save">Uložiť</button>
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              id="restorePointEnabled"
+              class="checkbox__input"
+            />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label"
+              >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
+            >
+          </label>
+        </fieldset>
+
+        <div id="status" role="status"></div>
+        <button type="button" id="save">Uložiť</button>
+      </form>
 
       <!-- <ul>
         <li>
