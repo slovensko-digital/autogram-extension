@@ -1,6 +1,6 @@
 {
   "name": "autogram-extension-monorepo",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Monorepo for Autogram Extension",
   "workspaces": [
@@ -9,17 +9,21 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "build:sdk": "npm run build -w autogram-sdk",
-    "build:extension": "npm run build:prod -w autogram-extension",
-    "build:dev": "npm run build:dev -w autogram-extension",
-    "watch:mv2": "run-p \"start:mv2 -w autogram-extension\" \"build:watch -w autogram-sdk\"",
-    "watch:mv3": "run-p \"start:mv3 -w autogram-extension\" \"build:watch -w autogram-sdk\"",
+    "watch:mv2": "run-p \"ext:start:mv2\" \"sdk:build:watch\"",
+    "watch:mv3": "run-p \"ext:start:mv3\" \"sdk:build:watch\"",
+    "ext:start:mv2": "npm run start:mv2 -w autogram-extension",
+    "ext:start:mv3": "npm run start:mv3 -w autogram-extension",
+    "sdk:build:watch": "npm run build:watch -w autogram-sdk",
+    "sdk:build": "npm run build -w autogram-sdk",
+    "ext:build": "npm run build:prod -w autogram-extension",
+    "ext:build:dev": "npm run build:dev -w autogram-extension",
+    "example-extension-usage": "cd example-extension-usage && vite --port 49675",
     "test": "npm test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "start": "npm start -w autogram-extension",
-    "postinstall": "npm run build:sdk"
+    "postinstall": "npm run sdk:build"
   },
   "repository": {
     "type": "git",
@@ -56,6 +60,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.17.12",
+    "buffer": "^6.0.3",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
@@ -64,6 +69,7 @@
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vite": "^5.2.11"
   }
 }

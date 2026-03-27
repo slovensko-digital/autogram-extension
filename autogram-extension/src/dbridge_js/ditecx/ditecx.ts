@@ -5,7 +5,10 @@ import { DSigXadesBpAdapter } from "./dsig-xades-bp-adapter";
 import { DSigXadesAdapter } from "./dsig-xades-adapter";
 import { DBridgeAutogramImpl } from "../autogram/autogram-implementation";
 import { createLogger } from "../../log";
-import { defaultOptionsStorage } from "../../options/default";
+import {
+  defaultOptionsStorage,
+  ExtensionOptions,
+} from "../../options/default";
 
 const log = createLogger("ag-ext.ditecx");
 
@@ -48,7 +51,9 @@ export type DitecX = {
   AbstractJsCore: DummyClass;
 };
 
-export async function constructDitecX(autogramOptions) {
+export async function constructDitecX(
+  autogramOptions: ExtensionOptions = defaultOptionsStorage.options
+) {
   const implementation = await DBridgeAutogramImpl.init(autogramOptions);
 
   /**

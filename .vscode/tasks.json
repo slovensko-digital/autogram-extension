@@ -3,9 +3,9 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "example-usage",
-			"label": "npm: example-usage",
-			"detail": "serve -p 49675 example-usage",
+			"script": "example-extension-usage",
+			"label": "npm: example-extension-usage",
+			"detail": "serve -p 49675 example-extension-usage",
 			"isBackground": true,
 			"problemMatcher": [
 				{

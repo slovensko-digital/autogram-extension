@@ -25,6 +25,12 @@ const log = createLogger("ag-ext.impl");
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 
+type RestorePointCapableClient = CombinedClient & {
+  useRestorePoint?: (
+    restorePoint: string
+  ) => Promise<DesktopSignResponseBody | null>;
+};
+
 /**
  * Creates a hash-based restore point ID from sign request data and page URL
  * This ensures the same signing session can be resumed after page reload
@@ -171,13 +177,18 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
           parameters
         );
 
-        const restored = await this.client.useRestorePoint(restorePoint);
-        if (restored) {
-          log.info("We can restore previous signing session");
-          this.signedObject = restored;
-          this.signRequest.signingStatus = SigningStatus.signed;
-          callback.onSuccess(restored.content);
-          return;
+        const restorePointClient = this.client as RestorePointCapableClient;
+        if (typeof restorePointClient.useRestorePoint !== "function") {
+          log.warn("SDK client does not support restore points");
+        } else {
+          const restored = await restorePointClient.useRestorePoint(restorePoint);
+          if (restored) {
+            log.info("We can restore previous signing session");
+            this.signedObject = restored;
+            this.signRequest.signingStatus = SigningStatus.signed;
+            callback.onSuccess(restored.content);
+            return;
+          }
         }
       }
 

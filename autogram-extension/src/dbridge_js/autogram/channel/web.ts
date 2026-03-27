@@ -4,7 +4,6 @@ import {
   AVMSignedDocument,
   randomUUID,
   UserCancelledSigningException,
-  AutogramSdkException,
 } from "autogram-sdk";
 
 import {
@@ -324,6 +323,13 @@ class AutogramTimeoutError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "AutogramTimeoutError";
+  }
+}
+
+class AutogramSdkException extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AutogramSdkException";
   }
 }
 

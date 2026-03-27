@@ -116,7 +116,7 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
     );
 
     cells
-      .filter((cell) => cell.textContent.trim() === "")
+      .filter((cell) => cell.textContent?.trim() === "")
       .forEach((cell) => {
         if (cell instanceof HTMLElement) {
           cell.style.display = "none";
