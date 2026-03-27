@@ -12,7 +12,7 @@ const log = createLogger("ag-sdk:AutogramSignMobileScreen");
 
 enum Steps {
   showQRCode,
-  noitifyMobile,
+  notifyMobile,
 }
 @customElement("autogram-sign-mobile-screen")
 export class AutogramSignMobileScreen extends AutogramBaseScreen {
@@ -26,7 +26,7 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
     log.debug(this.url);
     return this.step === Steps.showQRCode
       ? this.renderQR()
-      : this.step === Steps.noitifyMobile
+      : this.step === Steps.notifyMobile
       ? this.renderNotifyMobile()
       : html``;
   }
