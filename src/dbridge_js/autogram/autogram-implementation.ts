@@ -20,6 +20,7 @@ import {
 import { InputObject } from "../ditecx/types";
 import { createLogger } from "../../log";
 import { ExtensionOptions } from "../../options/default";
+import { setupDialogAccessibility } from "./dialog-accessibility";
 
 const log = createLogger("ag-ext.impl");
 
@@ -100,14 +101,13 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   ): Promise<DBridgeAutogramImpl> {
     const webChannelCaller = new WebChannelCaller();
     webChannelCaller.init();
-    return new DBridgeAutogramImpl(
-      await CombinedClient.init(
-        new AvmChannelWeb(webChannelCaller),
-        new AutogramDesktopChannel(webChannelCaller),
-        () => {}
-      ),
-      extensionOptions
+    const client = await CombinedClient.init(
+      new AvmChannelWeb(webChannelCaller),
+      new AutogramDesktopChannel(webChannelCaller),
+      () => {}
     );
+    setupDialogAccessibility();
+    return new DBridgeAutogramImpl(client, extensionOptions);
   }
 
   public async launch(callback: OnSuccessCallback): Promise<void> {
