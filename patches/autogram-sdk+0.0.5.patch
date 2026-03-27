@@ -1,0 +1,104 @@
+diff --git a/node_modules/autogram-sdk/dist/chunk-NWSK673T.mjs b/node_modules/autogram-sdk/dist/chunk-NWSK673T.mjs
+index 7935070..afd2d23 100644
+--- a/node_modules/autogram-sdk/dist/chunk-NWSK673T.mjs
++++ b/node_modules/autogram-sdk/dist/chunk-NWSK673T.mjs
+@@ -218,7 +218,7 @@ import{a as Wn,b as sc}from"./chunk-KGRHP2XK.mjs";import{a as ri,b as nc}from"./
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${m0(p)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/dist/demo.global.js b/node_modules/autogram-sdk/dist/demo.global.js
+index d55a3b7..15b58d2 100644
+--- a/node_modules/autogram-sdk/dist/demo.global.js
++++ b/node_modules/autogram-sdk/dist/demo.global.js
+@@ -223,7 +223,7 @@ var AutogramSDK=(()=>{var $u=Object.create;var Zo=Object.defineProperty,Ju=Objec
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${D2(c)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/dist/demo.js b/node_modules/autogram-sdk/dist/demo.js
+index 18686e9..e9bcbe8 100644
+--- a/node_modules/autogram-sdk/dist/demo.js
++++ b/node_modules/autogram-sdk/dist/demo.js
+@@ -220,7 +220,7 @@ var Rv=Object.create;var is=Object.defineProperty,Nv=Object.defineProperties,gc=
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${(0,hs.unsafeSVG)(l)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/dist/index-all.global.js b/node_modules/autogram-sdk/dist/index-all.global.js
+index 741dc44..ef6f9b4 100644
+--- a/node_modules/autogram-sdk/dist/index-all.global.js
++++ b/node_modules/autogram-sdk/dist/index-all.global.js
+@@ -223,7 +223,7 @@ var AutogramSDK=(()=>{var _u=Object.create;var us=Object.defineProperty,em=Objec
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${Pi(c)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/dist/index-all.js b/node_modules/autogram-sdk/dist/index-all.js
+index 976a0dc..7ac787d 100644
+--- a/node_modules/autogram-sdk/dist/index-all.js
++++ b/node_modules/autogram-sdk/dist/index-all.js
+@@ -220,7 +220,7 @@ var Yv=Object.create;var nn=Object.defineProperty,zv=Object.defineProperties,Mc=
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${(0,xs.unsafeSVG)(l)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/dist/with-ui.global.js b/node_modules/autogram-sdk/dist/with-ui.global.js
+index 95fbe98..c264bfc 100644
+--- a/node_modules/autogram-sdk/dist/with-ui.global.js
++++ b/node_modules/autogram-sdk/dist/with-ui.global.js
+@@ -223,7 +223,7 @@ var AutogramSDK=(()=>{var Ju=Object.create;var hs=Object.defineProperty,Ku=Objec
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${D2(c)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/dist/with-ui.js b/node_modules/autogram-sdk/dist/with-ui.js
+index 2deca9e..12ae1f8 100644
+--- a/node_modules/autogram-sdk/dist/with-ui.js
++++ b/node_modules/autogram-sdk/dist/with-ui.js
+@@ -220,7 +220,7 @@ var Nv=Object.create;var tn=Object.defineProperty,Dv=Object.defineProperties,gc=
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${(0,hs.unsafeSVG)(l)}
+               </figure>
+             </a>
+diff --git a/node_modules/autogram-sdk/src/injected-ui/sign-mobile.screen.ts b/node_modules/autogram-sdk/src/injected-ui/sign-mobile.screen.ts
+index fdeb0a7..46722c2 100644
+--- a/node_modules/autogram-sdk/src/injected-ui/sign-mobile.screen.ts
++++ b/node_modules/autogram-sdk/src/injected-ui/sign-mobile.screen.ts
+@@ -72,7 +72,7 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
+           </div>
+           <div class="col">
+             <a href="${this.url}" target="_blank" rel="noopener">
+-              <figure style="width: 200px; height: 200px;">
++              <figure role="img" aria-label="QR kód" style="width: 200px; height: 200px;">
+                 ${unsafeSVG(qrCode)}
+               </figure>
+             </a>
