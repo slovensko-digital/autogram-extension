@@ -3,7 +3,11 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   platform: "browser",
   minify: true,
-  dts: true,
+  dts: {
+    compilerOptions: {
+      composite: false,
+    },
+  },
   sourcemap: true,
   format: ["cjs", "esm", "iife"],
   outDir: "dist",

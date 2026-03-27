@@ -25,12 +25,6 @@ const log = createLogger("ag-ext.impl");
 
 const AVAILABLE_LANGUAGES = ["sk", "en"];
 
-type RestorePointCapableClient = CombinedClient & {
-  useRestorePoint?: (
-    restorePoint: string
-  ) => Promise<DesktopSignResponseBody | null>;
-};
-
 /**
  * Creates a hash-based restore point ID from sign request data and page URL
  * This ensures the same signing session can be resumed after page reload
@@ -177,7 +171,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
           parameters
         );
 
-        const restorePointClient = this.client as RestorePointCapableClient;
+        const restorePointClient = this.client;
         if (typeof restorePointClient.useRestorePoint !== "function") {
           log.warn("SDK client does not support restore points");
         } else {

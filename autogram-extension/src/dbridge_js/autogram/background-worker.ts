@@ -16,20 +16,6 @@ import { SignedObject } from "autogram-sdk/with-ui";
 
 const log = createLogger("ag-ext.bg.worker");
 
-type AVMStatusCheckResponse = {
-  status: "signed" | "pending" | "not found";
-  document: {
-    content: string;
-    signers?: Array<{ issuedBy?: string; signedBy?: string }>;
-  };
-};
-
-type AVMClientWithStatusCheck = AutogramVMobileIntegration & {
-  checkDocumentStatus?: (
-    documentRef: AVMIntegrationDocument
-  ) => Promise<AVMStatusCheckResponse>;
-};
-
 export class BackgroundWorker {
   constructor(
     private avm = new AvmExecutor(),
@@ -398,13 +384,13 @@ class AvmExecutor {
         }
 
         // Check document status without polling
-        const statusCheckClient = this.apiClient as AVMClientWithStatusCheck;
-        if (typeof statusCheckClient.checkDocumentStatus !== "function") {
+
+        if (typeof this.apiClient.checkDocumentStatus !== "function") {
           log.warn("AVM client does not support checkDocumentStatus");
           return null;
         }
         const documentResult =
-          await statusCheckClient.checkDocumentStatus(savedDocumentRef);
+          await this.apiClient.checkDocumentStatus(savedDocumentRef);
 
         log.debug("Document status from restore point", documentResult);
 

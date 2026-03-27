@@ -15,7 +15,11 @@
     "lib": ["ES5", "ES2023", "DOM", "ESNext"],
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "autogram-sdk": ["../autogram-sdk/src"],
+      "autogram-sdk/*": ["../autogram-sdk/src/*"]
+    }
   },
   "include": ["src/**/*", "webpack/**/*"],
   "exclude": ["spec"],

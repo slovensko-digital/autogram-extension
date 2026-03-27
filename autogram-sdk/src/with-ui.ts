@@ -217,9 +217,8 @@ export class CombinedClient {
   ): Promise<SignedObject | null> {
     log.debug("useRestorePoint", restorePoint);
 
-    let restored = await this.clientMobileIntegration.useRestorePoint(
-      restorePoint
-    );
+    let restored =
+      await this.clientMobileIntegration.useRestorePoint(restorePoint);
 
     if (restored !== null) {
       if (await this.ui.maybeRestoreRestorePoint()) {
@@ -343,8 +342,8 @@ export class CombinedClient {
       params.container == null
         ? null
         : params.container == "ASiC_E"
-        ? "ASiC-E"
-        : "ASiC-S";
+          ? "ASiC-E"
+          : "ASiC-S";
 
     await this.clientMobileIntegration.loadOrRegister();
     await this.clientMobileIntegration.addDocument({
@@ -363,9 +362,8 @@ export class CombinedClient {
   private async getSignatureMobileSignDocument(
     abortController?: AbortController
   ) {
-    const signedObject = await this.clientMobileIntegration.waitForSignature(
-      abortController
-    );
+    const signedObject =
+      await this.clientMobileIntegration.waitForSignature(abortController);
     log.debug({ signedObject });
     if (signedObject === null || signedObject === undefined) {
       throw new Error("Signing cancelled");

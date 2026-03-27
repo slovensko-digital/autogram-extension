@@ -15,7 +15,10 @@
     "lib": ["ES5", "ES2023", "DOM", "ESNext"],
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
   },
   "include": ["src/**/*"],
   "exclude": ["spec", "dist", "**/*.test.ts", "**/*.codemod.ts"]
