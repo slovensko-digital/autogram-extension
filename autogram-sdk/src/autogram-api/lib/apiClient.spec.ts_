@@ -1,0 +1,173 @@
+/* eslint-disable functional/immutable-data */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import anyTest, { TestInterface } from 'ava';
+import nock from 'nock';
+import 'abort-controller/polyfill';
+
+import { apiClient } from './apiClient';
+
+const test = anyTest as TestInterface;
+
+test('Launch URL works with default options', (t) => {
+    const client = apiClient();
+
+    t.true(client.getLaunchURL().startsWith('signer://listen/37200/'));
+});
+
+test('Launch URL uses location.origin as default when available', (t) => {
+    // @ts-ignore
+    globalThis.location = { origin: 'https://example.com' };
+
+    const client = apiClient();
+
+    t.true(client.getLaunchURL().startsWith('signer://listen/37200/https%3A%2F%2Fexample.com/'));
+
+    // @ts-ignore
+    delete globalThis.location;
+});
+
+test('Launch URL is correct with disabled security', (t) => {
+    const client = apiClient({ disableSecurity: true });
+
+    t.is(client.getLaunchURL(), 'signer://listen/37200/*');
+});
+
+test('Launch URL is correct with all custom options', (t) => {
+    const client = apiClient({
+        serverPort: 330,
+        customProtocol: 'protocol',
+        requestsOrigin: 'https://example.com',
+        secretKey: '0011ff',
+        secretInitialNonce: 123534,
+    });
+
+    t.is(client.getLaunchURL(), 'protocol://listen/330/https%3A%2F%2Fexample.com/0011ff/123534');
+});
+
+test('Info makes a GET request on /info with default server url', async (t) => {
+    const scope = nock('http://127.0.0.1:37200')
+        .get('/info')
+        .reply(200, { version: '1.2.3', status: 'LOADING' });
+
+    const client = apiClient();
+
+    const info = await client.info();
+
+    t.true(scope.isDone());
+    t.deepEqual(info, { version: '1.2.3', status: 'LOADING' });
+});
+
+test('Info triggers correct custom URL', async (t) => {
+    const scope = nock('https://example.com:123')
+        .get('/info')
+        .reply(200, { version: '2.2.3', status: 'READY' });
+
+    const client = apiClient({
+        serverProtocol: 'https',
+        serverHost: 'example.com',
+        serverPort: 123,
+    });
+
+    const info = await client.info();
+
+    t.true(scope.isDone());
+    t.deepEqual(info, { version: '2.2.3', status: 'READY' });
+});
+
+test('Signing makes a POST request on /sign with defaults', async (t) => {
+    const document = { content: 'unsigned' };
+    const scope = nock('http://127.0.0.1:37200')
+        .post('/sign', {
+            document,
+            parameters: { format: 'XADES' },
+            payloadMimeType: 'application/xml',
+        })
+        .reply(200, { content: 'signed!' });
+
+    const client = apiClient();
+
+    const signedDocument = await client.sign(document);
+
+    scope.done();
+    t.deepEqual(signedDocument, { content: 'signed!' });
+});
+
+test('Signing can use fully featured document, parameters, and custom payload', async (t) => {
+    const document = {
+        id: 'asd123',
+        title: 'title',
+        content: 'unsigned',
+        legalEffect: 'effect',
+    };
+    const parameters = { format: 'PADES' } as const;
+    const scope = nock('http://127.0.0.1:37200')
+        .post('/sign', { document, parameters, payloadMimeType: 'application/pdf' })
+        .reply(200, { content: 'signed!' });
+
+    const client = apiClient();
+
+    const signedDocument = await client.sign(document, parameters, 'application/pdf');
+
+    scope.done();
+    t.deepEqual(signedDocument, { content: 'signed!' });
+});
+
+test('Waiting for status returns info from GET request', async (t) => {
+    const scope = nock('http://127.0.0.1:37200')
+        .get('/info')
+        .reply(200, { version: '1.2.3', status: 'READY' });
+
+    const client = apiClient();
+
+    const info = await client.waitForStatus('READY');
+
+    t.true(scope.isDone());
+    t.deepEqual(info, { version: '1.2.3', status: 'READY' });
+});
+
+test('Waiting for status fails after timeout', async (t) => {
+    nock('http://127.0.0.1:37200').get('/info').reply(200, { version: '1.2.3', status: 'LOADING' });
+
+    const client = apiClient();
+
+    t.deepEqual(
+        await t.throwsAsync(() => client.waitForStatus('READY', 0.1)),
+        new Error('No request ever finished')
+    );
+});
+
+test('Waiting for status fails after timeout with network error', async (t) => {
+    nock('http://127.0.0.1:37200').get('/info').replyWithError(new Error('Network error'));
+
+    const client = apiClient();
+
+    const error = await t.throwsAsync(() => client.waitForStatus('READY', 0.2));
+
+    t.regex(error.message, /.*Network error.*/);
+});
+
+test('Waiting for status fails after timeout with http error', async (t) => {
+    nock('http://127.0.0.1:37200').get('/info').reply(503, { code: 'HUH' });
+
+    const client = apiClient();
+
+    await t.throwsAsync(() => client.waitForStatus('READY', 0.2));
+});
+
+test('Waiting for status handles request timeouts', async (t) => {
+    nock('http://127.0.0.1:37200')
+        .get('/info')
+        .delayConnection(2000)
+        .reply(200, { version: '1.2.3', status: 'LOADING' });
+
+    const client = apiClient();
+
+    t.deepEqual(
+        await t.throwsAsync(() => client.waitForStatus('READY', 1.1, 0)),
+        new Error('No request ever finished')
+    );
+});
+
+test.todo('Waiting for status does not return abort error as last error');
+
+test.todo('Waiting for status repeats request');
