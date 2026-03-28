@@ -44,6 +44,12 @@
       button:hover {
         background-color: #005a30;
       }
+      button:focus-visible {
+        outline: 3px solid transparent;
+        background-color: #ffdd00;
+        color: #0b0c0c;
+        box-shadow: 0 2px 0 #0b0c0c;
+      }
 
       ul {
         padding-left: 20px;
@@ -67,6 +73,13 @@
         color: #003078;
         text-decoration-thickness: 3px;
       }
+      a:focus-visible {
+        outline: 3px solid transparent;
+        color: #0b0c0c;
+        background-color: #ffdd00;
+        box-shadow: 0 -2px #ffdd00, 0 4px #0b0c0c;
+        text-decoration: none;
+      }
 
       .checkbox {
         position: relative;
@@ -82,6 +95,10 @@
         cursor: pointer;
         height: 0;
         width: 0;
+      }
+      .checkbox__input:focus-visible + .checkbox__checkmark {
+        box-shadow: 0 0 0 3px #ffdd00;
+        border-color: #0b0c0c;
       }
       .checkbox__input:checked + .checkbox__checkmark:before {
         opacity: 1;
