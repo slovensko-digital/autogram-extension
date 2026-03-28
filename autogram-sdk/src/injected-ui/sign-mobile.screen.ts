@@ -17,10 +17,15 @@ enum Steps {
 @customElement("autogram-sign-mobile-screen")
 export class AutogramSignMobileScreen extends AutogramBaseScreen {
   @property()
-  step = Steps.showQRCode;
+  declare step: Steps;
 
   @property()
-  url: string;
+  declare url: string;
+
+  constructor() {
+     super();
+     this.step = Steps.showQRCode;
+  }
 
   render() {
     log.debug(this.url);
