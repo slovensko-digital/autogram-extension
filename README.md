@@ -1,32 +1,89 @@
-# Rozšírenie "Autogram na štátnych weboch" 🇸🇰
+# Autogram Extension Monorepo
 
-Rozšírenie do prehliadačov, nahrádzajúce DSigner za [Autogram](https://github.com/slovensko-digital/autogram) alebo [Autogram v Mobile](https://sluzby.slovensko.digital/autogram-v-mobile/) na vybraných štátnych weboch
+This is a monorepo containing the Autogram Extension and SDK for electronic signatures.
 
-## Inštalácia
+## Packages
 
-Odporúčame inštalovať cez store Vášho prehliadaču.
+- **autogram-sdk** - SDK for integrating Autogram signer into web applications
+- **autogram-extension** - Browser extension for using Autogram with government portals
 
-- [🐶 Google Chrome](https://chrome.google.com/webstore/detail/autogram-na-%C5%A1t%C3%A1tnych-webo/lamjcijmpimfpmapeaedanjmfmgjokne)
-- [🦊 Mozilla Firefox](https://addons.mozilla.org/en-US/firefox/addon/autogram-na-%C5%A1t%C3%A1tnych-weboch/)
-- [🐠 Microsoft Edge](https://microsoftedge.microsoft.com/addons/detail/autogram-na-%C5%A1t%C3%A1tnych-webo/comimcpjldggdjlbmpmlkmenjfpglllh)
+## Getting Started
 
-Alebo si viete stiahnuť zip z podstránky [Releases](https://github.com/slovensko-digital/autogram-extension/releases) a nainštalovať ručne. Použite súbor s manifest-om verzie 3 označený ako `mv3` pre Chrome a manifest-om verzie 2 označený `mv2` pre Firefox.
+### Prerequisites
 
-## Podporované weby
+- Node.js 20+ (see `.nvmrc`)
+- npm (comes with Node.js)
 
-- Slovensko.sk (UPVS - Ústredný portál verejnej správy) https://www.slovensko.sk/, https://schranka.slovensko.sk
-- Finančná správa (PFS - Portál finančnej správy) https://www.financnasprava.sk/, https://pfseform.financnasprava.sk/
+### Installation
 
-Ak máte záujem o podporu na iných weboch vytvorte [novú issue](https://github.com/slovensko-digital/autogram-extension/issues/new)
+```bash
+npm install
+```
 
-# Browser Extension "Autogram on Government Websites" (en)
+This will install dependencies for all packages and build the SDK.
 
-Browser extension replacing DSigner with [Autogram](https://github.com/slovensko-digital/autogram) as signer on select government websites.
+### Development
 
-To install use browser extension store or manually using zip from [Releases](https://github.com/slovensko-digital/autogram-extension/releases)
+#### Build all packages
 
+```bash
+npm run build
+```
 
+#### Build individual packages
 
-## Development
+```bash
+npm run build:sdk
+npm run build:extension
+npm run build:dev  # Development build of extension
+```
 
-Look into [DEVELOPERS.md](DEVELOPERS.md)
+#### Start development server
+
+```bash
+npm start
+```
+
+#### Run tests
+
+```bash
+npm test
+```
+
+#### Lint code
+
+```bash
+npm run lint
+```
+
+#### Type checking
+
+```bash
+npm run typecheck
+```
+
+#### Clean build artifacts
+
+```bash
+npm run clean
+```
+
+## Workspace Structure
+
+This monorepo uses npm workspaces:
+
+- `/autogram-sdk` - SDK package
+- `/autogram-extension` - Extension package (depends on SDK)
+
+The extension automatically uses the local SDK version via workspace protocol.
+
+## Contributing
+
+Please see individual package READMEs for package-specific documentation:
+
+- [autogram-sdk/README.md](./autogram-sdk/README.md)
+- [autogram-extension/README.md](./autogram-extension/README.md)
+
+## License
+
+EUPL-1.2 - See LICENSE file for details
