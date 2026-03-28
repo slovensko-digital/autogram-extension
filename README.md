@@ -44,6 +44,13 @@ npm run build:dev  # Development build of extension
 npm start
 ```
 
+#### Run example apps
+
+```bash
+npm run example-extension-usage
+npm run example-avm-integration
+```
+
 #### Run tests
 
 ```bash

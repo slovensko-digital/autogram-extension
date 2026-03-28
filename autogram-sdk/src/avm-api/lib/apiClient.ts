@@ -585,6 +585,13 @@ export class AutogramVMobileIntegrationApiClient {
       new URLSearchParams(data).toString()
     );
   }
+
+  _qrCodeRegisterIntegrationUrl = "/qr-code-register" as const;
+  qrCodeRegisterIntegrationUrl(integrationJwt: string): string {
+    let url = new URL(this.baseUrl + this._qrCodeRegisterIntegrationUrl);
+    url.searchParams.set("integration", integrationJwt);
+    return url.toString();
+  }
 }
 
 // Zod Types

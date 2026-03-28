@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example AVM Integration</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Avenir Next", "Nunito Sans", "Segoe UI", sans-serif;
+        --ink-strong: #1d2735;
+        --ink-soft: #4b5e75;
+        --bg-top: #fff6de;
+        --bg-mid: #f5fbff;
+        --bg-low: #ecf3f6;
+        --card: rgba(255, 255, 255, 0.84);
+        --card-stroke: rgba(41, 57, 78, 0.12);
+        --accent: #046c5e;
+        --accent-strong: #03554a;
+        --accent-soft: rgba(4, 108, 94, 0.12);
+        --warning: #b42318;
+        --field-stroke: #c5d1df;
+        --surface-dark: #10213a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink-strong);
+        background:
+          radial-gradient(48vw 38vw at -10% 0%, #ffe6ad 0%, transparent 66%),
+          radial-gradient(34vw 26vw at 100% -2%, #a7dfef 0%, transparent 75%),
+          linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-low) 100%);
+      }
+
+      main {
+        width: min(1200px, 100% - 40px);
+        margin: 0 auto;
+        padding: 40px 0 72px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.95rem, 1.6rem + 1.4vw, 3rem);
+        letter-spacing: -0.02em;
+      }
+
+      h2 {
+        font-size: clamp(1.15rem, 1.05rem + 0.5vw, 1.5rem);
+        letter-spacing: -0.01em;
+      }
+
+      main > .hero {
+        position: relative;
+        display: grid;
+        gap: 18px;
+        margin-bottom: 28px;
+        padding: 26px;
+        border-radius: 28px;
+        background:
+          linear-gradient(125deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62)),
+          linear-gradient(150deg, #fff0ca, #dcf5ff);
+        border: 1px solid rgba(43, 58, 81, 0.12);
+        box-shadow: 0 14px 48px rgba(21, 35, 51, 0.14);
+        overflow: hidden;
+      }
+
+      main > .hero::after {
+        content: "";
+        position: absolute;
+        top: -72px;
+        right: -66px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(4, 108, 94, 0.22), transparent 72%);
+        pointer-events: none;
+      }
+
+      .hero p {
+        max-width: 74ch;
+        color: var(--ink-soft);
+        line-height: 1.56;
+      }
+
+      .pill {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        border: 1px solid rgba(20, 80, 116, 0.25);
+        background: rgba(244, 251, 255, 0.9);
+        color: #1f4a68;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .grid > article {
+        animation: card-rise 0.52s ease both;
+      }
+
+      .grid > article:nth-child(2) {
+        animation-delay: 0.04s;
+      }
+
+      .grid > article:nth-child(3) {
+        animation-delay: 0.08s;
+      }
+
+      .grid > article:nth-child(4) {
+        animation-delay: 0.12s;
+      }
+
+      .grid > article:nth-child(5) {
+        animation-delay: 0.16s;
+      }
+
+      .card {
+        position: relative;
+        display: grid;
+        gap: 14px;
+        background: var(--card);
+        border: 1px solid var(--card-stroke);
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 10px 34px rgba(15, 33, 53, 0.1);
+        backdrop-filter: blur(7px);
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 38px rgba(15, 33, 53, 0.16);
+      }
+
+      .card.stack {
+        grid-column: span 6;
+      }
+
+      .card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .card > div:first-child {
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(37, 57, 82, 0.11);
+      }
+
+      .card[data-step] h2 {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .card[data-step] h2::before {
+        content: attr(data-step);
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #0f5e65;
+        background: linear-gradient(180deg, #e0f7ff, #caedee);
+        border: 1px solid rgba(19, 95, 116, 0.25);
+      }
+
+      .stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .row {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .muted {
+        color: var(--ink-soft);
+        line-height: 1.52;
+      }
+
+      strong {
+        font-size: 0.95rem;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        font-size: 0.86rem;
+        color: #26425e;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+      }
+
+      input,
+      textarea,
+      select,
+      button {
+        font: inherit;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--field-stroke);
+        border-radius: 12px;
+        padding: 11px 12px;
+        font-weight: 400;
+        color: var(--ink-strong);
+        background: rgba(255, 255, 255, 0.9);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: 0;
+        border-color: #0b8b79;
+        box-shadow: 0 0 0 4px rgba(11, 139, 121, 0.16);
+      }
+
+      textarea {
+        min-height: 172px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 15px;
+        background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+        color: #ffffff;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(3, 85, 74, 0.25);
+      }
+
+      button.secondary {
+        background: #e4edf6;
+        color: #22374f;
+      }
+
+      button.secondary:hover {
+        box-shadow: 0 8px 18px rgba(40, 61, 84, 0.16);
+      }
+
+      button.warn {
+        background: linear-gradient(180deg, #cf3a32, var(--warning));
+      }
+
+      button:disabled {
+        opacity: 0.58;
+        cursor: not-allowed;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .mono,
+      pre,
+      code {
+        font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+      }
+
+      pre,
+      .output {
+        margin: 0;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #132845, var(--surface-dark));
+        color: #d7e5f7;
+        padding: 14px;
+        font-size: 0.84rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow: auto;
+      }
+
+      .grid pre {
+        max-height: 320px;
+      }
+
+      .qr-box {
+        display: grid;
+        gap: 12px;
+        justify-items: start;
+      }
+
+      .qr-box .qr-frame {
+        width: 248px;
+        height: 248px;
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid #c8d5e2;
+        padding: 10px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .qr-box .qr-frame svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .qr-box label {
+        width: 100%;
+        max-width: 248px;
+        margin: 0;
+        margin-left: 40px;
+      }
+
+      .qr-box textarea {
+        min-height: 92px;
+      }
+
+      .qr-cols {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .qr-cols .qr-box {
+        border: 1px solid rgba(44, 65, 91, 0.11);
+        border-radius: 16px;
+        padding: 14px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(244, 250, 255, 0.8));
+      }
+
+      .preview {
+        display: grid;
+        gap: 12px;
+      }
+
+      .preview img,
+      .preview iframe {
+        max-width: 100%;
+        border: 1px solid #cad7e6;
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .preview button.secondary {
+        justify-self: start;
+      }
+
+      @keyframes card-rise {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 1024px) {
+        main {
+          width: min(1024px, 100% - 24px);
+          padding-top: 24px;
+        }
+
+        .card.stack {
+          grid-column: span 12;
+        }
+
+        .qr-cols {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 680px) {
+        main > .hero {
+          border-radius: 20px;
+          padding: 18px;
+          margin-bottom: 16px;
+        }
+
+        .card {
+          border-radius: 16px;
+          padding: 16px;
+        }
+
+        .row {
+          grid-template-columns: 1fr;
+        }
+
+        .qr-box .qr-frame {
+          width: min(100%, 260px);
+          height: auto;
+          aspect-ratio: 1;
+        }
+
+        .card > div:first-child {
+          padding-bottom: 8px;
+        }
+
+        .qr-cols .qr-box {
+          padding: 12px;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <span class="pill">Autogram v mobile integration demo</span>
+        <h1>Example AVM Integration</h1>
+        <p>
+          This example follows the same lightweight Vite pattern as
+          example-extension-usage, but drives a real AVM integration flow:
+          register or reuse an integration, upload a document, generate a mobile
+          deep-link or QR payload, and wait for the signed file.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article class="card stack" data-step="1">
+          <div>
+            <h2>Integration</h2>
+            <p class="muted">
+              The integration key pair and GUID are persisted in IndexedDB so the
+              same demo deployment can be paired with the mobile app once and
+              reused.
+            </p>
+          </div>
+
+          <label>
+            AVM base URL
+            <input
+              $="baseUrl"
+              type="url"
+              value="https://autogram.slovensko.digital/api/v1"
+            />
+          </label>
+
+          <div class="button-row">
+            <button onclick="loadOrRegisterIntegration()">
+              Load or register integration
+            </button>
+            <button class="secondary" onclick="resetIntegrationState()">
+              Reset saved integration
+            </button>
+          </div>
+
+          <div>
+            <strong>Integration state</strong>
+            <pre $="integrationState">Not initialized yet.</pre>
+          </div>
+
+          <div>
+            <strong>Device pairing QR</strong>
+            <p class="muted" style="font-size:14px;margin-bottom:8px">
+              Scan with Autogram v mobile to pair this integration with the app. Regenerated each time you load or register.
+            </p>
+            <div class="qr-box">
+              <figure
+                class="qr-frame"
+                $="pairingQrImage"
+                role="img"
+                aria-label="QR code for device pairing"
+                hidden
+              ></figure>
+            </div>
+          </div>
+        </article>
+
+        <article class="card stack" data-step="2">
+          <div>
+            <h2>Document</h2>
+            <p class="muted">
+              Upload a file or use inline text content. Text payloads are sent as
+              plain text, binary files are sent as base64 with the matching MIME
+              type.
+            </p>
+          </div>
+
+          <label>
+            File input
+            <input $="fileInput" type="file" />
+          </label>
+
+          <div class="row">
+            <label>
+              Filename
+              <input $="filename" type="text" value="demo-document.txt" />
+            </label>
+            <label>
+              MIME type
+              <input $="mimeType" type="text" value="text/plain" />
+            </label>
+          </div>
+
+          <label>
+            Text content fallback
+            <textarea $="documentContent">Hello from example-avm-integration.
+
+This document was uploaded through the Autogram SDK AVM integration demo.
+Sign it with Autogram v mobile and the signed output will appear below.</textarea>
+          </label>
+
+          <div class="row">
+            <label>
+              Signature level
+              <select $="signatureLevel">
+                <option value="XAdES_BASELINE_B">XAdES_BASELINE_B</option>
+                <option value="XAdES_BASELINE_T">XAdES_BASELINE_T</option>
+                <option value="PAdES_BASELINE_B">PAdES_BASELINE_B</option>
+                <option value="PAdES_BASELINE_T">PAdES_BASELINE_T</option>
+                <option value="CAdES_BASELINE_B">CAdES_BASELINE_B</option>
+                <option value="CAdES_BASELINE_T">CAdES_BASELINE_T</option>
+              </select>
+            </label>
+            <label>
+              Container
+              <select $="signatureContainer">
+                <option value="ASiC-E">ASiC-E</option>
+                <option value="ASiC-S">ASiC-S</option>
+                <option value="">No container</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button onclick="createSigningSession()">Create signing session</button>
+          </div>
+
+          <div>
+            <strong>Document reference</strong>
+            <pre $="documentState">No document uploaded yet.</pre>
+          </div>
+        </article>
+
+        <article class="card wide stack" data-step="3">
+          <div>
+            <h2>Mobile app handoff</h2>
+            <p class="muted">
+              Open the generated URL on a mobile device with Autogram v mobile,
+              or scan the QR code. If the integration has already been paired,
+              the same wait operation also triggers a sign request push.
+            </p>
+          </div>
+
+          <div class="qr-cols">
+            <div class="qr-box">
+              <strong>With integration JWT</strong>
+              <p class="muted" style="font-size:13px;margin:4px 0 8px">
+                AVM will try to register this integration with the mobile app for push notifications.
+              </p>
+              <figure
+                class="qr-frame"
+                $="qrImage"
+                role="img"
+                aria-label="QR code for AVM URL with integration"
+                hidden
+              ></figure>
+              <label>
+                AVM URL
+                <textarea class="mono" $="qrUrl" readonly></textarea>
+              </label>
+              <div class="button-row">
+                <button class="secondary" onclick="copyQrUrl()">Copy URL</button>
+                <button class="secondary" onclick="openQrUrl()">Open in browser</button>
+              </div>
+            </div>
+
+            <div class="qr-box">
+              <strong>Without integration JWT</strong>
+              <p class="muted" style="font-size:13px;margin:4px 0 8px">
+                Plain signing URL — no pairing, no push notifications.
+              </p>
+              <figure
+                class="qr-frame"
+                $="qrImageNoJwt"
+                role="img"
+                aria-label="QR code for AVM URL without integration"
+                hidden
+              ></figure>
+              <label>
+                AVM URL
+                <textarea class="mono" $="qrUrlNoJwt" readonly></textarea>
+              </label>
+              <div class="button-row">
+                <button class="secondary" onclick="copyQrUrlNoJwt()">Copy URL</button>
+                <button class="secondary" onclick="openQrUrlNoJwt()">Open in browser</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card stack" data-step="4">
+          <div>
+            <h2>Wait for signature</h2>
+            <p class="muted">
+              The SDK sends a sign-request to paired devices and polls the
+              document until it changes to a signed state.
+            </p>
+          </div>
+
+          <div class="button-row">
+            <button onclick="waitForSignature()">Wait for signature</button>
+            <button class="warn" onclick="abortWaiting()">Abort</button>
+          </div>
+
+          <div>
+            <strong>Current status</strong>
+            <pre $="statusOutput">Idle.</pre>
+          </div>
+
+          <div>
+            <strong>Event log</strong>
+            <pre $="eventLog">Ready.</pre>
+          </div>
+        </article>
+
+        <article class="card stack" data-step="5">
+          <div>
+            <h2>Signed result</h2>
+            <p class="muted">
+              Signed output can be downloaded directly from the page. Text and
+              image payloads are previewed inline.
+            </p>
+          </div>
+
+          <div>
+            <strong>Signed metadata</strong>
+            <pre $="signedMetadata">No signed document yet.</pre>
+          </div>
+
+          <div class="preview" $="signedPreview"></div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>
