@@ -4,8 +4,11 @@
 
 /* Autogram Desktop */
 export {
-  AutogramDesktopIntegrationInterface,
   apiClient as desktopApiClient,
+} from "./autogram-api/index";
+
+export type {
+  AutogramDesktopIntegrationInterface,
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody, // TODO we could unify SignResponseBody from desktop and SignedDocument from avm
@@ -15,10 +18,13 @@ export {
 /* Autogram V Mobile */
 export {
   AutogramVMobileIntegration,
-  AutogramVMobileIntegrationInterfaceStateful,
   randomUUID,
-  SignedDocument as AVMSignedDocument,
   GetDocumentsResponse as AVMGetDocumentsResponse,
+} from "./avm-api/index";
+
+export type {
+  AutogramVMobileIntegrationInterfaceStateful,
+  SignedDocument as AVMSignedDocument,
   DocumentToSign as AVMDocumentToSign,
   AvmIntegrationDocument as AVMIntegrationDocument,
 } from "./avm-api/index";
