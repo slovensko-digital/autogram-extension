@@ -80,6 +80,16 @@ export class AutogramRoot extends LitElement {
 
   hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  /**
+   * Some host pages (e.g. konto.bratislava.sk) manage focus traps by setting the
+   * `inert` attribute on every element outside their own modal — including
+   * <autogram-root>.  An inert element ignores all pointer and keyboard events,
+   * making our dialog appear but be completely unclickable regardless of z-index.
+   * This observer watches for that attribute being added while our dialog is open
+   * and immediately removes it so the dialog stays interactive.
+   */
+  private inertObserver: MutationObserver | null = null;
+
   choiceResult: {
     promise: Promise<SigningMethod>;
     resolve: (value: SigningMethod) => void;
@@ -242,11 +252,28 @@ export class AutogramRoot extends LitElement {
   }
 
   show() {
+    // Remove inert immediately in case it was already set before show() was called.
+    this.removeAttribute("inert");
     this.style.display = "flex";
+    // Start watching for the host page re-adding the inert attribute and strip it
+    // straight away so our dialog remains interactive for the duration of signing.
+    this.inertObserver = new MutationObserver(() => {
+      this.removeAttribute("inert");
+    });
+    this.inertObserver.observe(this, {
+      attributes: true,
+      attributeFilter: ["inert"],
+    });
   }
 
   hide() {
     this.style.display = "none";
+    // Stop observing once the dialog is closed — no need to fight the host page
+    // over the inert attribute when we are not visible.
+    if (this.inertObserver) {
+      this.inertObserver.disconnect();
+      this.inertObserver = null;
+    }
   }
 
   reset() {
