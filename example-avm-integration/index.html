@@ -7,61 +7,183 @@
     <style>
       :root {
         color-scheme: light;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        background:
-          radial-gradient(circle at top left, #fef3c7 0, transparent 28%),
-          radial-gradient(circle at top right, #dbeafe 0, transparent 24%),
-          linear-gradient(180deg, #fffaf3 0%, #f7f9fc 100%);
-        color: #18212f;
+        font-family: "Avenir Next", "Nunito Sans", "Segoe UI", sans-serif;
+        --ink-strong: #1d2735;
+        --ink-soft: #4b5e75;
+        --bg-top: #fff6de;
+        --bg-mid: #f5fbff;
+        --bg-low: #ecf3f6;
+        --card: rgba(255, 255, 255, 0.84);
+        --card-stroke: rgba(41, 57, 78, 0.12);
+        --accent: #046c5e;
+        --accent-strong: #03554a;
+        --accent-soft: rgba(4, 108, 94, 0.12);
+        --warning: #b42318;
+        --field-stroke: #c5d1df;
+        --surface-dark: #10213a;
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
         margin: 0;
         min-height: 100vh;
+        color: var(--ink-strong);
+        background:
+          radial-gradient(48vw 38vw at -10% 0%, #ffe6ad 0%, transparent 66%),
+          radial-gradient(34vw 26vw at 100% -2%, #a7dfef 0%, transparent 75%),
+          linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 48%, var(--bg-low) 100%);
       }
 
       main {
-        max-width: 1120px;
+        width: min(1200px, 100% - 40px);
         margin: 0 auto;
-        padding: 32px 20px 64px;
+        padding: 40px 0 72px;
       }
 
       h1,
       h2,
       h3,
       p {
-        margin-top: 0;
+        margin: 0;
       }
 
-      .hero {
+      h1 {
+        font-size: clamp(1.95rem, 1.6rem + 1.4vw, 3rem);
+        letter-spacing: -0.02em;
+      }
+
+      h2 {
+        font-size: clamp(1.15rem, 1.05rem + 0.5vw, 1.5rem);
+        letter-spacing: -0.01em;
+      }
+
+      main > .hero {
+        position: relative;
         display: grid;
-        gap: 16px;
-        margin-bottom: 24px;
+        gap: 18px;
+        margin-bottom: 28px;
+        padding: 26px;
+        border-radius: 28px;
+        background:
+          linear-gradient(125deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62)),
+          linear-gradient(150deg, #fff0ca, #dcf5ff);
+        border: 1px solid rgba(43, 58, 81, 0.12);
+        box-shadow: 0 14px 48px rgba(21, 35, 51, 0.14);
+        overflow: hidden;
+      }
+
+      main > .hero::after {
+        content: "";
+        position: absolute;
+        top: -72px;
+        right: -66px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(4, 108, 94, 0.22), transparent 72%);
+        pointer-events: none;
       }
 
       .hero p {
-        max-width: 72ch;
-        color: #4a5565;
+        max-width: 74ch;
+        color: var(--ink-soft);
+        line-height: 1.56;
+      }
+
+      .pill {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        border: 1px solid rgba(20, 80, 116, 0.25);
+        background: rgba(244, 251, 255, 0.9);
+        color: #1f4a68;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 20px;
+        gap: 18px;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .grid > article {
+        animation: card-rise 0.52s ease both;
+      }
+
+      .grid > article:nth-child(2) {
+        animation-delay: 0.04s;
+      }
+
+      .grid > article:nth-child(3) {
+        animation-delay: 0.08s;
+      }
+
+      .grid > article:nth-child(4) {
+        animation-delay: 0.12s;
+      }
+
+      .grid > article:nth-child(5) {
+        animation-delay: 0.16s;
       }
 
       .card {
-        background: rgba(255, 255, 255, 0.88);
-        border: 1px solid rgba(24, 33, 47, 0.08);
-        border-radius: 20px;
-        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-        padding: 20px;
-        backdrop-filter: blur(8px);
+        position: relative;
+        display: grid;
+        gap: 14px;
+        background: var(--card);
+        border: 1px solid var(--card-stroke);
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 10px 34px rgba(15, 33, 53, 0.1);
+        backdrop-filter: blur(7px);
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 38px rgba(15, 33, 53, 0.16);
+      }
+
+      .card.stack {
+        grid-column: span 6;
       }
 
       .card.wide {
         grid-column: 1 / -1;
+      }
+
+      .card > div:first-child {
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(37, 57, 82, 0.11);
+      }
+
+      .card[data-step] h2 {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .card[data-step] h2::before {
+        content: attr(data-step);
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #0f5e65;
+        background: linear-gradient(180deg, #e0f7ff, #caedee);
+        border: 1px solid rgba(19, 95, 116, 0.25);
       }
 
       .stack {
@@ -72,14 +194,25 @@
       .row {
         display: grid;
         gap: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .muted {
+        color: var(--ink-soft);
+        line-height: 1.52;
+      }
+
+      strong {
+        font-size: 0.95rem;
       }
 
       label {
         display: grid;
-        gap: 6px;
-        font-size: 14px;
-        font-weight: 600;
+        gap: 7px;
+        font-size: 0.86rem;
+        color: #26425e;
+        font-weight: 700;
+        letter-spacing: 0.01em;
       }
 
       input,
@@ -93,40 +226,61 @@
       textarea,
       select {
         width: 100%;
-        box-sizing: border-box;
-        border: 1px solid #d0d7e2;
+        border: 1px solid var(--field-stroke);
         border-radius: 12px;
-        padding: 10px 12px;
-        background: #fff;
-        color: #18212f;
+        padding: 11px 12px;
+        font-weight: 400;
+        color: var(--ink-strong);
+        background: rgba(255, 255, 255, 0.9);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: 0;
+        border-color: #0b8b79;
+        box-shadow: 0 0 0 4px rgba(11, 139, 121, 0.16);
       }
 
       textarea {
-        min-height: 180px;
+        min-height: 172px;
         resize: vertical;
       }
 
       button {
         border: 0;
         border-radius: 999px;
-        padding: 11px 16px;
-        background: #0f766e;
-        color: #fff;
-        cursor: pointer;
+        padding: 10px 15px;
+        background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+        color: #ffffff;
+        font-size: 0.9rem;
         font-weight: 700;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 18px rgba(3, 85, 74, 0.25);
       }
 
       button.secondary {
-        background: #dbe4f0;
-        color: #18212f;
+        background: #e4edf6;
+        color: #22374f;
+      }
+
+      button.secondary:hover {
+        box-shadow: 0 8px 18px rgba(40, 61, 84, 0.16);
       }
 
       button.warn {
-        background: #b91c1c;
+        background: linear-gradient(180deg, #cf3a32, var(--warning));
       }
 
       button:disabled {
-        opacity: 0.55;
+        opacity: 0.58;
         cursor: not-allowed;
       }
 
@@ -136,39 +290,28 @@
         gap: 10px;
       }
 
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        background: #eef3ff;
-        color: #254277;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .muted {
-        color: #5d6878;
-      }
-
       .mono,
       pre,
       code {
-        font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Consolas,
-          monospace;
+        font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
       }
 
       pre,
       .output {
         margin: 0;
         border-radius: 14px;
-        background: #101828;
-        color: #d7e1ef;
+        background: linear-gradient(180deg, #132845, var(--surface-dark));
+        color: #d7e5f7;
         padding: 14px;
-        overflow: auto;
+        font-size: 0.84rem;
+        line-height: 1.5;
         white-space: pre-wrap;
         word-break: break-word;
+        overflow: auto;
+      }
+
+      .grid pre {
+        max-height: 320px;
       }
 
       .qr-box {
@@ -178,11 +321,11 @@
       }
 
       .qr-box .qr-frame {
-        width: 240px;
-        height: 240px;
+        width: 248px;
+        height: 248px;
         border-radius: 18px;
-        background: #fff;
-        border: 1px solid #d0d7e2;
+        background: #ffffff;
+        border: 1px solid #c8d5e2;
         padding: 10px;
         display: grid;
         place-items: center;
@@ -194,10 +337,28 @@
         height: 100%;
       }
 
+      .qr-box label {
+        width: 100%;
+        max-width: 248px;
+        margin: 0;
+        margin-left: 40px;
+      }
+
+      .qr-box textarea {
+        min-height: 92px;
+      }
+
       .qr-cols {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 20px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .qr-cols .qr-box {
+        border: 1px solid rgba(44, 65, 91, 0.11);
+        border-radius: 16px;
+        padding: 14px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(244, 250, 255, 0.8));
       }
 
       .preview {
@@ -208,33 +369,73 @@
       .preview img,
       .preview iframe {
         max-width: 100%;
-        border: 1px solid #d0d7e2;
+        border: 1px solid #cad7e6;
         border-radius: 14px;
         background: #fff;
       }
 
-      .status-ok {
-        color: #166534;
+      .preview button.secondary {
+        justify-self: start;
       }
 
-      .status-error {
-        color: #b91c1c;
+      @keyframes card-rise {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
-      @media (max-width: 640px) {
+      @media (max-width: 1024px) {
         main {
-          padding-inline: 14px;
+          width: min(1024px, 100% - 24px);
+          padding-top: 24px;
+        }
+
+        .card.stack {
+          grid-column: span 12;
+        }
+
+        .qr-cols {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 680px) {
+        main > .hero {
+          border-radius: 20px;
+          padding: 18px;
+          margin-bottom: 16px;
         }
 
         .card {
-          padding: 16px;
           border-radius: 16px;
+          padding: 16px;
+        }
+
+        .row {
+          grid-template-columns: 1fr;
         }
 
         .qr-box .qr-frame {
           width: min(100%, 260px);
           height: auto;
           aspect-ratio: 1;
+        }
+
+        .card > div:first-child {
+          padding-bottom: 8px;
+        }
+
+        .qr-cols .qr-box {
+          padding: 12px;
+        }
+
+        button {
+          width: 100%;
         }
       }
     </style>
@@ -253,9 +454,9 @@
       </section>
 
       <section class="grid">
-        <article class="card stack">
+        <article class="card stack" data-step="1">
           <div>
-            <h2>1. Integration</h2>
+            <h2>Integration</h2>
             <p class="muted">
               The integration key pair and GUID are persisted in IndexedDB so the
               same demo deployment can be paired with the mobile app once and
@@ -303,9 +504,9 @@
           </div>
         </article>
 
-        <article class="card stack">
+        <article class="card stack" data-step="2">
           <div>
-            <h2>2. Document</h2>
+            <h2>Document</h2>
             <p class="muted">
               Upload a file or use inline text content. Text payloads are sent as
               plain text, binary files are sent as base64 with the matching MIME
@@ -369,9 +570,9 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           </div>
         </article>
 
-        <article class="card wide stack">
+        <article class="card wide stack" data-step="3">
           <div>
-            <h2>3. Mobile app handoff</h2>
+            <h2>Mobile app handoff</h2>
             <p class="muted">
               Open the generated URL on a mobile device with Autogram v mobile,
               or scan the QR code. If the integration has already been paired,
@@ -426,9 +627,9 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           </div>
         </article>
 
-        <article class="card stack">
+        <article class="card stack" data-step="4">
           <div>
-            <h2>4. Wait for signature</h2>
+            <h2>Wait for signature</h2>
             <p class="muted">
               The SDK sends a sign-request to paired devices and polls the
               document until it changes to a signed state.
@@ -451,9 +652,9 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           </div>
         </article>
 
-        <article class="card stack">
+        <article class="card stack" data-step="5">
           <div>
-            <h2>5. Signed result</h2>
+            <h2>Signed result</h2>
             <p class="muted">
               Signed output can be downloaded directly from the page. Text and
               image payloads are previewed inline.
