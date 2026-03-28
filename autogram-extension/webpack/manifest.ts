@@ -51,7 +51,7 @@ function generateManifest(
         permissions: [
           "storage",
           "alarms",
-          "local-network-access",
+          // "local-network-access",
           // "declarativeContent",
           // "webRequest",
           // "webNavigation",
@@ -157,7 +157,6 @@ function generateManifest(
         permissions: [
           "storage",
           "alarms",
-          "local-network-access",
           // "declarativeContent", // chrome only - does not work in firefox
           ...enabledUrls,
         ],
