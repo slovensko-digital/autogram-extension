@@ -3,7 +3,6 @@ import { setupDialogAccessibility } from "./dialog-accessibility";
 describe("dialog-accessibility", () => {
   let dialogElement: HTMLElement;
   let sibling1: HTMLElement;
-  let sibling2: HTMLElement;
 
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -11,10 +10,6 @@ describe("dialog-accessibility", () => {
     sibling1 = document.createElement("div");
     sibling1.id = "sibling1";
     document.body.appendChild(sibling1);
-
-    sibling2 = document.createElement("nav");
-    sibling2.id = "sibling2";
-    document.body.appendChild(sibling2);
 
     dialogElement = document.createElement("autogram-root");
     dialogElement.style.display = "none";
@@ -38,15 +33,30 @@ describe("dialog-accessibility", () => {
     expect(dialogElement.getAttribute("aria-label")).toBeTruthy();
   });
 
-  it("does not hide siblings when dialog is initially hidden", () => {
+  it("adds popover=manual to the autogram-root element", () => {
     setupDialogAccessibility();
 
-    expect(sibling1.getAttribute("aria-hidden")).toBeNull();
-    expect(sibling2.getAttribute("aria-hidden")).toBeNull();
+    expect(dialogElement.getAttribute("popover")).toBe("manual");
   });
 
-  it("hides siblings when dialog becomes visible", async () => {
+  it("adds tabindex=-1 to make the host focusable", () => {
     setupDialogAccessibility();
+
+    expect(dialogElement.getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("does not overwrite an existing tabindex attribute", () => {
+    dialogElement.setAttribute("tabindex", "0");
+    setupDialogAccessibility();
+
+    expect(dialogElement.getAttribute("tabindex")).toBe("0");
+  });
+
+  it("moves focus to the dialog when it becomes visible", async () => {
+    setupDialogAccessibility();
+
+    sibling1.setAttribute("tabindex", "-1");
+    sibling1.focus();
 
     // Simulate AutogramRoot.show() setting display: flex
     dialogElement.style.display = "flex";
@@ -54,14 +64,14 @@ describe("dialog-accessibility", () => {
     // Allow MutationObserver microtask to run
     await Promise.resolve();
 
-    expect(sibling1.getAttribute("aria-hidden")).toBe("true");
-    expect(sibling2.getAttribute("aria-hidden")).toBe("true");
-    expect(sibling1.inert).toBe(true);
-    expect(sibling2.inert).toBe(true);
+    expect(document.activeElement).toBe(dialogElement);
   });
 
-  it("restores siblings when dialog becomes hidden again", async () => {
+  it("restores focus to the previously focused element when dialog closes", async () => {
     setupDialogAccessibility();
+
+    sibling1.setAttribute("tabindex", "-1");
+    sibling1.focus();
 
     // Show
     dialogElement.style.display = "flex";
@@ -71,19 +81,7 @@ describe("dialog-accessibility", () => {
     dialogElement.style.display = "none";
     await Promise.resolve();
 
-    expect(sibling1.getAttribute("aria-hidden")).toBeNull();
-    expect(sibling2.getAttribute("aria-hidden")).toBeNull();
-    expect(sibling1.inert).toBe(false);
-    expect(sibling2.inert).toBe(false);
-  });
-
-  it("does not apply aria-hidden to the dialog element itself", async () => {
-    setupDialogAccessibility();
-
-    dialogElement.style.display = "flex";
-    await Promise.resolve();
-
-    expect(dialogElement.getAttribute("aria-hidden")).toBeNull();
+    expect(document.activeElement).toBe(sibling1);
   });
 
   it("does nothing when autogram-root is not present in the DOM", () => {

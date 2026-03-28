@@ -8,10 +8,9 @@ const DIALOG_LABEL = "Podpisovanie dokumentu";
 /**
  * Sets up accessibility for the Autogram dialog overlay.
  *
- * Adds dialog semantics (role="dialog", aria-modal="true") to the autogram-root
- * custom element, and manages aria-hidden/inert on background content so that
- * keyboard focus and screen-reader access are restricted to the dialog while it
- * is open.
+ * Adds dialog semantics and a manual popover role to the autogram-root custom
+ * element. When the dialog opens, keyboard focus is moved into it; when it
+ * closes, focus is returned to wherever the user was before.
  */
 export function setupDialogAccessibility(): void {
   const dialogElement = document.querySelector(
@@ -28,38 +27,33 @@ export function setupDialogAccessibility(): void {
   dialogElement.setAttribute("aria-modal", "true");
   dialogElement.setAttribute("aria-label", DIALOG_LABEL);
 
+  // Register as a manual popover so the browser exposes correct accessibility
+  // semantics. Display is still controlled by AutogramRoot.show()/hide().
+  dialogElement.setAttribute("popover", "manual");
+
+  // Ensure the host element is focusable for programmatic focus on open
+  if (!dialogElement.hasAttribute("tabindex")) {
+    dialogElement.setAttribute("tabindex", "-1");
+  }
+
+  let previouslyFocused: Element | null = null;
+
   // Watch for visibility changes driven by show()/hide() on AutogramRoot
   const observer = new MutationObserver(() => {
     const isVisible = dialogElement.style.display === "flex";
-    updateBackgroundAccessibility(dialogElement, isVisible);
+    if (isVisible) {
+      previouslyFocused = document.activeElement;
+      dialogElement.focus();
+    } else {
+      if (previouslyFocused instanceof HTMLElement) {
+        previouslyFocused.focus();
+      }
+      previouslyFocused = null;
+    }
   });
 
   observer.observe(dialogElement, {
     attributes: true,
     attributeFilter: ["style"],
   });
-}
-
-/**
- * When the dialog becomes visible, hide all other direct children of
- * document.body from the accessibility tree and prevent keyboard focus on them.
- * When the dialog closes, restore those attributes.
- */
-function updateBackgroundAccessibility(
-  dialogElement: Element,
-  isDialogVisible: boolean
-): void {
-  const siblings = Array.from(document.body.children).filter(
-    (el) => el !== dialogElement
-  );
-
-  for (const sibling of siblings) {
-    if (isDialogVisible) {
-      sibling.setAttribute("aria-hidden", "true");
-      (sibling as HTMLElement).inert = true;
-    } else {
-      sibling.removeAttribute("aria-hidden");
-      (sibling as HTMLElement).inert = false;
-    }
-  }
 }
