@@ -11,3 +11,12 @@ export class AutogramSdkException extends Error {
     this.name = "AutogramSdkException";
   }
 }
+
+export class AutogramAppNotInstalledException extends AutogramSdkException {
+  constructor() {
+    super(
+      "Autogram nie je nainštalovaný. Stiahnite si ho na autogram.slovensko.digital"
+    );
+    this.name = "AutogramAppNotInstalledException";
+  }
+}

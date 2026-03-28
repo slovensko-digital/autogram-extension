@@ -53,8 +53,14 @@ export class AutogramDesktopSimpleChannel
   sign(
     document: AutogramDocument,
     signatureParameters?: SignatureParameters,
-    payloadMimeType?: string
+    payloadMimeType?: string,
+    abortController?: AbortController
   ): Promise<SignResponseBody> {
-    return this.apiClient.sign(document, signatureParameters, payloadMimeType);
+    return this.apiClient.sign(
+      document,
+      signatureParameters,
+      payloadMimeType,
+      abortController ?? null
+    );
   }
 }

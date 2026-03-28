@@ -13,6 +13,7 @@ import { SigningMethod } from "./types";
 import { createLogger } from "../log";
 import { UserCancelledSigningException } from "../errors";
 import { isMobileDevice } from "../utils";
+import type { DesktopSigningState } from "../autogram-api/index";
 
 const log = createLogger("ag-sdk:root");
 
@@ -73,6 +74,9 @@ export class AutogramRoot extends LitElement {
   @property()
   declare mobileSigningUrl: string | null;
 
+  @property({ attribute: false })
+  declare desktopSigningState: DesktopSigningState;
+
   abortController: AbortController | null = null;
 
   errorMessage: string | null = null;
@@ -99,6 +103,7 @@ export class AutogramRoot extends LitElement {
     super();
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.desktopSigningState = { type: "checkingApp" };
   }
 
   _closeChoiceScreen(event: EventClose) {
@@ -152,6 +157,7 @@ export class AutogramRoot extends LitElement {
             ></autogram-choice-screen>`
           : this.screen === Screens.signReader
             ? html`<autogram-sign-reader-screen
+                .state=${this.desktopSigningState}
                 @autogram-close=${this._closeSigningScreen}
               ></autogram-sign-reader-screen>`
             : this.screen === Screens.signMobile
@@ -227,6 +233,11 @@ export class AutogramRoot extends LitElement {
   desktopSigning(abortController: AbortController) {
     this.screen = Screens.signReader;
     this.abortController = abortController;
+    this.desktopSigningState = { type: "checkingApp" };
+  }
+
+  updateDesktopSigningState(state: DesktopSigningState) {
+    this.desktopSigningState = state;
   }
 
   signingCancelled() {
@@ -305,6 +316,7 @@ export class AutogramRoot extends LitElement {
     }
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.desktopSigningState = { type: "checkingApp" };
     if (this.abortController) {
       this.abortController.abort();
     }

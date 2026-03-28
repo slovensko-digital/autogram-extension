@@ -13,6 +13,8 @@ export type {
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody, // TODO we could unify SignResponseBody from desktop and SignedDocument from avm
   ServerInfo as DesktopServerInfo,
+  DesktopSigningState,
+  DesktopSigningStateConsumer,
 } from "./autogram-api/index";
 
 /* Autogram V Mobile */
@@ -30,4 +32,11 @@ export type {
 } from "./avm-api/index";
 export { AutogramVMobileSimulation } from "./avm-api/index";
 
-export { UserCancelledSigningException, AutogramSdkException } from "./errors";
+export {
+  UserCancelledSigningException,
+  AutogramSdkException,
+  AutogramAppNotInstalledException,
+} from "./errors";
+
+export { DesktopClient } from "./desktop-client";
+export type { DesktopSignOptions } from "./desktop-client";

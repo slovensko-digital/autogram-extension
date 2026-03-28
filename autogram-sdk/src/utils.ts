@@ -32,3 +32,19 @@ export function isMobileDevice(): boolean {
   // Consider it mobile if it matches user agent OR (has touch + small screen + mobile features)
   return isMobileUA || (isTouchDevice && isSmallScreen && hasMobileFeatures);
 }
+
+export function waitForWindowBlur(timeoutMs: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const handler = () => {
+      clearTimeout(timer);
+      resolve(true);
+    };
+
+    const timer = setTimeout(() => {
+      window.removeEventListener("blur", handler);
+      resolve(false);
+    }, timeoutMs);
+
+    window.addEventListener("blur", handler, { once: true });
+  });
+}
