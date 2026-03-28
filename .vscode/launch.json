@@ -7,7 +7,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome against example-usage",
+      "name": "Launch Chrome against example-extension-usage",
       "url": "http://localhost:49675/",
       "webRoot": "${workspaceFolder}/dist",
       "pathMapping": { "__webpack_modules__..": "${workspaceFolder}" },
@@ -21,7 +21,7 @@
       "sourceMapPathOverrides": {
         "webpack:///./*": "${webRoot}/*"
       },
-      "preLaunchTask": "npm: example-usage",
+      "preLaunchTask": "npm: example-extension-usage",
     },
     {
       "type": "chrome",
@@ -63,7 +63,7 @@
     {
       "type": "firefox",
       "request": "launch",
-      "name": "Launch Firefox against example-usage",
+      "name": "Launch Firefox against example-extension-usage",
       "url": "http://localhost:49675/",
       "addonPath": "${workspaceFolder}/dist/",
       "reAttach": true,
