@@ -4,8 +4,8 @@
   "private": true,
   "description": "Monorepo for Autogram Extension",
   "workspaces": [
-    "autogram-extension",
-    "autogram-sdk"
+    "autogram-sdk",
+    "autogram-extension"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
@@ -22,7 +22,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
-    "start": "npm start -w autogram-extension",
+    "start": "echo 'Please specify which extension manifest version to start: npm run watch:mv2 or npm run watch:mv3'",
     "postinstall": "npm run sdk:build"
   },
   "repository": {

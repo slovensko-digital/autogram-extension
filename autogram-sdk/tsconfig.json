@@ -20,6 +20,6 @@
     "declaration": true,
     "declarationMap": true,
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "package.json"],
   "exclude": ["spec", "dist", "**/*.test.ts", "**/*.codemod.ts"]
 }

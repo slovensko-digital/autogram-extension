@@ -6,9 +6,10 @@
   "type": "module",
   "main": "./webpack/manifest.ts",
   "scripts": {
-    "start": "npm run webpack:build-dev && run-p webpack:watch webext:run",
-    "start:mv2": "AE_MANIFEST_VERSION=2 npm start",
-    "start:mv3": "AE_MANIFEST_VERSION=3 npm start",
+    "_start": "npm run webpack:build-dev && run-p webpack:watch webext:run",
+    "start": "echo 'Please specify manifest version: npm run start:mv2 or npm run start:mv3'",
+    "start:mv2": "AE_MANIFEST_VERSION=2 npm run _start",
+    "start:mv3": "AE_MANIFEST_VERSION=3 npm run _start",
     "lint": "eslint src webpack",
     "release": "./scripts/release.sh",
     "build": "npm run build:prod",

@@ -20,6 +20,7 @@ import { AutogramDesktopIntegrationInterface } from "./autogram-api/lib/apiClien
 import { AutogramDesktopSimpleChannel } from "./channel-desktop";
 import { createLogger } from "./log";
 import { AutogramSdkException, UserCancelledSigningException } from "./errors";
+import packageJson from "../package.json";
 
 export type SignedObject = DesktopSignResponseBody;
 // We have to leave this in because otherwise the custom elements are not registered
@@ -74,7 +75,7 @@ export class CombinedClient {
     resetSignRequestCallback?: () => void
   ): Promise<CombinedClient> {
     // TODO: WIP
-    log.debug("init");
+    log.debug(`init version ${packageJson.version}`);
     async function createUI(): Promise<AutogramRoot> {
       const root: AutogramRoot = document.createElement(
         "autogram-root"
