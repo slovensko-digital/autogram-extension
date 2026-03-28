@@ -91,7 +91,7 @@
   "dependencies": {
     "@sentry/browser": "^8.48.0",
     "@types/chrome": "^0.0.145",
-    "autogram-sdk": "*",
+    "autogram-sdk": "file:../autogram-sdk",
     "isomorphic-webcrypto": "^2.3.8",
     "webextension-polyfill": "^0.8.0"
   },
