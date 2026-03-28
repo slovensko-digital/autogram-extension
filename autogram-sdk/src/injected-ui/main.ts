@@ -63,7 +63,6 @@ export class AutogramRoot extends LitElement {
 
       max-width: 800px;
       max-height: 800px;
-      margin-bottom: 100px;
       width: 100%;
     }
   `;
@@ -145,42 +144,43 @@ export class AutogramRoot extends LitElement {
   render() {
     log.debug("render");
     return html`
-      <div class="dialog">
+      <dialog class="dialog" aria-modal="true">
         ${this.screen === Screens.choice
           ? html`<autogram-choice-screen
               @autogram-close=${this._closeChoiceScreen}
               @autogram-choice=${this._handleChoice}
             ></autogram-choice-screen>`
           : this.screen === Screens.signReader
-          ? html`<autogram-sign-reader-screen
-              @autogram-close=${this._closeSigningScreen}
-            ></autogram-sign-reader-screen>`
-          : this.screen === Screens.signMobile
-          ? html`<autogram-sign-mobile-screen
-              @autogram-close=${this._closeSigningScreen}
-              url=${this.mobileSigningUrl}
-            ></autogram-sign-mobile-screen>`
-          : this.screen === Screens.signingCancelled
-          ? html`<autogram-signing-cancelled-screen
-              @autogram-close=${this._closeNow}
-            ></autogram-signing-cancelled-screen>`
-          : this.screen === Screens.signMobileOnMobile
-          ? html`<autogram-signing-mobile-on-mobile-screen
-              @autogram-close=${this._closeSigningScreen}
-              url=${this.mobileSigningUrl}
-            ></autogram-signing-mobile-on-mobile-screen>`
-          : this.screen === Screens.useRestorePoint
-          ? html`<autogram-restore-point-choice-screen
-              @autogram-close=${this._closeNow}
-              @autogram-restore-point-result=${this._handleRestorePointChoice}
-            ></autogram-restore-point-choice-screen>`
-          : this.screen === Screens.error
-          ? html`<autogram-error-screen
-              @autogram-close=${this._closeNow}
-              errorMessage=${this.errorMessage}
-            ></autogram-error-screen>`
-          : ""}
-      </div>
+            ? html`<autogram-sign-reader-screen
+                @autogram-close=${this._closeSigningScreen}
+              ></autogram-sign-reader-screen>`
+            : this.screen === Screens.signMobile
+              ? html`<autogram-sign-mobile-screen
+                  @autogram-close=${this._closeSigningScreen}
+                  url=${this.mobileSigningUrl}
+                ></autogram-sign-mobile-screen>`
+              : this.screen === Screens.signingCancelled
+                ? html`<autogram-signing-cancelled-screen
+                    @autogram-close=${this._closeNow}
+                  ></autogram-signing-cancelled-screen>`
+                : this.screen === Screens.signMobileOnMobile
+                  ? html`<autogram-signing-mobile-on-mobile-screen
+                      @autogram-close=${this._closeSigningScreen}
+                      url=${this.mobileSigningUrl}
+                    ></autogram-signing-mobile-on-mobile-screen>`
+                  : this.screen === Screens.useRestorePoint
+                    ? html`<autogram-restore-point-choice-screen
+                        @autogram-close=${this._closeNow}
+                        @autogram-restore-point-result=${this
+                          ._handleRestorePointChoice}
+                      ></autogram-restore-point-choice-screen>`
+                    : this.screen === Screens.error
+                      ? html`<autogram-error-screen
+                          @autogram-close=${this._closeNow}
+                          errorMessage=${this.errorMessage}
+                        ></autogram-error-screen>`
+                      : ""}
+      </dialog>
     `;
   }
 
@@ -270,6 +270,17 @@ export class AutogramRoot extends LitElement {
       attributes: true,
       attributeFilter: ["inert"],
     });
+
+    const dialog = this.renderRoot.querySelector("dialog");
+    if (!dialog) {
+      return;
+    }
+    dialog.addEventListener("close", () => {
+      log.debug("dialog closed");
+      this._closeNow(new Event("close"));
+    });
+    dialog.showModal();
+    log.debug("focus dialog after render");
   }
 
   hide() {
@@ -279,6 +290,10 @@ export class AutogramRoot extends LitElement {
     if (this.inertObserver) {
       this.inertObserver.disconnect();
       this.inertObserver = null;
+    }
+    const dialog = this.renderRoot.querySelector("dialog");
+    if (dialog && dialog.open) {
+      dialog.close();
     }
   }
 
