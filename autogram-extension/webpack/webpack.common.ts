@@ -49,6 +49,21 @@ const config: webpack.Configuration = {
   },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        include: [path.resolve(__dirname, "../../autogram-sdk/src")],
+        use: {
+          loader: "ts-loader",
+          options: {
+            // Keep SDK classes native to avoid LitElement inheritance runtime errors.
+            transpileOnly: true,
+            compilerOptions: {
+              target: "ES2022",
+              module: "ESNext",
+            },
+          },
+        },
+      },
       // {
       //   test: /\.module\.css$/i,
       //   use: [
@@ -69,7 +84,7 @@ const config: webpack.Configuration = {
       },
       {
         test: /\.tsx?$/,
-        exclude: /node_modules/,
+        exclude: [/node_modules/, path.resolve(__dirname, "../../autogram-sdk/src")],
         use: {
           loader: "ts-loader",
           options: {
@@ -94,6 +109,9 @@ const config: webpack.Configuration = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      "autogram-sdk": path.resolve(__dirname, "../../autogram-sdk/src"),
+    },
     fallback: {
       crypto: require.resolve("crypto-browserify"),
       stream: require.resolve("stream-browserify"),

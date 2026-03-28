@@ -3,7 +3,15 @@ import loglevel from "loglevel";
 // prefix.reg(loglevel);
 // prefix.apply(loglevel);
 
-export function createLogger(name: string | symbol) {
+export interface Logger {
+  trace: (...args: unknown[]) => void;
+  debug: (...args: unknown[]) => void;
+  info: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+}
+
+export function createLogger(name: string | symbol): Logger {
   const log = loglevel.getLogger(name);
   // TODO this should be configurable from outside of the library
   log.enableAll();
@@ -25,8 +33,4 @@ export function createLogger(name: string | symbol) {
   // });
 
   return log;
-}
-
-export interface Logger {
-  debug: (...args: unknown[]) => void;
 }
