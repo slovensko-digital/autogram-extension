@@ -41,10 +41,28 @@ jobs:
         run: npx vite build
         working-directory: example-avm-integration
 
+      - name: Prepare Pages artifact structure
+        run: |
+          mkdir -p .pages/example-avm-integration
+          cp -R example-avm-integration/dist/* .pages/example-avm-integration/
+          cat > .pages/index.html << 'EOF'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta http-equiv="refresh" content="0; url=/autogram-extension/example-avm-integration/" />
+              <title>Redirecting...</title>
+            </head>
+            <body>
+              Redirecting to <a href="/autogram-extension/example-avm-integration/">example-avm-integration</a>...
+            </body>
+          </html>
+          EOF
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: example-avm-integration/dist
+          path: .pages
 
   deploy:
     needs: build
