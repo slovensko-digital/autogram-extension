@@ -4,5 +4,8 @@
   },
   "appDesc": {
     "message": "Rozšírenie umožnuje používať podpisovač Autogram od Slovensko.Digital na štátnych portáloch."
+  },
+  "optionsSaved": {
+    "message": "Nastavenia uložené."
   }
 }
