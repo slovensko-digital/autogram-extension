@@ -29,7 +29,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsup",
+    "build": "tsdown",
     "build:watch": "npm run build -- --watch",
     "build:release": "NODE_ENV=production $(rm -r dist || true) && npm run build -- --env.NODE_ENV production",
     "generate-autogram-api-types": "npx openapi-typescript http://localhost:37200/docs/server.yml --default-non-nullable false --output src/autogram-api/lib/autogram-api.generated.ts && npx prettier --write src/autogram-api/lib/autogram-api.generated.ts",
@@ -59,7 +59,7 @@
   "homepage": "https://github.com/slovensko-digital/autogram-sdk#readme",
   "devDependencies": {
     "@types/bwip-js": "^3.2.3",
-    "tsup": "^8.3.5",
+    "tsdown": "^0.21.6",
     "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "^4.4.1",
     "typedoc-umlclass": "^0.10.1"
