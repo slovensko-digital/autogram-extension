@@ -7,4 +7,6 @@ export type {
   SignatureParameters,
   SignResponseBody,
   AutogramDesktopIntegrationInterface,
+  DesktopSigningState,
+  DesktopSigningStateConsumer,
 } from "./lib/apiClient";

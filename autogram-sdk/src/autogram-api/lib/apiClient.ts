@@ -240,8 +240,7 @@ export function apiClient(options?: ApiClientConfiguration) {
 
       const init: RequestInit = {
         method: "POST",
-        // Server considers text/plain as JSON to prevent CORS preflight
-        headers: { "Content-Type": "text/plain" },
+        headers: { "Content-Type": "application/json" },
         cache: "no-store",
         body: JSON.stringify(body),
         ...(abortController ? { signal: abortController.signal } : {}),
@@ -357,3 +356,18 @@ export type AutogramDocument = components["schemas"]["Document"];
 export type SignatureParameters = components["schemas"]["SignatureParameters"];
 type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
 export type SignResponseBody = components["schemas"]["SignResponseBody"];
+
+/**
+ * Represents the current state of the desktop signing process.
+ */
+export type DesktopSigningState =
+  | { type: "checkingApp" }
+  | { type: "launchingApp" }
+  | { type: "waitingForSignature" }
+  | { type: "appNotInstalled" }
+  | { type: "signingCancelled" }
+  | { type: "error"; message: string };
+
+export type DesktopSigningStateConsumer = (
+  state: DesktopSigningState
+) => void;

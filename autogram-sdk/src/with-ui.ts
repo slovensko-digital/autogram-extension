@@ -16,10 +16,18 @@ import { AvmSimpleChannel } from "./channel-avm";
 import { Base64 } from "js-base64";
 import { AutogramRoot } from "./injected-ui/main";
 import { SigningMethod } from "./injected-ui/types";
-import type { AutogramDesktopIntegrationInterface } from "./autogram-api/lib/apiClient";
+import type {
+  AutogramDesktopIntegrationInterface,
+  DesktopSigningStateConsumer,
+} from "./autogram-api/index";
 import { AutogramDesktopSimpleChannel } from "./channel-desktop";
+import { DesktopClient, type DesktopSignOptions } from "./desktop-client";
 import { createLogger } from "./log";
-import { AutogramSdkException, UserCancelledSigningException } from "./errors";
+import {
+  AutogramAppNotInstalledException,
+  AutogramSdkException,
+  UserCancelledSigningException,
+} from "./errors";
 import packageJson from "../package.json";
 
 export type SignedObject = DesktopSignResponseBody;
@@ -40,6 +48,7 @@ const log = createLogger("ag-sdk.CombinedClient");
 export class CombinedClient {
   private signatureIndex = 1;
   private signerIdentificationListeners: (() => void)[];
+  private desktopClient: DesktopClient;
 
   /**
    * @param avmChannel - Autogram V Mobile Integration channel
@@ -51,7 +60,7 @@ export class CombinedClient {
     private clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
     private resetSignRequestCallback: (() => void) | undefined = undefined
   ) {
-    // this.ui = ui;
+    this.desktopClient = new DesktopClient(this.clientDesktopIntegration);
 
     // this.clientDesktopIntegration = clientDesktopIntegration;
 
@@ -145,13 +154,15 @@ export class CombinedClient {
     document: DesktopAutogramDocument,
     signatureParameters: SignatureParameters,
     payloadMimeType: string,
-    decodeBase64 = false
+    decodeBase64 = false,
+    options?: DesktopSignOptions
   ) {
     try {
       const signedObject = await this.signBasedOnUserChoice(
         document,
         signatureParameters,
-        payloadMimeType
+        payloadMimeType,
+        options?.onDesktopStateChange
       );
       return {
         ...signedObject,
@@ -164,6 +175,9 @@ export class CombinedClient {
         log.info("User cancelled request");
         this.ui.signingCancelled();
         throw e;
+      } else if (e instanceof AutogramAppNotInstalledException) {
+        log.error("Autogram app not installed", e);
+        throw e;
       } else if (e instanceof AutogramSdkException) {
         this.ui.showError(e.message);
       }
@@ -175,7 +189,8 @@ export class CombinedClient {
   private async signBasedOnUserChoice(
     document: DesktopAutogramDocument,
     signatureParameters: SignatureParameters,
-    payloadMimeType: string
+    payloadMimeType: string,
+    onDesktopStateChange?: DesktopSigningStateConsumer
   ) {
     // TODO: remove
     log.debug("sign", this.ui);
@@ -185,13 +200,20 @@ export class CombinedClient {
 
     const abortController = new AbortController();
     if (signingMethod === SigningMethod.reader) {
+      const stateConsumer: DesktopSigningStateConsumer = (state) => {
+        this.ui.updateDesktopSigningState(state);
+        onDesktopStateChange?.(state);
+      };
+
       this.ui.desktopSigning(abortController);
-      await this.launchDesktop(abortController);
+      await this.desktopClient.launch(abortController, stateConsumer);
+      stateConsumer({ type: "waitingForSignature" });
       return this.getSignatureDesktop(
         document,
         signatureParameters,
         payloadMimeType,
-        abortController
+        abortController,
+        stateConsumer
       );
     } else if (signingMethod === SigningMethod.mobile) {
       return this.getSignatureMobile(
@@ -229,36 +251,12 @@ export class CombinedClient {
     return null;
   }
 
-  private async launchDesktop(abortController?: AbortController) {
-    try {
-      const info = await this.clientDesktopIntegration.info();
-      if (info.status != "READY") throw new Error("Wait for server");
-      log.info(`Autogram ${info.version} is ready`);
-    } catch (e) {
-      log.error("launchDesktop failed, getting info failed", e);
-      const url = await this.clientDesktopIntegration.getLaunchURL();
-      log.info(`Opening "${url}"`);
-      window.location.assign(url);
-      try {
-        const info = await this.clientDesktopIntegration.waitForStatus(
-          "READY",
-          100,
-          5,
-          abortController
-        );
-        log.info(`Autogram ${info.version} is ready`);
-      } catch (e) {
-        log.error("launchDesktop failed, waiting for Autogram failed", e);
-        throw new AutogramSdkException("Nepodarilo sa spustiť Autogram.");
-      }
-    }
-  }
-
   private async getSignatureDesktop(
     document: DesktopAutogramDocument,
     signatureParameters: DesktopSignatureParameters,
     payloadMimeType: string,
-    abortController: AbortController
+    abortController: AbortController,
+    onStateChange?: DesktopSigningStateConsumer
   ): Promise<SignedObject> {
     log.info("getSignatureDesktop");
     return this.clientDesktopIntegration
@@ -278,6 +276,7 @@ export class CombinedClient {
       .catch((reason) => {
         if (reason instanceof UserCancelledSigningException) {
           log.info("User cancelled request");
+          onStateChange?.({ type: "signingCancelled" });
           this.ui.signingCancelled();
           throw reason;
         } else {

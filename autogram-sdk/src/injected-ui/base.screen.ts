@@ -1,11 +1,11 @@
-import { LitElement, html, css } from "lit";
+import { LitElement, html, css, type CSSResultGroup } from "lit";
 
 import { closeSvg } from "./svg";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { EventClose } from "./events";
 
 export class AutogramBaseScreen extends LitElement {
-  static styles = css`
+  static styles: CSSResultGroup = css`
     .heading {
       /* Website/Headline 2 */
       /* 01 Header */
