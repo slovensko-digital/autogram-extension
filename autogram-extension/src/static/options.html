@@ -2,9 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Autogram Extension Options</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400&display=swap");
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       body {
         font-family: "Source Sans Pro", Arial, sans-serif;
         font-weight: 400;
@@ -14,6 +21,7 @@
         -webkit-font-smoothing: antialiased;
         font-size: 16px;
         margin-bottom: 50px;
+        overflow-x: hidden;
       }
 
       button {
@@ -62,8 +70,8 @@
 
       .checkbox {
         position: relative;
-        display: inline-flex;
-        align-items: center;
+        display: flex;
+        align-items: flex-start;
         cursor: pointer;
         margin-bottom: 10px;
       }
@@ -82,6 +90,7 @@
       .checkbox__checkmark {
         content: "";
         box-sizing: border-box;
+        flex-shrink: 0;
         width: 40px;
         height: 40px;
         border: 2px solid black;
@@ -103,8 +112,10 @@
         opacity: 0;
         background: transparent;
       }
-      .checkbox__checkmark .checkbox__label {
+      .checkbox__label {
         font-size: 19px;
+        overflow-wrap: break-word;
+        word-break: break-word;
       }
 
       fieldset {
@@ -121,7 +132,7 @@
 
       .wrapper {
         margin: 0 auto;
-        padding: 100px 0 0 20px;
+        padding: 100px 20px 0 20px;
         max-width: 600px;
       }
 
