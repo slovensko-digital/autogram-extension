@@ -4,19 +4,19 @@
  * and when you try registering them outside of content script you will get an error
  */
 
-import {
+import type {
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody,
   SignatureParameters,
 } from "./autogram-api/index";
 
-import { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
+import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
 import { AvmSimpleChannel } from "./channel-avm";
 import { Base64 } from "js-base64";
 import { AutogramRoot } from "./injected-ui/main";
 import { SigningMethod } from "./injected-ui/types";
-import { AutogramDesktopIntegrationInterface } from "./autogram-api/lib/apiClient";
+import type { AutogramDesktopIntegrationInterface } from "./autogram-api/lib/apiClient";
 import { AutogramDesktopSimpleChannel } from "./channel-desktop";
 import { createLogger } from "./log";
 import { AutogramSdkException, UserCancelledSigningException } from "./errors";

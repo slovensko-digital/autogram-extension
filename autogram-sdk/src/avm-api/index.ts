@@ -1,9 +1,12 @@
 export {
   AutogramVMobileIntegration,
-  AutogramVMobileIntegrationInterfaceStateful,
   randomUUID,
-  SignedDocument,
   GetDocumentsResponse,
+} from "./lib/apiClient";
+
+export type {
+  AutogramVMobileIntegrationInterfaceStateful,
+  SignedDocument,
   DocumentToSign,
   AvmIntegrationDocument,
 } from "./lib/apiClient";

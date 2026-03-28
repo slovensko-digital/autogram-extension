@@ -1,9 +1,10 @@
-export {
+export { apiClient } from "./lib/apiClient";
+
+export type {
   ApiClientConfiguration,
   AutogramDocument,
   ServerInfo,
   SignatureParameters,
   SignResponseBody,
-  apiClient,
   AutogramDesktopIntegrationInterface,
 } from "./lib/apiClient";
