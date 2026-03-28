@@ -20,6 +20,7 @@
     "ext:start:mv2": "npm run start:mv2 -w autogram-extension",
     "ext:start:mv3": "npm run start:mv3 -w autogram-extension",
     "example-extension-usage": "cd example-extension-usage && vite --port 49675",
+    "example-avm-integration": "cd example-avm-integration && vite --port 49676",
     "test": "npm test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

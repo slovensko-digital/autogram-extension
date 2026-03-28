@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example AVM Integration</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, #fef3c7 0, transparent 28%),
+          radial-gradient(circle at top right, #dbeafe 0, transparent 24%),
+          linear-gradient(180deg, #fffaf3 0%, #f7f9fc 100%);
+        color: #18212f;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      .hero {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .hero p {
+        max-width: 72ch;
+        color: #4a5565;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(24, 33, 47, 0.08);
+        border-radius: 20px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        padding: 20px;
+        backdrop-filter: blur(8px);
+      }
+
+      .card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .row {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      input,
+      textarea,
+      select,
+      button {
+        font: inherit;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d0d7e2;
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #fff;
+        color: #18212f;
+      }
+
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 11px 16px;
+        background: #0f766e;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      button.secondary {
+        background: #dbe4f0;
+        color: #18212f;
+      }
+
+      button.warn {
+        background: #b91c1c;
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #eef3ff;
+        color: #254277;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .muted {
+        color: #5d6878;
+      }
+
+      .mono,
+      pre,
+      code {
+        font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Consolas,
+          monospace;
+      }
+
+      pre,
+      .output {
+        margin: 0;
+        border-radius: 14px;
+        background: #101828;
+        color: #d7e1ef;
+        padding: 14px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .qr-box {
+        display: grid;
+        gap: 12px;
+        justify-items: start;
+      }
+
+      .qr-box .qr-frame {
+        width: 240px;
+        height: 240px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid #d0d7e2;
+        padding: 10px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .qr-box .qr-frame svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .qr-cols {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+
+      .preview {
+        display: grid;
+        gap: 12px;
+      }
+
+      .preview img,
+      .preview iframe {
+        max-width: 100%;
+        border: 1px solid #d0d7e2;
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .status-ok {
+        color: #166534;
+      }
+
+      .status-error {
+        color: #b91c1c;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding-inline: 14px;
+        }
+
+        .card {
+          padding: 16px;
+          border-radius: 16px;
+        }
+
+        .qr-box .qr-frame {
+          width: min(100%, 260px);
+          height: auto;
+          aspect-ratio: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <span class="pill">Autogram v mobile integration demo</span>
+        <h1>Example AVM Integration</h1>
+        <p>
+          This example follows the same lightweight Vite pattern as
+          example-extension-usage, but drives a real AVM integration flow:
+          register or reuse an integration, upload a document, generate a mobile
+          deep-link or QR payload, and wait for the signed file.
+        </p>
+      </section>
+
+      <section class="grid">
+        <article class="card stack">
+          <div>
+            <h2>1. Integration</h2>
+            <p class="muted">
+              The integration key pair and GUID are persisted in IndexedDB so the
+              same demo deployment can be paired with the mobile app once and
+              reused.
+            </p>
+          </div>
+
+          <label>
+            AVM base URL
+            <input
+              $="baseUrl"
+              type="url"
+              value="https://autogram.slovensko.digital/api/v1"
+            />
+          </label>
+
+          <div class="button-row">
+            <button onclick="loadOrRegisterIntegration()">
+              Load or register integration
+            </button>
+            <button class="secondary" onclick="resetIntegrationState()">
+              Reset saved integration
+            </button>
+          </div>
+
+          <div>
+            <strong>Integration state</strong>
+            <pre $="integrationState">Not initialized yet.</pre>
+          </div>
+
+          <div>
+            <strong>Device pairing QR</strong>
+            <p class="muted" style="font-size:14px;margin-bottom:8px">
+              Scan with Autogram v mobile to pair this integration with the app. Regenerated each time you load or register.
+            </p>
+            <div class="qr-box">
+              <figure
+                class="qr-frame"
+                $="pairingQrImage"
+                role="img"
+                aria-label="QR code for device pairing"
+                hidden
+              ></figure>
+            </div>
+          </div>
+        </article>
+
+        <article class="card stack">
+          <div>
+            <h2>2. Document</h2>
+            <p class="muted">
+              Upload a file or use inline text content. Text payloads are sent as
+              plain text, binary files are sent as base64 with the matching MIME
+              type.
+            </p>
+          </div>
+
+          <label>
+            File input
+            <input $="fileInput" type="file" />
+          </label>
+
+          <div class="row">
+            <label>
+              Filename
+              <input $="filename" type="text" value="demo-document.txt" />
+            </label>
+            <label>
+              MIME type
+              <input $="mimeType" type="text" value="text/plain" />
+            </label>
+          </div>
+
+          <label>
+            Text content fallback
+            <textarea $="documentContent">Hello from example-avm-integration.
+
+This document was uploaded through the Autogram SDK AVM integration demo.
+Sign it with Autogram v mobile and the signed output will appear below.</textarea>
+          </label>
+
+          <div class="row">
+            <label>
+              Signature level
+              <select $="signatureLevel">
+                <option value="XAdES_BASELINE_B">XAdES_BASELINE_B</option>
+                <option value="XAdES_BASELINE_T">XAdES_BASELINE_T</option>
+                <option value="PAdES_BASELINE_B">PAdES_BASELINE_B</option>
+                <option value="PAdES_BASELINE_T">PAdES_BASELINE_T</option>
+                <option value="CAdES_BASELINE_B">CAdES_BASELINE_B</option>
+                <option value="CAdES_BASELINE_T">CAdES_BASELINE_T</option>
+              </select>
+            </label>
+            <label>
+              Container
+              <select $="signatureContainer">
+                <option value="ASiC-E">ASiC-E</option>
+                <option value="ASiC-S">ASiC-S</option>
+                <option value="">No container</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button onclick="createSigningSession()">Create signing session</button>
+          </div>
+
+          <div>
+            <strong>Document reference</strong>
+            <pre $="documentState">No document uploaded yet.</pre>
+          </div>
+        </article>
+
+        <article class="card wide stack">
+          <div>
+            <h2>3. Mobile app handoff</h2>
+            <p class="muted">
+              Open the generated URL on a mobile device with Autogram v mobile,
+              or scan the QR code. If the integration has already been paired,
+              the same wait operation also triggers a sign request push.
+            </p>
+          </div>
+
+          <div class="qr-cols">
+            <div class="qr-box">
+              <strong>With integration JWT</strong>
+              <p class="muted" style="font-size:13px;margin:4px 0 8px">
+                AVM will try to register this integration with the mobile app for push notifications.
+              </p>
+              <figure
+                class="qr-frame"
+                $="qrImage"
+                role="img"
+                aria-label="QR code for AVM URL with integration"
+                hidden
+              ></figure>
+              <label>
+                AVM URL
+                <textarea class="mono" $="qrUrl" readonly></textarea>
+              </label>
+              <div class="button-row">
+                <button class="secondary" onclick="copyQrUrl()">Copy URL</button>
+                <button class="secondary" onclick="openQrUrl()">Open in browser</button>
+              </div>
+            </div>
+
+            <div class="qr-box">
+              <strong>Without integration JWT</strong>
+              <p class="muted" style="font-size:13px;margin:4px 0 8px">
+                Plain signing URL — no pairing, no push notifications.
+              </p>
+              <figure
+                class="qr-frame"
+                $="qrImageNoJwt"
+                role="img"
+                aria-label="QR code for AVM URL without integration"
+                hidden
+              ></figure>
+              <label>
+                AVM URL
+                <textarea class="mono" $="qrUrlNoJwt" readonly></textarea>
+              </label>
+              <div class="button-row">
+                <button class="secondary" onclick="copyQrUrlNoJwt()">Copy URL</button>
+                <button class="secondary" onclick="openQrUrlNoJwt()">Open in browser</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card stack">
+          <div>
+            <h2>4. Wait for signature</h2>
+            <p class="muted">
+              The SDK sends a sign-request to paired devices and polls the
+              document until it changes to a signed state.
+            </p>
+          </div>
+
+          <div class="button-row">
+            <button onclick="waitForSignature()">Wait for signature</button>
+            <button class="warn" onclick="abortWaiting()">Abort</button>
+          </div>
+
+          <div>
+            <strong>Current status</strong>
+            <pre $="statusOutput">Idle.</pre>
+          </div>
+
+          <div>
+            <strong>Event log</strong>
+            <pre $="eventLog">Ready.</pre>
+          </div>
+        </article>
+
+        <article class="card stack">
+          <div>
+            <h2>5. Signed result</h2>
+            <p class="muted">
+              Signed output can be downloaded directly from the page. Text and
+              image payloads are previewed inline.
+            </p>
+          </div>
+
+          <div>
+            <strong>Signed metadata</strong>
+            <pre $="signedMetadata">No signed document yet.</pre>
+          </div>
+
+          <div class="preview" $="signedPreview"></div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>
