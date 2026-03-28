@@ -2,9 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Autogram Extension Options</title>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400&display=swap");
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       body {
         font-family: "Source Sans Pro", Arial, sans-serif;
         font-weight: 400;
@@ -14,6 +21,7 @@
         -webkit-font-smoothing: antialiased;
         font-size: 16px;
         margin-bottom: 50px;
+        overflow-x: hidden;
       }
 
       button {
@@ -62,8 +70,8 @@
 
       .checkbox {
         position: relative;
-        display: inline-flex;
-        align-items: center;
+        display: flex;
+        align-items: flex-start;
         cursor: pointer;
         margin-bottom: 10px;
       }
@@ -82,6 +90,7 @@
       .checkbox__checkmark {
         content: "";
         box-sizing: border-box;
+        flex-shrink: 0;
         width: 40px;
         height: 40px;
         border: 2px solid black;
@@ -103,13 +112,27 @@
         opacity: 0;
         background: transparent;
       }
-      .checkbox__checkmark .checkbox__label {
+      .checkbox__label {
         font-size: 19px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      fieldset {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      legend {
+        font-weight: 600;
+        padding: 0;
+        margin-bottom: 10px;
       }
 
       .wrapper {
         margin: 0 auto;
-        padding: 100px 0 0 20px;
+        padding: 100px 20px 0 20px;
         max-width: 600px;
       }
 
@@ -149,28 +172,33 @@
     <div class="wrapper">
       <header class="header"><div class="header__tricolor"></div></header>
 
-      <div style="font-weight: 600; margin-bottom: -21px;">Nastavenia rozšírenia</div>
       <h1>Autogram na štátnych weboch</h1>
-      <label class="checkbox">
-        <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
-        <span class="checkbox__checkmark"></span>
-        <span class="checkbox__label">Zapnúť rozšírenie.</span>
-      </label>
+      <form>
+        <fieldset>
+          <legend>Nastavenia rozšírenia</legend>
 
-      <label class="checkbox">
-        <input
-          type="checkbox"
-          id="restorePointEnabled"
-          class="checkbox__input"
-        />
-        <span class="checkbox__checkmark"></span>
-        <span class="checkbox__label"
-          >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
-        >
-      </label>
+          <label class="checkbox">
+            <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label">Zapnúť rozšírenie.</span>
+          </label>
 
-      <div id="status"></div>
-      <button id="save">Uložiť</button>
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              id="restorePointEnabled"
+              class="checkbox__input"
+            />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label"
+              >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
+            >
+          </label>
+        </fieldset>
+
+        <div id="status" role="status"></div>
+        <button type="button" id="save">Uložiť</button>
+      </form>
 
       <!-- <ul>
         <li>
@@ -210,7 +238,7 @@
 
     <div class="section">
       <h2>Viac o programe "Autogram"</h2>
-      - desktop aplikácia, nájdete na stránke
+      Desktop aplikácia, nájdete na stránke
       <a
         href="https://sluzby.slovensko.digital/autogram/?utm_source=extension&utm_medium=options&utm_campaign=extension"
         target="_blank"
@@ -223,7 +251,7 @@
 
     <div class="section">
       <h2>Viac o programe "Autogram v Mobile"</h2>
-      - mobilná aplikácia pre iOS a Android, nájdete na stránke
+      Mobilná aplikácia pre iOS a Android, nájdete na stránke
       <a
         href="https://sluzby.slovensko.digital/autogram-v-mobile/?utm_source=extension&utm_medium=options&utm_campaign=extension"
         target="_blank"
