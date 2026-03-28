@@ -65,6 +65,20 @@ export class AutogramBaseScreen extends LitElement {
       cursor: pointer;
     }
 
+    .sr-only {
+      border: 0 !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      -webkit-clip-path: inset(50%) !important;
+      clip-path: inset(50%) !important;
+      height: 1px !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      position: absolute !important;
+      width: 1px !important;
+      white-space: nowrap !important;
+    }
+
     .choice-screen {
       display: flex;
       flex-direction: row;
@@ -272,6 +286,7 @@ export class AutogramBaseScreen extends LitElement {
         <h1>?</h1>
         <button class="close" @click="${this.close}">
           ${unsafeSVG(closeSvg)}
+          <span class="sr-only">Zavrieť</span>
         </button>
       </div>
       <div class="main">
