@@ -94,6 +94,9 @@ const config: webpack.Configuration = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      "autogram-sdk": path.resolve(__dirname, "../../autogram-sdk/src"),
+    },
     fallback: {
       crypto: require.resolve("crypto-browserify"),
       stream: require.resolve("stream-browserify"),

@@ -9,8 +9,10 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "watch:mv2": "run-p \"ext:start:mv2\" \"sdk:build:watch\"",
-    "watch:mv3": "run-p \"ext:start:mv3\" \"sdk:build:watch\"",
+    "watch:mv2": "run-s sdk:build watch:mv2:_parallel",
+    "watch:mv2:_parallel": "run-p \"ext:start:mv2\" \"sdk:build:watch\"",
+    "watch:mv3": "run-s sdk:build watch:mv3:_parallel",
+    "watch:mv3:_parallel": "run-p \"ext:start:mv3\" \"sdk:build:watch\"",
     "sdk:build:watch": "npm run build:watch -w autogram-sdk",
     "sdk:build": "npm run build -w autogram-sdk",
     "ext:build": "npm run build:prod -w autogram-extension",

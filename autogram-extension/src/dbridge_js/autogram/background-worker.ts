@@ -1,8 +1,9 @@
 import { z } from "zod";
-import {
-  AutogramVMobileIntegration,
+import { desktopApiClient, AutogramVMobileIntegration, } from "autogram-sdk";
+
+import type {
+  
   AVMDocumentToSign,
-  desktopApiClient,
   DesktopSignResponseBody,
   DesktopServerInfo,
   AVMIntegrationDocument,
@@ -11,8 +12,8 @@ import { ChannelMessage, ZChannelMessage } from "./channel/common";
 import { get, set } from "idb-keyval";
 import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
-import { SignedDocument } from "autogram-sdk/avm-api";
-import { SignedObject } from "autogram-sdk/with-ui";
+import type { SignedDocument } from "autogram-sdk/avm-api";
+import type { SignedObject } from "autogram-sdk/with-ui";
 
 const log = createLogger("ag-ext.bg.worker");
 

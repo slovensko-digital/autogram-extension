@@ -15,7 +15,16 @@ const commonOptions = {
   sourcemap: true,
   outDir: "dist",
   deps: {
-    alwaysBundle: ["@bwip-js/generic"],
+    alwaysBundle: [
+      "@bwip-js/generic",
+      "cross-fetch",
+      "jose",
+      "lit",
+      "lit-html",
+      "lit/decorators.js",
+      "lit/html.js",
+      "lit/directives/unsafe-svg.js",
+    ],
   },
   loader: {
     ".css": "text" as const,
