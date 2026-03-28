@@ -29,7 +29,7 @@ function save_options() {
       // Update status to let user know options were saved.
       const status = document.getElementById("status");
       if (status) {
-        status.textContent = "Options saved.";
+        status.textContent = browser.i18n.getMessage("optionsSaved");
         setTimeout(function () {
           status.textContent = "";
         }, 750);
