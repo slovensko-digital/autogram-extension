@@ -80,6 +80,8 @@ export class AutogramRoot extends LitElement {
 
   hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  private inertObserver: MutationObserver | null = null;
+
   choiceResult: {
     promise: Promise<SigningMethod>;
     resolve: (value: SigningMethod) => void;
@@ -242,11 +244,23 @@ export class AutogramRoot extends LitElement {
   }
 
   show() {
+    this.removeAttribute("inert");
     this.style.display = "flex";
+    this.inertObserver = new MutationObserver(() => {
+      this.removeAttribute("inert");
+    });
+    this.inertObserver.observe(this, {
+      attributes: true,
+      attributeFilter: ["inert"],
+    });
   }
 
   hide() {
     this.style.display = "none";
+    if (this.inertObserver) {
+      this.inertObserver.disconnect();
+      this.inertObserver = null;
+    }
   }
 
   reset() {
