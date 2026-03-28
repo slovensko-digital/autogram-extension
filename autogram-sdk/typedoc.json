@@ -1,0 +1,82 @@
+{
+  "outputs": [
+    {
+      "name": "html",
+      "path": "docs/html",
+      "format": "html"
+    },
+    // {
+    //   "name": "uml",
+    //   "path": "docs/uml",
+    //   "format": "png"
+    // }
+  ],
+  "entryPoints": [
+    "src/index.ts",
+    "src/demo.ts",
+    "src/with-ui.ts",
+    "src/autogram-api/index.ts",
+    "src/avm-api/index.ts"
+  ],
+  "exclude": ["**/node_modules/**/*", "**/*.test.ts", "**/*.codemod.ts"],
+  "plugin": ["typedoc-umlclass"],
+  "umlClassDiagram": {
+    // <=========== Use this object to configure this plugin
+    "type": "detailed",
+    "location": "local",
+    "format": "png",
+    "legendType": "only-included",
+    "hideShadow": false,
+    "generatorProcessCount": 1,
+    "createPlantUmlFiles": true,
+    "verboseOutput": true,
+    "style": {
+      "box": {
+        "backgroundColor": "fcf2cc",
+        "border": {
+          "width": 2,
+          "color": "5a0000",
+          "radius": 0
+        }
+      },
+      "class": {
+        "name": {
+          "font": {
+            "bold": true
+          }
+        }
+      },
+      "property": {
+        "name": {
+          "font": {
+            "bold": true
+          }
+        },
+        "type": {
+          "font": {
+            "color": "26009966"
+          }
+        }
+      },
+      "method": {
+        "parameter": {
+          "name": {
+            "font": {
+              "color": "780000"
+            }
+          },
+          "type": {
+            "font": {
+              "color": "26009966"
+            }
+          }
+        },
+        "returnType": {
+          "font": {
+            "color": "26009966"
+          }
+        }
+      }
+    }
+  }
+}

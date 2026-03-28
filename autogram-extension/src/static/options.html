@@ -1,0 +1,269 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autogram Extension Options</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400&display=swap");
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Source Sans Pro", Arial, sans-serif;
+        font-weight: 400;
+        margin: 0;
+        padding: 0;
+        line-height: 1.31579;
+        -webkit-font-smoothing: antialiased;
+        font-size: 16px;
+        margin-bottom: 50px;
+        overflow-x: hidden;
+      }
+
+      button {
+        font-family: "Source Sans Pro", Arial, sans-serif;
+        font-weight: 400;
+        font-size: 19px;
+        line-height: 1;
+        display: inline-block;
+        padding: 8px 10px 7px;
+        border: 2px solid transparent;
+        border-radius: 0;
+        color: #ffffff;
+        background-color: #00703c;
+        box-shadow: 0 2px 0 #002d18;
+        text-align: center;
+        vertical-align: top;
+        cursor: pointer;
+        appearance: none;
+      }
+      button:hover {
+        background-color: #005a30;
+      }
+
+      ul {
+        padding-left: 20px;
+        list-style-type: disc;
+        margin-bottom: 20px;
+        font-size: 19px;
+        color: #0b0c0c;
+      }
+      ul li {
+        margin-bottom: 5px;
+      }
+
+      a {
+        font-size: 16px;
+        color: #0065b3;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.1em;
+      }
+      a:hover {
+        color: #003078;
+        text-decoration-thickness: 3px;
+      }
+
+      .checkbox {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+
+      .checkbox__input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+      }
+      .checkbox__input:checked + .checkbox__checkmark:before {
+        opacity: 1;
+      }
+
+      .checkbox__checkmark {
+        content: "";
+        box-sizing: border-box;
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        border: 2px solid black;
+        margin-right: 15px;
+      }
+      .checkbox__checkmark::before {
+        content: "";
+        position: absolute;
+        top: 11px;
+        left: 9px;
+        width: 18px;
+        height: 7px;
+        -webkit-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+        transform: rotate(-45deg);
+        border: solid;
+        border-width: 0 0 5px 5px;
+        border-top-color: transparent;
+        opacity: 0;
+        background: transparent;
+      }
+      .checkbox__label {
+        font-size: 19px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      fieldset {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      legend {
+        font-weight: 600;
+        padding: 0;
+        margin-bottom: 10px;
+      }
+
+      .wrapper {
+        margin: 0 auto;
+        padding: 100px 20px 0 20px;
+        max-width: 600px;
+      }
+
+      .section {
+        margin: 40px auto;
+        padding: 0 20px;
+        max-width: 600px;
+      }
+
+      .header {
+        background-color: #003078;
+        height: 60px;
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+      }
+
+      .header__tricolor {
+        height: 3px;
+        background-image: linear-gradient(
+          to right,
+          #ffffff 0%,
+          #ffffff 33.3%,
+          #003183 33.3%,
+          #003183 66.6%,
+          #d0190f 66.6%,
+          #d0190f 100%
+        );
+        background-size: 150px 100%;
+        background-repeat: repeat;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <header class="header"><div class="header__tricolor"></div></header>
+
+      <h1>Autogram na štátnych weboch</h1>
+      <form>
+        <fieldset>
+          <legend>Nastavenia rozšírenia</legend>
+
+          <label class="checkbox">
+            <input type="checkbox" id="extensionEnabled" class="checkbox__input" />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label">Zapnúť rozšírenie.</span>
+          </label>
+
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              id="restorePointEnabled"
+              class="checkbox__input"
+            />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label"
+              >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
+            >
+          </label>
+        </fieldset>
+
+        <div id="status" role="status"></div>
+        <button type="button" id="save">Uložiť</button>
+      </form>
+
+      <!-- <ul>
+        <li>
+          <a href="https://autogram.slovensko.digital/ext/check" target="_blank"
+            >Vyskúšať či mi všetko funguje správne</a
+          >
+        </li>
+        <li>
+          <a href="https://autogram.slovensko.digital/ext/help" target="_blank"
+            >Help</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://autogram.slovensko.digital/ext/feedback"
+            target="_blank"
+            >Feedback</a
+          >
+        </li>
+      </ul> -->
+    </div>
+    <div class="section">
+      <h2>Viac o rozšírení "Autogram na štátnych weboch"</h2>
+      Zdrojový kód nájdete na
+      <a
+        href="https://github.com/slovensko-digital/autogram-extension"
+        target="_blank"
+        >GitHub-e</a
+      >, kde môžete aj
+      <a
+        href="https://github.com/slovensko-digital/autogram-extension/issues"
+        target="_blank"
+        >nahlásiť problémy</a
+      >
+      .
+    </div>
+
+    <div class="section">
+      <h2>Viac o programe "Autogram"</h2>
+      - desktop aplikácia, nájdete na stránke
+      <a
+        href="https://sluzby.slovensko.digital/autogram/?utm_source=extension&utm_medium=options&utm_campaign=extension"
+        target="_blank"
+        >Autogram</a
+      >, zdrojový kód na
+      <a href="https://github.com/slovensko-digital/autogram" target="_blank"
+        >GitHub-e</a
+      >.
+    </div>
+
+    <div class="section">
+      <h2>Viac o programe "Autogram v Mobile"</h2>
+      - mobilná aplikácia pre iOS a Android, nájdete na stránke
+      <a
+        href="https://sluzby.slovensko.digital/autogram-v-mobile/?utm_source=extension&utm_medium=options&utm_campaign=extension"
+        target="_blank"
+        >Autogram v Mobile</a
+      >, zdrojový kód na
+      <a
+        href="https://github.com/slovensko-digital/avm-app-flutter"
+        target="_blank"
+        >GitHub-e</a
+      >.
+    </div>
+
+    <script src="/autogram-options.bundle.js"></script>
+  </body>
+</html>
