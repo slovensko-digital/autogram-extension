@@ -69,10 +69,10 @@ export class AutogramRoot extends LitElement {
   `;
 
   @property()
-  screen = Screens.choice;
+  declare screen: Screens;
 
   @property()
-  mobileSigningUrl: string | null = null;
+  declare mobileSigningUrl: string | null;
 
   abortController: AbortController | null = null;
 
@@ -95,6 +95,12 @@ export class AutogramRoot extends LitElement {
     resolve: (value: SigningMethod) => void;
     reject: (reason?: unknown) => void;
   } | null = null;
+
+  constructor() {
+    super();
+    this.screen = Screens.choice;
+    this.mobileSigningUrl = null;
+  }
 
   _closeChoiceScreen(event: EventClose) {
     log.debug("_closeScreen");
