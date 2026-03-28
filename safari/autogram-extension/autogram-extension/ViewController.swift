@@ -75,10 +75,7 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
             </head>
             <body>
                 <img src="\(iconPath)" width="80" height="80" alt="autogram-extension Icon">
-                <h2 class="state-ios">Ako zapnúť rozšírenie Autogram na štýtnych weboch</h2>
-                <p class="state-unknown">You can turn on autogram-extension's extension in Safari Extensions preferences.</p>
-                <p class="state-on">autogram-extension's extension is currently on. You can turn it off in Safari Extensions preferences.</p>
-                <p class="state-off">autogram-extension's extension is currently off. You can turn it on in Safari Extensions preferences.</p>
+                <h2 class="state-ios">Ako zapnúť rozšírenie Autogram na štátnych weboch</h2>
                 <div class="state-ios tutorial-container">
                     <div class="tutorial-step">
                         <div class="step-number">1</div>
@@ -92,31 +89,30 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
                     </div>
                     <div class="tutorial-step">
                         <div class="step-number">3</div>
-                        <p class="step-text">Nájdite rozšírenie <strong>Autogram na štátnych weboch</strong> v zozname</p>
+                        <p class="step-text">Nájdite rozšírenie <strong>Autogram na štátnych weboch</strong> v zozname a zapnite prepínač vedľa rozšírenia</p>
                         \(tutorial3.isEmpty ? "" : "<img src=\"\(tutorial3)\" class=\"tutorial-image\" alt=\"Krok 3\">")
                     </div>
                     <div class="tutorial-step">
                         <div class="step-number">4</div>
-                        <p class="step-text">Zapnite prepínač vedľa rozšírenia</p>
+                        <p class="step-text">Opäť kliknite na ikonu v adresnom riadku</p>
                         \(tutorial4.isEmpty ? "" : "<img src=\"\(tutorial4)\" class=\"tutorial-image\" alt=\"Krok 4\">")
                     </div>
                     <div class="tutorial-step">
                         <div class="step-number">5</div>
-                        <p class="step-text">Potvrďte, že chcete povoliť rozšírenie</p>
+                        <p class="step-text">Kliknite na <strong>Autogram na štátnych weboch</strong></p>
                         \(tutorial5.isEmpty ? "" : "<img src=\"\(tutorial5)\" class=\"tutorial-image\" alt=\"Krok 5\">")
                     </div>
                     <div class="tutorial-step">
                         <div class="step-number">6</div>
-                        <p class="step-text">Vyberte <strong>Vždy povoliť na tejto webstránke</strong> alebo <strong>Vždy povoliť na všetkých webových stránkach</strong></p>
+                        <p class="step-text">Vyberte <strong>Vždy povoliť na tejto webstránke</strong></p>
                         \(tutorial6.isEmpty ? "" : "<img src=\"\(tutorial6)\" class=\"tutorial-image\" alt=\"Krok 6\">")
                     </div>
                     <div class="tutorial-step">
                         <div class="step-number">7</div>
-                        <p class="step-text">Rozšírenie je teraz povolené a pripravené na použitie</p>
+                        <p class="step-text">V ďalšom kroku vyberte <strong>Vždy povoliť na všetkých webových stránkach</strong></p>
                         \(tutorial7.isEmpty ? "" : "<img src=\"\(tutorial7)\" class=\"tutorial-image\" alt=\"Krok 7\">")
                     </div>
                 </div>
-                <button class="open-preferences">Quit and Open Safari Extensions Preferences…</button>
                 <button class="open-safari">Otvoriť slovensko.sk v Safari</button>
             </body>
             </html>
@@ -145,11 +141,7 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
             }
 
             DispatchQueue.main.async {
-                if #available(macOS 13, *) {
-                    webView.evaluateJavaScript("show(\(state.isEnabled), true)")
-                } else {
-                    webView.evaluateJavaScript("show(\(state.isEnabled), false)")
-                }
+                webView.evaluateJavaScript("show(\(state.isEnabled))")
             }
         }
         #else
