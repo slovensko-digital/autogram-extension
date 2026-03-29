@@ -109,6 +109,49 @@
         letter-spacing: 0.04em;
       }
 
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .area-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+      }
+
+      .area-chip::before {
+        font-size: 0.95rem;
+      }
+
+      .area-chip.integration {
+        background: rgba(4, 108, 94, 0.1);
+        color: #0d5f56;
+        border-color: rgba(4, 108, 94, 0.18);
+      }
+
+      .area-chip.integration::before {
+        content: "◧";
+      }
+
+      .area-chip.mobile {
+        background: rgba(23, 87, 167, 0.1);
+        color: #1d4f92;
+        border-color: rgba(23, 87, 167, 0.2);
+      }
+
+      .area-chip.mobile::before {
+        content: "◉";
+      }
+
       .grid {
         display: grid;
         gap: 18px;
@@ -146,6 +189,49 @@
         box-shadow: 0 10px 34px rgba(15, 33, 53, 0.1);
         backdrop-filter: blur(7px);
         transition: transform 0.22s ease, box-shadow 0.22s ease;
+      }
+
+      .card[data-area] {
+        border-width: 2px;
+      }
+
+      .card[data-area]::after {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .card[data-area="integration"] {
+        border-color: rgba(4, 108, 94, 0.25);
+        box-shadow: 0 10px 34px rgba(15, 33, 53, 0.1), inset 0 0 0 1px rgba(4, 108, 94, 0.03);
+      }
+
+      .card[data-area="integration"]::after {
+        content: "◧ Integration";
+        color: #0d5f56;
+        background: rgba(4, 108, 94, 0.1);
+        border: 1px solid rgba(4, 108, 94, 0.18);
+      }
+
+      .card[data-area="mobile"] {
+        border-color: rgba(23, 87, 167, 0.24);
+        box-shadow: 0 10px 34px rgba(15, 33, 53, 0.1), inset 0 0 0 1px rgba(23, 87, 167, 0.03);
+      }
+
+      .card[data-area="mobile"]::after {
+        content: "◉ Mobile app";
+        color: #1d4f92;
+        background: rgba(23, 87, 167, 0.1);
+        border: 1px solid rgba(23, 87, 167, 0.2);
       }
 
       .card:hover {
@@ -378,6 +464,77 @@
         justify-self: start;
       }
 
+      .notice {
+        margin: 0;
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: rgba(255, 244, 212, 0.82);
+        border: 1px solid rgba(170, 127, 20, 0.2);
+        color: #6b4f0a;
+        line-height: 1.5;
+      }
+
+      .inline-check {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #26425e;
+      }
+
+      .inline-check input {
+        width: auto;
+      }
+
+      .mini-note {
+        margin: 0;
+        font-size: 0.83rem;
+        color: var(--ink-soft);
+        line-height: 1.5;
+      }
+
+      .notification-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .notification-item {
+        display: grid;
+        gap: 10px;
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(35, 73, 120, 0.14);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 247, 255, 0.88));
+      }
+
+      .notification-item header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: baseline;
+      }
+
+      .notification-item h3 {
+        font-size: 0.98rem;
+        letter-spacing: -0.01em;
+      }
+
+      .notification-item time {
+        font-size: 0.78rem;
+        color: var(--ink-soft);
+      }
+
+      .notification-item p {
+        color: var(--ink-soft);
+        line-height: 1.5;
+      }
+
+      .notification-item pre {
+        max-height: 140px;
+      }
+
       @keyframes card-rise {
         from {
           opacity: 0;
@@ -451,10 +608,14 @@
           register or reuse an integration, upload a document, generate a mobile
           deep-link or QR payload, and wait for the signed file.
         </p>
+        <div class="hero-meta">
+          <span class="area-chip integration">Integration side</span>
+          <span class="area-chip mobile">Mobile app side</span>
+        </div>
       </section>
 
       <section class="grid">
-        <article class="card stack" data-step="1">
+        <article class="card stack" data-step="1" data-area="integration">
           <div>
             <h2>Integration</h2>
             <p class="muted">
@@ -500,11 +661,15 @@
                 aria-label="QR code for device pairing"
                 hidden
               ></figure>
+              <label>
+                Pairing URL
+                <textarea class="mono" $="pairingQrUrl" readonly></textarea>
+              </label>
             </div>
           </div>
         </article>
 
-        <article class="card stack" data-step="2">
+        <article class="card stack" data-step="2" data-area="integration">
           <div>
             <h2>Document</h2>
             <p class="muted">
@@ -570,7 +735,7 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           </div>
         </article>
 
-        <article class="card wide stack" data-step="3">
+        <article class="card wide stack" data-step="3" data-area="integration">
           <div>
             <h2>Mobile app handoff</h2>
             <p class="muted">
@@ -627,7 +792,210 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           </div>
         </article>
 
-        <article class="card stack" data-step="4">
+        <article class="card stack" data-step="4" data-area="mobile">
+          <div>
+            <h2>Device simulator</h2>
+            <p class="muted">
+              This browser page can also act as a lightweight AVM device
+              simulator: register a device, pair it with an integration token,
+              then accept incoming AVM deep-links.
+            </p>
+          </div>
+
+          <div class="row">
+            <label>
+              Device name
+              <input $="deviceDisplayName" type="text" value="Example browser device" />
+            </label>
+            <label>
+              Simulated platform
+              <select $="devicePlatform">
+                <option value="android">android</option>
+                <option value="ios">ios</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button onclick="loadOrRegisterDevice()">Load or register device</button>
+            <button class="secondary" onclick="resetDeviceState()">Reset saved device</button>
+          </div>
+
+          <div>
+            <strong>Device state</strong>
+            <pre $="deviceState">Not initialized yet.</pre>
+          </div>
+
+          <div>
+            <strong>Paired integrations</strong>
+            <pre $="pairedIntegrations">No paired integrations loaded yet.</pre>
+          </div>
+
+          <label>
+            Pairing token or AVM URL
+            <textarea
+              class="mono"
+              $="pairingTokenInput"
+              placeholder="Paste the integration JWT or a URL containing ?integration=..."
+            ></textarea>
+          </label>
+
+          <div class="button-row">
+            <button onclick="pairDeviceFromInput()">Pair device</button>
+          </div>
+
+          <div>
+            <strong>Device status</strong>
+            <pre $="deviceStatusOutput">Idle.</pre>
+          </div>
+
+          <div>
+            <strong>Device log</strong>
+            <pre $="deviceEventLog">Ready.</pre>
+          </div>
+
+          <div>
+            <strong>Browser push inbox</strong>
+            <p class="mini-note">
+              Optional Push API receiver for standard browser push payloads.
+              This is separate from AVM native mobile push, but lets the demo
+              collect push-delivered AVM URLs and activate them into the
+              request loader below.
+            </p>
+          </div>
+
+          <div class="button-row">
+            <button class="secondary" onclick="initializePushInbox()">
+              Enable browser push inbox
+            </button>
+            <button class="secondary" onclick="refreshPushInbox()">
+              Refresh inbox
+            </button>
+            <button class="secondary" onclick="clearPushInbox()">
+              Clear inbox
+            </button>
+          </div>
+
+          <div>
+            <strong>Push status</strong>
+            <pre $="pushStatusOutput">Checking browser push support...</pre>
+          </div>
+
+          <div>
+            <strong>Received notifications</strong>
+            <div class="notification-list" $="pushNotificationList">
+              <p class="muted">No push notifications received yet.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card wide stack" data-step="5" data-area="mobile">
+          <div>
+            <h2>Receive request</h2>
+            <p class="muted">
+              Native APNS/GCM push is not available in a plain browser page, so
+              this demo receives the same AVM request payload through a pasted
+              deep-link or the current page URL.
+            </p>
+          </div>
+
+          <p class="notice">
+            Paste the AVM URL containing <span class="mono">guid</span>,
+            <span class="mono">key</span>, and optionally
+            <span class="mono">integration</span>. If the page was opened with
+            those query params already present, use “Load current page URL”.
+          </p>
+
+          <label>
+            Incoming AVM URL or query string
+            <textarea
+              class="mono"
+              $="incomingRequestInput"
+              placeholder="https://autogram.slovensko.digital/api/v1/qr-code?guid=...&key=...&integration=..."
+            ></textarea>
+          </label>
+
+          <div class="button-row">
+            <button onclick="loadIncomingRequest()">Load request</button>
+            <button class="secondary" onclick="loadIncomingRequestFromLocation()">
+              Load current page URL
+            </button>
+          </div>
+
+          <div class="row">
+            <div>
+              <strong>Incoming request</strong>
+              <pre $="incomingRequestState">No request loaded yet.</pre>
+            </div>
+            <div>
+              <strong>Signing parameters</strong>
+              <pre $="incomingRequestParameters">No request parameters loaded yet.</pre>
+            </div>
+          </div>
+
+          <div>
+            <strong>Document visualization</strong>
+            <div class="preview" $="incomingRequestPreview"></div>
+          </div>
+        </article>
+
+        <article class="card wide stack" data-step="6" data-area="mobile">
+          <div>
+            <h2>Complete request</h2>
+            <p class="muted">
+              AVM expects a raw <span class="mono">signedData</span> value over
+              the server-provided <span class="mono">dataToSign</span>. This
+              demo prepares the request and posts the final AVM
+              <span class="mono">/documents/{guid}/sign</span> call when you
+              provide the certificate and signed payload.
+            </p>
+          </div>
+
+          <label>
+            Signing certificate (Base64 DER)
+            <textarea
+              class="mono"
+              $="signingCertificateInput"
+              placeholder="Paste the certificate that will be used for the AVM dataToSign request"
+            ></textarea>
+          </label>
+
+          <label class="inline-check">
+            <input $="addTimestamp" type="checkbox" />
+            Ask AVM to add timestamp if the document was created without one
+          </label>
+
+          <div class="button-row">
+            <button onclick="prepareDataToSign()">Prepare dataToSign</button>
+          </div>
+
+          <div>
+            <strong>dataToSign structure</strong>
+            <pre $="dataToSignState">No dataToSign prepared yet.</pre>
+          </div>
+
+          <label>
+            Signed data (Base64)
+            <textarea
+              class="mono"
+              $="signedDataInput"
+              placeholder="Paste the raw signature value returned by your signing client"
+            ></textarea>
+          </label>
+
+          <div class="button-row">
+            <button onclick="submitSignedResponse()">Submit signed response</button>
+          </div>
+
+          <div>
+            <strong>Completed signed document</strong>
+            <pre $="deviceSignedMetadata">No completed AVM document yet.</pre>
+          </div>
+
+          <div class="preview" $="deviceSignedPreview"></div>
+        </article>
+
+        <article class="card stack" data-step="7" data-area="integration">
           <div>
             <h2>Wait for signature</h2>
             <p class="muted">
@@ -652,7 +1020,7 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           </div>
         </article>
 
-        <article class="card stack" data-step="5">
+        <article class="card stack" data-step="8" data-area="integration">
           <div>
             <h2>Signed result</h2>
             <p class="muted">

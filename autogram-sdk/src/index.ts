@@ -20,8 +20,10 @@ export type {
 /* Autogram V Mobile */
 export {
   AutogramVMobileIntegration,
+  AutogramVMobileClientApiClient,
   randomUUID,
   GetDocumentsResponse as AVMGetDocumentsResponse,
+  createDeviceJwt,
 } from "./avm-api/index";
 
 export type {
@@ -29,6 +31,11 @@ export type {
   SignedDocument as AVMSignedDocument,
   DocumentToSign as AVMDocumentToSign,
   AvmIntegrationDocument as AVMIntegrationDocument,
+  DeviceRegistrationResponse as AVMDeviceRegistrationResponse,
+  DeviceIntegrationsResponse as AVMDeviceIntegrationsResponse,
+  DocumentVisualizationResponse as AVMDocumentVisualizationResponse,
+  DocumentDataToSignResponse as AVMDocumentDataToSignResponse,
+  DocumentSignResponse as AVMDocumentSignResponse,
 } from "./avm-api/index";
 export { AutogramVMobileSimulation } from "./avm-api/index";
 

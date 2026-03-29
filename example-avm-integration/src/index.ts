@@ -1,7 +1,12 @@
 import { del, get, set } from "idb-keyval";
 import {
+  AutogramVMobileClientApiClient,
   AutogramVMobileIntegration,
+  createDeviceJwt,
+  type AVMDeviceIntegrationsResponse,
   type AVMDocumentToSign,
+  type AVMDocumentDataToSignResponse,
+  type AVMDocumentVisualizationResponse,
   type AVMIntegrationDocument,
   type AVMSignedDocument,
 } from "autogram-sdk";
@@ -15,34 +20,82 @@ import {
   showSignedPreview,
 } from "./ui";
 
-type IntegrationInternals = {
-  apiClient: {
-    baseUrl: string;
-    qrCodeRegisterIntegrationUrl(integrationJwt: string): string;
-  };
-  integrationGuid: string | null;
-  getIntegrationBearerToken(withDevice?: boolean): Promise<string>;
-};
-
 type SigningParameters = NonNullable<AVMDocumentToSign["parameters"]>;
 type SignatureLevel = NonNullable<SigningParameters["level"]>;
 type SignatureContainer = NonNullable<SigningParameters["container"]>;
+type DevicePlatform = "android" | "ios";
+type DeviceRequest = {
+  guid: string;
+  key: string;
+  integrationToken: string | null;
+  source: string;
+};
+type PushInboxItem = {
+  id: string;
+  title: string;
+  body: string;
+  source: string;
+  receivedAt: string;
+  rawPayload?: unknown;
+};
+type PushWorkerMessage =
+  | {
+      type: "avm-push-sync";
+      items: PushInboxItem[];
+    }
+  | {
+      type: "avm-push-received";
+      item: PushInboxItem;
+    }
+  | {
+      type: "avm-push-activate";
+      item: PushInboxItem;
+    };
 
 const integration = new AutogramVMobileIntegration({
   get,
   set,
 });
-const integrationInternals = integration as unknown as IntegrationInternals;
+const mobileApiClient = new AutogramVMobileClientApiClient();
+
+const deviceKeys = {
+  guid: "avmDeviceGuid",
+  keyPair: "avmDeviceKeyPair",
+  pushKey: "avmDevicePushKey",
+  registrationId: "avmDeviceRegistrationId",
+};
 
 let documentRef: AVMIntegrationDocument | null = null;
 let waitAbortController: AbortController | null = null;
+let deviceKeyPair: CryptoKeyPair | null = null;
+let deviceGuid: string | null = null;
+let devicePushKey: string | null = null;
+let deviceRegistrationId: string | null = null;
+let currentDeviceRequest: DeviceRequest | null = null;
+let currentDeviceDataToSign: AVMDocumentDataToSignResponse | null = null;
+let pushInbox: PushInboxItem[] = [];
+let pushWorkerRegistration: ServiceWorkerRegistration | null = null;
+let pushWorkerBound = false;
 
 function currentBaseUrl() {
   return ($("baseUrl").el as HTMLInputElement).value.trim();
 }
 
+function currentDeviceDisplayName() {
+  return (
+    ($("deviceDisplayName").el as HTMLInputElement).value.trim() ||
+    "Example browser device"
+  );
+}
+
+function currentDevicePlatform() {
+  return ($("devicePlatform").el as HTMLSelectElement).value as DevicePlatform;
+}
+
 function applyBaseUrl() {
-  integrationInternals.apiClient.baseUrl = currentBaseUrl();
+  const baseUrl = currentBaseUrl();
+  integration.setBaseUrl(baseUrl);
+  mobileApiClient.baseUrl = baseUrl;
 }
 
 function logEvent(message: string) {
@@ -53,19 +106,34 @@ function setStatus(message: string) {
   setText("statusOutput", message);
 }
 
+function logDevice(message: string) {
+  appendLog(
+    "deviceEventLog",
+    `[${new Date().toLocaleTimeString()}] ${message}`
+  );
+}
+
+function setDeviceStatus(message: string) {
+  setText("deviceStatusOutput", message);
+}
+
+function setPushStatus(message: string) {
+  setText("pushStatusOutput", message);
+}
+
 async function loadOrRegisterIntegration() {
   applyBaseUrl();
   setStatus("Loading integration state...");
-  logEvent(`Using AVM server ${integrationInternals.apiClient.baseUrl}`);
+  logEvent(`Using AVM server ${integration.getBaseUrl()}`);
   await integration.loadOrRegister();
   const state = {
-    baseUrl: integrationInternals.apiClient.baseUrl,
-    integrationGuid: integrationInternals.integrationGuid,
+    baseUrl: integration.getBaseUrl(),
+    integrationGuid: integration.getIntegrationGuid(),
     persistedKeys: true,
   };
   $("integrationState").j = state;
   setStatus("Integration ready.");
-  logEvent(`Integration ready: ${integrationInternals.integrationGuid}`);
+  logEvent(`Integration ready: ${integration.getIntegrationGuid()}`);
   await showPairingQr();
 }
 
@@ -84,6 +152,86 @@ async function resetIntegrationState() {
   clearElement("signedPreview");
   setStatus("Integration state reset.");
   logEvent("Cleared persisted integration key pair and GUID.");
+}
+
+async function loadOrRegisterDevice() {
+  applyBaseUrl();
+  setDeviceStatus("Loading device state...");
+  await loadPersistedDeviceState();
+
+  if (!deviceKeyPair) {
+    deviceKeyPair = await generateDeviceKeyPair();
+    await set(deviceKeys.keyPair, deviceKeyPair);
+    logDevice("Generated a new device key pair.");
+  }
+
+  if (!devicePushKey) {
+    devicePushKey = await generatePushKey();
+    await set(deviceKeys.pushKey, devicePushKey);
+    logDevice("Generated a push encryption key for the simulated device.");
+  }
+
+  if (!deviceRegistrationId) {
+    deviceRegistrationId = `browser-${globalThis.crypto.randomUUID()}`;
+    await set(deviceKeys.registrationId, deviceRegistrationId);
+  }
+
+  if (!deviceGuid) {
+    setDeviceStatus("Registering device...");
+    const response = await mobileApiClient.postDevice({
+      platform: currentDevicePlatform(),
+      registrationId: deviceRegistrationId,
+      displayName: currentDeviceDisplayName(),
+      publicKey: await exportPublicKeyPem(deviceKeyPair.publicKey),
+      pushkey: devicePushKey,
+    });
+
+    if (!response.guid) {
+      throw new Error("Device registration succeeded without a GUID.");
+    }
+
+    deviceGuid = response.guid;
+    await set(deviceKeys.guid, deviceGuid);
+    logDevice(`Device registered with GUID ${deviceGuid}.`);
+  } else {
+    logDevice(`Reusing registered device ${deviceGuid}.`);
+  }
+
+  await refreshPairedIntegrations();
+  setDeviceStatus("Device ready.");
+}
+
+async function resetDeviceState() {
+  await Promise.all([
+    del(deviceKeys.guid),
+    del(deviceKeys.keyPair),
+    del(deviceKeys.pushKey),
+    del(deviceKeys.registrationId),
+  ]);
+
+  deviceKeyPair = null;
+  deviceGuid = null;
+  devicePushKey = null;
+  deviceRegistrationId = null;
+  currentDeviceRequest = null;
+  currentDeviceDataToSign = null;
+
+  $("deviceState").w = "Saved device state removed.";
+  $("pairedIntegrations").w = "No paired integrations loaded yet.";
+  $("incomingRequestState").w = "No request loaded yet.";
+  $("incomingRequestParameters").w = "No request parameters loaded yet.";
+  $("dataToSignState").w = "No dataToSign prepared yet.";
+  $("deviceSignedMetadata").w = "No completed AVM document yet.";
+  pushInbox = [];
+  ($("pairingTokenInput").el as HTMLTextAreaElement).value = "";
+  ($("incomingRequestInput").el as HTMLTextAreaElement).value = "";
+  ($("signingCertificateInput").el as HTMLTextAreaElement).value = "";
+  ($("signedDataInput").el as HTMLTextAreaElement).value = "";
+  clearElement("incomingRequestPreview");
+  clearElement("deviceSignedPreview");
+  renderPushInbox();
+  setDeviceStatus("Device state reset.");
+  logDevice("Cleared persisted device GUID, key pair, and push key.");
 }
 
 async function createSigningSession() {
@@ -136,6 +284,204 @@ function abortWaiting() {
   logEvent("Aborted waiting for signature.");
 }
 
+async function pairDeviceFromInput() {
+  await ensureDeviceReady();
+  const rawInput = ($("pairingTokenInput").el as HTMLTextAreaElement).value.trim();
+  if (!rawInput) {
+    throw new Error("Paste an integration token or AVM URL first.");
+  }
+
+  const pairingToken = extractIntegrationToken(rawInput);
+  if (!pairingToken) {
+    throw new Error("The provided value does not contain an integration token.");
+  }
+
+  const request = tryParseDeviceRequest(rawInput);
+
+  setDeviceStatus("Pairing device with integration...");
+  await mobileApiClient.postDeviceIntegrations(
+    { integrationPairingToken: pairingToken },
+    await generateCurrentDeviceJwt()
+  );
+  await refreshPairedIntegrations();
+
+  if (request) {
+    currentDeviceRequest = request;
+    ($("incomingRequestInput").el as HTMLTextAreaElement).value = request.source;
+    $("incomingRequestState").j = request;
+  }
+
+  setDeviceStatus("Pairing stored on AVM server.");
+  logDevice("Device paired with the supplied integration token.");
+}
+
+async function loadIncomingRequest() {
+  const rawInput = ($("incomingRequestInput").el as HTMLTextAreaElement).value.trim();
+  if (!rawInput) {
+    throw new Error("Paste an AVM URL or query string first.");
+  }
+  await hydrateIncomingRequest(rawInput);
+}
+
+async function loadIncomingRequestFromLocation() {
+  const currentUrl = window.location.href;
+  await hydrateIncomingRequest(currentUrl);
+  ($("incomingRequestInput").el as HTMLTextAreaElement).value = currentUrl;
+}
+
+async function hydrateIncomingRequest(rawInput: string) {
+  const parsed = parseDeviceRequest(rawInput);
+  currentDeviceRequest = parsed;
+  currentDeviceDataToSign = null;
+
+  if (parsed.integrationToken) {
+    ($("pairingTokenInput").el as HTMLTextAreaElement).value = parsed.source;
+  }
+
+  $("incomingRequestState").j = parsed;
+  $("dataToSignState").w = "No dataToSign prepared yet.";
+  $("deviceSignedMetadata").w = "No completed AVM document yet.";
+  clearElement("deviceSignedPreview");
+  setDeviceStatus("Loading visualization and signing parameters...");
+
+  const [visualization, parameters] = await Promise.all([
+    mobileApiClient.getDocumentVisualization(
+      { guid: parsed.guid },
+      parsed.key
+    ),
+    mobileApiClient.getDocumentSignatureParameters(
+      { guid: parsed.guid },
+      parsed.key
+    ),
+  ]);
+
+  renderVisualization(visualization);
+  $("incomingRequestParameters").j = parameters;
+  setDeviceStatus("Incoming request loaded.");
+  logDevice(`Loaded AVM request for document ${parsed.guid}.`);
+}
+
+async function prepareDataToSign() {
+  if (!currentDeviceRequest) {
+    throw new Error("Load an incoming request before preparing dataToSign.");
+  }
+
+  const signingCertificate =
+    ($("signingCertificateInput").el as HTMLTextAreaElement).value.trim();
+  if (!signingCertificate) {
+    throw new Error("Paste the signing certificate first.");
+  }
+
+  setDeviceStatus("Preparing dataToSign...");
+  currentDeviceDataToSign = await mobileApiClient.postDocumentDataToSign(
+    { guid: currentDeviceRequest.guid },
+    {
+      signingCertificate,
+      addTimestamp: ($("addTimestamp").el as HTMLInputElement).checked,
+    },
+    currentDeviceRequest.key
+  );
+
+  $("dataToSignState").j = currentDeviceDataToSign;
+  setDeviceStatus("dataToSign prepared.");
+  logDevice("Prepared AVM dataToSign structure.");
+}
+
+async function submitSignedResponse() {
+  if (!currentDeviceRequest) {
+    throw new Error("Load an incoming request before submitting a response.");
+  }
+  if (!currentDeviceDataToSign) {
+    throw new Error("Prepare dataToSign before submitting the signed response.");
+  }
+
+  const signedData = ($("signedDataInput").el as HTMLTextAreaElement).value.trim();
+  if (!signedData) {
+    throw new Error("Paste the Base64 signedData value first.");
+  }
+
+  setDeviceStatus("Submitting signed response to AVM...");
+  const signedDocument = await mobileApiClient.postDocumentSign(
+    { guid: currentDeviceRequest.guid },
+    {
+      signedData,
+      dataToSignStructure: currentDeviceDataToSign,
+    },
+    currentDeviceRequest.key
+  );
+
+  const normalizedSignedDocument: AVMSignedDocument = {
+    filename: signedDocument.filename,
+    mimeType: signedDocument.mimeType,
+    content: signedDocument.content,
+    signers: [
+      {
+        signedBy: signedDocument.signedBy,
+        issuedBy: signedDocument.issuedBy,
+      },
+    ],
+  };
+
+  renderSignedDocument(
+    normalizedSignedDocument,
+    "deviceSignedMetadata",
+    "deviceSignedPreview"
+  );
+  setDeviceStatus("Signed response accepted by AVM.");
+  logDevice("AVM returned the completed signed document.");
+}
+
+async function initializePushInbox() {
+  const registration = await ensurePushWorker();
+
+  if (Notification.permission === "default") {
+    const permission = await Notification.requestPermission();
+    if (permission === "denied") {
+      setPushStatus(
+        "Browser push inbox registered, but notification permission is denied."
+      );
+      await refreshPushInbox();
+      return;
+    }
+  }
+
+  setPushStatus(
+    `Browser push inbox ready. Notification permission: ${Notification.permission}.`
+  );
+  registration.active?.postMessage({ type: "avm-push-get-notifications" });
+}
+
+async function refreshPushInbox() {
+  const registration = await ensurePushWorker();
+  registration.active?.postMessage({ type: "avm-push-get-notifications" });
+  setPushStatus(
+    `Requested inbox refresh. Notification permission: ${Notification.permission}.`
+  );
+}
+
+async function clearPushInbox() {
+  const registration = await ensurePushWorker();
+  registration.active?.postMessage({ type: "avm-push-clear-notifications" });
+  pushInbox = [];
+  renderPushInbox();
+  setPushStatus("Cleared browser push inbox.");
+}
+
+async function activatePushNotification(notificationId: string) {
+  const item = pushInbox.find((candidate) => candidate.id === notificationId);
+  if (!item) {
+    throw new Error("Selected push notification was not found in the inbox.");
+  }
+  if (!item.source) {
+    throw new Error("Selected push notification does not contain an AVM URL.");
+  }
+
+  ($("incomingRequestInput").el as HTMLTextAreaElement).value = item.source;
+  await hydrateIncomingRequest(item.source);
+  setDeviceStatus(`Activated push notification ${item.title}.`);
+  logDevice(`Activated push notification ${item.id}.`);
+}
+
 async function copyQrUrl() {
   const url = ($("qrUrl").el as HTMLTextAreaElement).value;
   if (!url) {
@@ -171,8 +517,14 @@ function openQrUrlNoJwt() {
 }
 
 async function ensureIntegrationReady() {
-  if (!integrationInternals.integrationGuid) {
+  if (!integration.getIntegrationGuid()) {
     await loadOrRegisterIntegration();
+  }
+}
+
+async function ensureDeviceReady() {
+  if (!deviceGuid) {
+    await loadOrRegisterDevice();
   }
 }
 
@@ -297,28 +649,35 @@ function setQrUrlNoJwt(url: string) {
 }
 
 async function showPairingQr() {
-  const jwt = await integrationInternals.getIntegrationBearerToken(true);
-  const url = integrationInternals.apiClient.qrCodeRegisterIntegrationUrl(jwt);
+  const url = await integration.getPairingQrCodeUrl();
   const pairEl = $("pairingQrImage").el as HTMLElement;
+  const pairUrl = $("pairingQrUrl").el as HTMLTextAreaElement;
   pairEl.hidden = false;
+  pairUrl.value = url;
   renderQrCode("pairingQrImage", url);
 }
 
 function hidePairingQr() {
   const pairEl = $("pairingQrImage").el as HTMLElement;
+  const pairUrl = $("pairingQrUrl").el as HTMLTextAreaElement;
   pairEl.hidden = true;
   pairEl.replaceChildren();
+  pairUrl.value = "";
 }
 
-function renderSignedDocument(signedDocument: AVMSignedDocument) {
-  $("signedMetadata").j = {
+function renderSignedDocument(
+  signedDocument: AVMSignedDocument,
+  metadataSelector = "signedMetadata",
+  previewSelector = "signedPreview"
+) {
+  $(metadataSelector).j = {
     filename: signedDocument.filename,
     mimeType: signedDocument.mimeType,
     signers: signedDocument.signers,
   };
 
-  clearElement("signedPreview");
-  const previewRoot = $("signedPreview").el;
+  clearElement(previewSelector);
+  const previewRoot = $(previewSelector).el;
   previewRoot.appendChild(
     showSignedPreview({
       mimeType: signedDocument.mimeType,
@@ -337,6 +696,305 @@ function renderSignedDocument(signedDocument: AVMSignedDocument) {
     });
   });
   previewRoot.appendChild(downloadButton);
+}
+
+function renderVisualization(visualization: AVMDocumentVisualizationResponse) {
+  clearElement("incomingRequestPreview");
+  const previewRoot = $("incomingRequestPreview").el;
+  previewRoot.appendChild(
+    showSignedPreview({
+      mimeType: visualization.mimeType,
+      content: visualization.content,
+    })
+  );
+
+  if (visualization.filename) {
+    const caption = document.createElement("div");
+    caption.className = "muted";
+    caption.textContent = `Visualization filename: ${visualization.filename}`;
+    previewRoot.appendChild(caption);
+  }
+}
+
+function renderPushInbox() {
+  const container = $("pushNotificationList").el;
+  container.replaceChildren();
+
+  if (!pushInbox.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "No push notifications received yet.";
+    container.appendChild(empty);
+    return;
+  }
+
+  for (const item of pushInbox) {
+    const article = document.createElement("article");
+    article.className = "notification-item";
+
+    const header = document.createElement("header");
+    const title = document.createElement("h3");
+    title.textContent = item.title;
+    const time = document.createElement("time");
+    time.dateTime = item.receivedAt;
+    time.textContent = new Date(item.receivedAt).toLocaleString();
+    header.append(title, time);
+
+    const body = document.createElement("p");
+    body.textContent = item.body;
+
+    article.append(header, body);
+
+    if (item.source) {
+      const source = document.createElement("pre");
+      source.textContent = item.source;
+      article.appendChild(source);
+
+      const actions = document.createElement("div");
+      actions.className = "button-row";
+
+      const activateButton = document.createElement("button");
+      activateButton.className = "secondary";
+      activateButton.textContent = "Activate";
+      activateButton.addEventListener("click", () => {
+        void activatePushNotification(item.id);
+      });
+      actions.appendChild(activateButton);
+      article.appendChild(actions);
+    }
+
+    container.appendChild(article);
+  }
+}
+
+function renderDeviceState(
+  pairedIntegrations: AVMDeviceIntegrationsResponse = []
+) {
+  $("deviceState").j = {
+    baseUrl: currentBaseUrl(),
+    deviceGuid,
+    registrationId: deviceRegistrationId,
+    platform: currentDevicePlatform(),
+    displayName: currentDeviceDisplayName(),
+    persistedKeys: Boolean(deviceKeyPair && devicePushKey),
+    pairedIntegrations: pairedIntegrations.length,
+  };
+}
+
+async function generateCurrentDeviceJwt() {
+  if (!deviceGuid || !deviceKeyPair) {
+    throw new Error("Device not ready");
+  }
+  return createDeviceJwt(deviceGuid, deviceKeyPair);
+}
+
+async function refreshPairedIntegrations() {
+  const pairedIntegrations = await mobileApiClient.getDeviceIntegrations(
+    await generateCurrentDeviceJwt()
+  );
+  $("pairedIntegrations").j = pairedIntegrations;
+  renderDeviceState(pairedIntegrations);
+}
+
+async function ensurePushWorker() {
+  if (!supportsPushInbox()) {
+    setPushStatus("Push API is not available in this browser.");
+    throw new Error("Push API is not available in this browser.");
+  }
+
+  if (!pushWorkerBound) {
+    navigator.serviceWorker.addEventListener("message", onPushWorkerMessage);
+    pushWorkerBound = true;
+  }
+
+  if (pushWorkerRegistration) {
+    return pushWorkerRegistration;
+  }
+
+  const registration = await navigator.serviceWorker.register("./push-sw.js");
+  pushWorkerRegistration = await navigator.serviceWorker.ready;
+  setPushStatus(
+    `Browser push inbox registered. Notification permission: ${Notification.permission}.`
+  );
+
+  if (registration.active && !pushWorkerRegistration.active) {
+    pushWorkerRegistration = registration;
+  }
+
+  return pushWorkerRegistration;
+}
+
+function supportsPushInbox() {
+  return (
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  );
+}
+
+function onPushWorkerMessage(event: MessageEvent<PushWorkerMessage>) {
+  const data = event.data;
+  if (!data) {
+    return;
+  }
+
+  if (data.type === "avm-push-sync") {
+    pushInbox = sortPushInbox(data.items);
+    renderPushInbox();
+    return;
+  }
+
+  if (data.type === "avm-push-received") {
+    pushInbox = sortPushInbox(upsertPushInboxItem(pushInbox, data.item));
+    renderPushInbox();
+    setPushStatus(`Received push notification: ${data.item.title}.`);
+    logDevice(`Received push notification ${data.item.id}.`);
+    return;
+  }
+
+  if (data.type === "avm-push-activate") {
+    pushInbox = sortPushInbox(upsertPushInboxItem(pushInbox, data.item));
+    renderPushInbox();
+    void activatePushNotification(data.item.id);
+  }
+}
+
+function upsertPushInboxItem(items: PushInboxItem[], nextItem: PushInboxItem) {
+  const withoutExisting = items.filter((item) => item.id !== nextItem.id);
+  return [nextItem, ...withoutExisting];
+}
+
+function sortPushInbox(items: PushInboxItem[]) {
+  return [...items].sort((left, right) =>
+    right.receivedAt.localeCompare(left.receivedAt)
+  );
+}
+
+async function loadPersistedDeviceState() {
+  const [storedGuid, storedKeyPair, storedPushKey, storedRegistrationId] =
+    await Promise.all([
+      get<string>(deviceKeys.guid),
+      get<CryptoKeyPair>(deviceKeys.keyPair),
+      get<string>(deviceKeys.pushKey),
+      get<string>(deviceKeys.registrationId),
+    ]);
+
+  deviceGuid = storedGuid ?? null;
+  deviceKeyPair = storedKeyPair ?? null;
+  devicePushKey = storedPushKey ?? null;
+  deviceRegistrationId = storedRegistrationId ?? null;
+  renderDeviceState();
+}
+
+async function generateDeviceKeyPair() {
+  return globalThis.crypto.subtle.generateKey(
+    {
+      name: "ECDSA",
+      namedCurve: "P-256",
+    },
+    true,
+    ["sign", "verify"]
+  );
+}
+
+async function generatePushKey() {
+  const key = await globalThis.crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256,
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  return arrayBufferToBase64(
+    await globalThis.crypto.subtle.exportKey("raw", key)
+  );
+}
+
+async function exportPublicKeyPem(key: CryptoKey) {
+  const base64Key = arrayBufferToBase64(
+    await globalThis.crypto.subtle.exportKey("spki", key)
+  );
+  return `-----BEGIN PUBLIC KEY-----\n${base64Key}\n-----END PUBLIC KEY-----`;
+}
+
+function extractIntegrationToken(input: string) {
+  const deviceRequest = tryParseDeviceRequest(input);
+  if (deviceRequest) {
+    return deviceRequest.integrationToken;
+  }
+
+  const trimmed = input.trim();
+  const url = tryParseUrl(trimmed);
+  if (url) {
+    const token = url.searchParams.get("integration");
+    if (token) return token;
+  }
+
+  const searchInput = trimmed.startsWith("?") ? trimmed.slice(1) : trimmed;
+  const integrationParam = new URLSearchParams(searchInput).get("integration");
+  if (integrationParam) return integrationParam;
+
+  return normalizeJwt(trimmed);
+}
+
+function parseDeviceRequest(input: string): DeviceRequest {
+  const parsed = tryParseDeviceRequest(input);
+  if (!parsed) {
+    throw new Error("The provided value does not contain guid and key parameters.");
+  }
+  return parsed;
+}
+
+function tryParseDeviceRequest(input: string): DeviceRequest | null {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const directUrl = tryParseUrl(trimmed);
+  if (directUrl) {
+    const parsed = parseRequestFromSearchParams(directUrl.searchParams, trimmed);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  const searchInput = trimmed.startsWith("?") ? trimmed.slice(1) : trimmed;
+  const searchParams = new URLSearchParams(searchInput);
+  return parseRequestFromSearchParams(searchParams, trimmed);
+}
+
+function parseRequestFromSearchParams(
+  searchParams: URLSearchParams,
+  source: string
+) {
+  const guid = searchParams.get("guid");
+  const key = searchParams.get("key");
+
+  if (!guid || !key) {
+    return null;
+  }
+
+  return {
+    guid,
+    key,
+    integrationToken: searchParams.get("integration"),
+    source,
+  };
+}
+
+function normalizeJwt(input: string) {
+  const trimmed = input.trim();
+  return trimmed.split(".").length === 3 ? trimmed : null;
+}
+
+function tryParseUrl(input: string) {
+  try {
+    return new URL(input);
+  } catch {
+    return null;
+  }
 }
 
 function bindFileInput() {
@@ -367,22 +1025,74 @@ function installGlobalFunctions() {
   globalThis["openQrUrl"] = runAction(async () => openQrUrl());
   globalThis["copyQrUrlNoJwt"] = runAction(copyQrUrlNoJwt);
   globalThis["openQrUrlNoJwt"] = runAction(async () => openQrUrlNoJwt());
+  globalThis["loadOrRegisterDevice"] = runAction(loadOrRegisterDevice, true);
+  globalThis["resetDeviceState"] = runAction(resetDeviceState, true);
+  globalThis["pairDeviceFromInput"] = runAction(pairDeviceFromInput, true);
+  globalThis["loadIncomingRequest"] = runAction(loadIncomingRequest, true);
+  globalThis["loadIncomingRequestFromLocation"] = runAction(
+    loadIncomingRequestFromLocation,
+    true
+  );
+  globalThis["prepareDataToSign"] = runAction(prepareDataToSign, true);
+  globalThis["submitSignedResponse"] = runAction(submitSignedResponse, true);
+  globalThis["initializePushInbox"] = runAction(initializePushInbox, true);
+  globalThis["refreshPushInbox"] = runAction(refreshPushInbox, true);
+  globalThis["clearPushInbox"] = runAction(clearPushInbox, true);
 }
 
-function runAction(action: () => Promise<void>) {
+function runAction(action: () => Promise<void>, useDeviceStatus = false) {
   return async () => {
     try {
       await action();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unexpected error";
-      setStatus(message);
-      logEvent(`Error: ${message}`);
+      if (useDeviceStatus) {
+        setDeviceStatus(message);
+        logDevice(`Error: ${message}`);
+      } else {
+        setStatus(message);
+        logEvent(`Error: ${message}`);
+      }
       console.error(error);
     }
   };
 }
 
+function preloadIncomingRequestFromLocation() {
+  const currentUrl = window.location.href;
+  const request = tryParseDeviceRequest(currentUrl);
+  if (!request) {
+    return;
+  }
+
+  ($("incomingRequestInput").el as HTMLTextAreaElement).value = currentUrl;
+  if (request.integrationToken) {
+    ($("pairingTokenInput").el as HTMLTextAreaElement).value = currentUrl;
+  }
+
+  globalThis["loadIncomingRequestFromLocation"]();
+}
+
+async function bootstrapPushInbox() {
+  if (!supportsPushInbox()) {
+    setPushStatus("Push API is not available in this browser.");
+    renderPushInbox();
+    return;
+  }
+
+  try {
+    await ensurePushWorker();
+    await refreshPushInbox();
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to initialize push inbox.";
+    setPushStatus(message);
+  }
+}
+
 bindFileInput();
 installGlobalFunctions();
 applyBaseUrl();
+preloadIncomingRequestFromLocation();
+void bootstrapPushInbox();

@@ -103,6 +103,35 @@ export class AutogramVMobileIntegration
   }
 
   /**
+   * Override AVM server base URL used for API calls.
+   */
+  public setBaseUrl(baseUrl: string) {
+    this.apiClient.baseUrl = baseUrl;
+  }
+
+  /**
+   * Current AVM server base URL used for API calls.
+   */
+  public getBaseUrl() {
+    return this.apiClient.baseUrl;
+  }
+
+  /**
+   * Returns integration GUID when integration is loaded/registered.
+   */
+  public getIntegrationGuid() {
+    return this.integrationGuid;
+  }
+
+  /**
+   * Generates QR URL used to pair mobile app with this integration.
+   */
+  public async getPairingQrCodeUrl() {
+    const integrationJwt = await this.getIntegrationBearerToken(true);
+    return this.apiClient.qrCodeRegisterIntegrationUrl(integrationJwt);
+  }
+
+  /**
    * Register a new integration with the Autogram v mobile server.
    */
   private async register() {
@@ -467,7 +496,9 @@ export class AutogramVMobileIntegrationApiClient {
   getIntegrationDevices() {
     return fetch(this.baseUrl + this._getIntegrationDevices, {
       method: "GET",
-    }).then((res) => GetIntegrationDevicesResponseBody.parse(res.json()));
+    })
+      .then((res) => res.json())
+      .then((json) => GetIntegrationDevicesResponseBody.parse(json));
   }
 
   _documents = "/documents" as const;
