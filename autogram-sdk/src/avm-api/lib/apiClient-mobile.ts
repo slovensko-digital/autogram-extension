@@ -178,7 +178,10 @@ export class AutogramVMobileClientApiClient {
       }
     );
 
-    return this.readJsonOrThrow(response, GetDocumentSignatureParametersResponse);
+    return this.readJsonOrThrow(
+      response,
+      GetDocumentSignatureParametersResponse
+    );
   }
 
   _postDocumentDataToSign = "/documents/{guid}/datatosign" as const;
@@ -271,13 +274,26 @@ const PostDeviceResponse = z.object({
 });
 
 const GetDeviceIntegrationsResponse = z.array(
-  z.object({
-    integrationId: z.string(), // TODO add fallback to integration_id
-    platform: z.string(),
-    displayName: z.string(), // TODO add fallback to display_name
-  })
+  z
+    .union([
+      z.object({
+        integrationId: z.string(), // TODO add fallback to integration_id
+        platform: z.string(),
+        displayName: z.string(), // TODO add fallback to display_name
+      }),
+      z.object({
+        integration_id: z.string(),
+        platform: z.string(),
+        display_name: z.string(),
+      }),
+    ])
+    .transform((item) => ({
+      integrationId:
+        "integrationId" in item ? item.integrationId : item.integration_id,
+      platform: item.platform,
+      displayName: "displayName" in item ? item.displayName : item.display_name,
+    }))
 );
-
 
 const GetDocumentVisualizationResponse = z.object({
   mimeType: z.string(),
@@ -285,9 +301,8 @@ const GetDocumentVisualizationResponse = z.object({
   content: z.string(),
 });
 
-const GetDocumentSignatureParametersResponse = z.custom<
-  components["schemas"]["SigningParameters"]
->();
+const GetDocumentSignatureParametersResponse =
+  z.custom<components["schemas"]["SigningParameters"]>();
 
 const PostDocumentDataToSignResponse = z.object({
   dataToSign: z.string(),

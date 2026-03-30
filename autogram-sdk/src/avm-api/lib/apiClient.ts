@@ -177,6 +177,19 @@ export class AutogramVMobileIntegration
       await this.getIntegrationBearerToken(),
       encryptionKey
     );
+    try {
+      await this.apiClient.signRequest(
+        {
+          documentGuid: res.guid,
+          documentEncryptionKey: encryptionKey,
+        },
+        await this.getIntegrationBearerToken()
+      );
+    } catch (error) {
+      // Do not fail signing flow if push notification cannot be delivered.
+      log.warn("Failed to send sign-request push notification", error);
+    }
+
     return {
       guid: res.guid,
       encryptionKey: encryptionKey,
@@ -218,14 +231,6 @@ export class AutogramVMobileIntegration
       log.debug(documentRef);
       throw new Error("Document guid, key or last-modified missing");
     }
-
-    this.apiClient.signRequest(
-      {
-        documentGuid: documentRef.guid,
-        documentEncryptionKey: documentRef.encryptionKey,
-      },
-      await this.getIntegrationBearerToken()
-    );
 
     while (!abortController.signal.aborted) {
       const documentResult = await this.apiClient.getDocument(
@@ -589,20 +594,24 @@ export class AutogramVMobileIntegrationApiClient {
   }
 
   _signRequest = "/sign-request" as const;
-  signRequest(
+  async signRequest(
     data: NonNullable<
       paths[typeof this._signRequest]["post"]["requestBody"]
     >["content"]["application/json"],
     bearerToken: string
   ) {
-    return fetch(this.baseUrl + this._signRequest, {
+    const res = await fetch(this.baseUrl + this._signRequest, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${bearerToken}`,
       },
       body: JSON.stringify(data),
-    }).then((res) => res.json());
+    });
+
+    if (!res.ok) {
+      throw new Error(`API Error: ${res.status} ${res.statusText}`);
+    }
   }
 
   _getQrCodeUrl = "/qr-code" as const;
