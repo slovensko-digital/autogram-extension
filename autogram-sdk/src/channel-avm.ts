@@ -13,6 +13,28 @@ import { SignedObject } from "./with-ui";
 
 const log = createLogger("ag-sdk:AvmSimpleChannel");
 
+/**
+ * Default direct implementation of {@link AutogramVMobileIntegrationInterfaceStateful}
+ * that communicates with the Autogram v Mobile (AVM) cloud service.
+ *
+ * The typical signing flow is:
+ * 1. {@link loadOrRegister} — register this device with the AVM service.
+ * 2. {@link addDocument} — upload the document to be signed.
+ * 3. {@link getQrCodeUrl} — obtain a URL to present as a QR code;
+ *    the user scans it with the Autogram mobile app to sign.
+ * 4. {@link waitForSignature} — long-poll (up to 2 hours) until the
+ *    mobile user completes signing.
+ * 5. {@link reset} — clear internal state after signing is finished.
+ *
+ * {@link useRestorePoint} provides cross-page-reload continuity: the
+ * document reference is persisted in IndexedDB so that an in-progress
+ * signing session can be recovered after navigation.
+ *
+ * This class is the default channel used by `CombinedClient`. The
+ * browser extension replaces it with `AvmChannelWeb`, which routes
+ * calls through the content-script ↔ injected-script message bridge
+ * instead of talking to the AVM API directly.
+ */
 export class AvmSimpleChannel
   implements AutogramVMobileIntegrationInterfaceStateful
 {

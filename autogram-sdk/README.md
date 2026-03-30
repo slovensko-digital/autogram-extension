@@ -53,11 +53,24 @@ const { content, issuedBy, signedBy } = await client.sign(
 </script>
 ```
 
-## Advanced usage
+## Advanced usage — channels
 
-Because Autogram SDK is used in [Autogram Extension](https://github.com/slovensko-digital/autogram-extension) and in extension we UI is implemented in content context and signing process is in worker context, because of security reasons, the library is designed to support this case.
+For most web applications the basic usage above is all you need — `CombinedClient.init()` called without arguments works out of the box.
 
-That's why SDK has "channel" concept. `CombinedClient` is combining UI and singing process for both desktop and mobile. `Channel
+Channels become relevant when the SDK runs in an environment where it cannot make direct network requests from the page. A **channel** is simply an object that implements the communication contract with a signing back-end (desktop app or AVM cloud service). `CombinedClient` delegates all actual network calls to its two channels, keeping UI and transport completely separate.
+
+This separation makes it possible to move the network calls into a different execution context — for example a service worker or a browser-extension background script — and forward them over a message bridge instead. [Autogram Extension](https://github.com/slovensko-digital/autogram-extension) uses this: instead of the default channels it passes its own implementations that proxy every call through the content-script ↔ injected-script message bridge.
+
+```typescript
+// Simple case — use defaults, no channels needed, communicate directly
+const client = await CombinedClient.init();
+
+// Advanced case — inject custom channel implementations
+const client = await CombinedClient.init(
+  new MyAvmChannel(),      // implements AutogramVMobileIntegrationInterfaceStateful
+  new MyDesktopChannel(),  // implements AutogramDesktopIntegrationInterface
+);
+```
 
 ## Development
 

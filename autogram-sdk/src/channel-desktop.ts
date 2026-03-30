@@ -8,6 +8,26 @@ import {
 } from "./autogram-api/lib/apiClient";
 import { isSafari } from "./utils";
 
+/**
+ * Default direct implementation of {@link AutogramDesktopIntegrationInterface}
+ * that communicates with the Autogram desktop application running on
+ * the user's local machine.
+ *
+ * Connects to `http://localhost` by default. On Safari, where mixed
+ * content blocks plain HTTP, it falls back to
+ * `https://loopback.autogram.slovensko.digital` instead.
+ *
+ * The typical signing flow is:
+ * 1. {@link getLaunchURL} — get a deep-link URL to launch / wake the
+ *    desktop app.
+ * 2. {@link waitForStatus} — wait until the app reports it is ready.
+ * 3. {@link sign} — submit the document and receive the signed result.
+ *
+ * This class is the default channel used by `CombinedClient`. The
+ * browser extension replaces it with `AutogramDesktopChannel`, which
+ * routes calls through the content-script ↔ injected-script message
+ * bridge instead of calling the local HTTP server directly.
+ */
 export class AutogramDesktopSimpleChannel
   implements AutogramDesktopIntegrationInterface
 {

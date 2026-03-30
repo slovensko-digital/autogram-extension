@@ -181,11 +181,39 @@ export class AutogramVMobileIntegration
       await this.getIntegrationBearerToken(),
       encryptionKey
     );
+
+    return {
+      guid: res.guid,
+      encryptionKey: encryptionKey,
+      lastModified: res.lastModified,
+    };
+  }
+
+  /**
+   * List all mobile devices currently paired with this integration.
+   * Pre-condition: `loadOrRegister()` completed.
+   */
+  public async getDevices() {
+    return this.apiClient.getIntegrationDevices(
+      await this.getIntegrationBearerToken()
+    );
+  }
+
+  /**
+   * Send a push notification to all paired devices to prompt them to sign the document.
+   * Call after `addDocument()` when you want paired mobile devices to be notified.
+   * Pre-condition: `addDocument()` completed. Errors are logged but do not propagate.
+   */
+  public async sendNotification(documentRef: AvmIntegrationDocument): Promise<void> {
+    if (!documentRef.guid || !documentRef.encryptionKey) {
+      log.warn("Cannot send notification: document guid or key missing");
+      return;
+    }
     try {
       await this.apiClient.signRequest(
         {
-          documentGuid: res.guid,
-          documentEncryptionKey: encryptionKey,
+          documentGuid: documentRef.guid,
+          documentEncryptionKey: documentRef.encryptionKey,
         },
         await this.getIntegrationBearerToken()
       );
@@ -193,12 +221,6 @@ export class AutogramVMobileIntegration
       // Do not fail signing flow if push notification cannot be delivered.
       log.warn("Failed to send sign-request push notification", error);
     }
-
-    return {
-      guid: res.guid,
-      encryptionKey: encryptionKey,
-      lastModified: res.lastModified,
-    };
   }
 
   /**
@@ -505,9 +527,12 @@ export class AutogramVMobileIntegrationApiClient {
   }
 
   _getIntegrationDevices = "/integration-devices" as const;
-  getIntegrationDevices() {
+  getIntegrationDevices(bearerToken: string) {
     return fetch(this.baseUrl + this._getIntegrationDevices, {
       method: "GET",
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+      },
     })
       .then((res) => res.json())
       .then((json) => GetIntegrationDevicesResponseBody.parse(json));

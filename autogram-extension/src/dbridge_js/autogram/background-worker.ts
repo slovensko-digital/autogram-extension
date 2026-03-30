@@ -300,6 +300,10 @@ class AvmExecutor {
         documentToSign as unknown as AVMDocumentToSign
       );
       await set(dbKeyDocumentRef(senderId), documentRef);
+      const storageData = await browser.storage.local.get({ options: { notifyPairedDevices: true } });
+      if (storageData.options?.notifyPairedDevices !== false) {
+        await this.apiClient.sendNotification(documentRef);
+      }
     },
 
     waitForSignature: async (
