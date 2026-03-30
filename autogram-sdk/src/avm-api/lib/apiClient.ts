@@ -48,7 +48,9 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Load the key pair and integration GUID from the database, or register a new integration if not found.
+   * Initialize integration: must be called once at startup before any document operations.
+   * Loads the key pair and integration GUID from the local database, or registers a new integration if not found.
+   * Pre-condition: None. Post-condition: `getIntegrationGuid()` will return non-null.
    */
   public async loadOrRegister() {
     this.loadSubtleCrypto();
@@ -69,11 +71,11 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Generates a QR code URL for sharing a document signing
-   *
-   * @param doc document
-   * @param enableIntegration whether to add integration data to the URL - when this code is used AVM will try to register this instance with the mobile app for sending notifications
-   * @returns URL string
+   * Generate document-specific QR code for mobile signing.
+   * Share this URL with user (as QR code) after uploading document.
+   * Pre-condition: `addDocument()` must be called first. Post-condition: Mobile app can scan and sign.
+   * @param doc Document reference returned from `addDocument()`, containing document GUID and encryption key.
+   * @param enableIntegration Set to true to enable push notifications from the device to this integration.
    */
   public async getQrCodeUrl(
     doc: AvmIntegrationDocument,
@@ -124,7 +126,9 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Generates QR URL used to pair mobile app with this integration.
+   * Generate QR code for setting up push notifications: optional setup step.
+   * Use when you want mobile app to send notifications to this integration about new signatures.
+   * Pre-condition: `loadOrRegister()` completed.
    */
   public async getPairingQrCodeUrl() {
     const integrationJwt = await this.getIntegrationBearerToken(true);
@@ -161,10 +165,10 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Send a document to serverr to be signed later.
-   *
-   * @param document to add
-   * @returns documentRef for further operations
+   * Upload document to server for signing: first step of signing process (after integration initialization).
+   * Generates encryption key and sends document to server. Must be called before `getQrCodeUrl()` and `waitForSignature()`.
+   * Pre-condition: `loadOrRegister()` completed. Post-condition: Document is encrypted on server, ready to sign.
+   * @returns Document reference needed for subsequent signing operations.
    */
   public async addDocument(
     document: DocumentToSign
@@ -198,11 +202,9 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Checks the status of a document on the server.
-   * Uses GET /documents/{guid} endpoint.
-   *
-   * @param documentRef which document to check
-   * @returns status of the document from the server
+   * Check the status of a document on the server.
+   * Use only if push notifications aren't working or supported.
+   * Pre-condition: `addDocument()` called. Returns immediately with current status.
    */
   public async checkDocumentStatus(
     documentRef: AvmIntegrationDocument
@@ -219,6 +221,11 @@ export class AutogramVMobileIntegration
     );
   }
 
+  /**
+   * Wait for user to complete signing on mobile device: final step of signing process.
+   * Blocks until document is signed or abort signal is triggered. Call after `getQrCodeUrl()`.
+   * Pre-condition: `addDocument()` and user scanned QR code. Returns signed document when ready.
+   */
   public async waitForSignature(
     documentRef: AvmIntegrationDocument,
     abortController: AbortController

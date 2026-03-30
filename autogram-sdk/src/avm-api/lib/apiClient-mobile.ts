@@ -140,6 +140,7 @@ export class AutogramVMobileClientApiClient {
   }
 
   _getDocumentVisualization = "/documents/{guid}/visualization" as const;
+  /** Called by mobile app after scanning QR code to display document to user for preview. */
   async getDocumentVisualization(
     params: paths[typeof this._getDocumentVisualization]["get"]["parameters"]["path"],
     documentEncryptionKey: string
@@ -161,6 +162,7 @@ export class AutogramVMobileClientApiClient {
   }
 
   _getDocumentSignatureParameters = "/documents/{guid}/parameters" as const;
+  /** Called by mobile app to retrieve signing configuration (level, timestamp, etc.) for the document. */
   async getDocumentSignatureParameters(
     params: paths[typeof this._getDocumentSignatureParameters]["get"]["parameters"]["path"],
     documentEncryptionKey: string
@@ -185,6 +187,7 @@ export class AutogramVMobileClientApiClient {
   }
 
   _postDocumentDataToSign = "/documents/{guid}/datatosign" as const;
+  /** Called by mobile app to send signing certificate and get the data that needs to be signed (DataToSign). Pre-condition: User selected certificate. */
   async postDocumentDataToSign(
     params: paths[typeof this._postDocumentDataToSign]["post"]["parameters"]["path"],
     data: NonNullable<
@@ -210,6 +213,7 @@ export class AutogramVMobileClientApiClient {
   }
 
   _postDocumentSign = "/documents/{guid}/sign" as const;
+  /** Called by mobile app as final step: send locally-signed data. Server combines with document and completes signing. Pre-condition: User signed the DataToSign. */
   async postDocumentSign(
     params: paths[typeof this._postDocumentSign]["post"]["parameters"]["path"],
     data: NonNullable<
