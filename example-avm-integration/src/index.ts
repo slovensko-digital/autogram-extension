@@ -240,17 +240,20 @@ async function createSigningSession() {
   setStatus("Uploading document...");
   logEvent(`Uploading ${payload.document.filename || "unnamed document"}.`);
   documentRef = await integration.addDocument(payload);
-  $("documentState").j = documentRef;
+  $('documentState').j = documentRef;
+  if (!documentRef) {
+    throw new Error('Document upload finished without a document reference.');
+  }
+  logEvent(`Document uploaded with GUID ${documentRef.guid}.`);
+
+  await integration.sendNotification(documentRef);
+  logEvent('Push notification sent to paired devices.');
 
   const qrUrl = await integration.getQrCodeUrl(documentRef, true);
   const qrUrlNoJwt = await integration.getQrCodeUrl(documentRef, false);
   setQrUrl(qrUrl);
   setQrUrlNoJwt(qrUrlNoJwt);
-  setStatus("Signing session created.");
-  if (!documentRef) {
-    throw new Error("Document upload finished without a document reference.");
-  }
-  logEvent(`Document uploaded with GUID ${documentRef.guid}.`);
+  setStatus('Signing session created.');
 }
 
 async function waitForSignature() {
@@ -260,7 +263,7 @@ async function waitForSignature() {
 
   waitAbortController?.abort("New wait started");
   waitAbortController = new AbortController();
-  setStatus("Waiting for signature. Push request was sent to paired devices.");
+  setStatus('Waiting for signature...');
   logEvent("Waiting for signed document.");
 
   const signedDocument = await integration.waitForSignature(
