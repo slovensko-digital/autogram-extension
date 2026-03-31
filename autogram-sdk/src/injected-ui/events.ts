@@ -33,3 +33,13 @@ export class EventRestorePointResult extends CustomEvent<boolean> {
     });
   }
 }
+
+export class EventRetryMobileNotification extends CustomEvent<null> {
+  constructor() {
+    super("autogram-retry-mobile-notification", {
+      detail: null,
+      bubbles: true,
+      composed: true,
+    });
+  }
+}

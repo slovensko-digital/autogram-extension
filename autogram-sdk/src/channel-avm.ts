@@ -7,6 +7,7 @@ import {
 import {
   AutogramVMobileIntegrationInterfaceStateful,
   AutogramVMobileIntegration,
+  AvmRegistrationInfo,
 } from "./avm-api/lib/apiClient";
 import { createLogger } from "./log";
 import { SignedObject } from "./with-ui";
@@ -49,8 +50,8 @@ export class AvmSimpleChannel
   init(): Promise<void> {
     return Promise.resolve();
   }
-  async loadOrRegister(): Promise<void> {
-    await this.apiClient.loadOrRegister();
+  async loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void> {
+    await this.apiClient.loadOrRegister(regInfo);
   }
   async getQrCodeUrl(): Promise<string> {
     if (!this.documentRef) {
@@ -58,10 +59,20 @@ export class AvmSimpleChannel
     }
     return this.apiClient.getQrCodeUrl(this.documentRef);
   }
+  async getPairingQrCodeUrl(): Promise<string> {
+    return this.apiClient.getPairingQrCodeUrl();
+  }
   async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
     this.documentRef = await this.apiClient.addDocument(
       documentToSign as unknown as AVMDocumentToSign
     );
+    await this.apiClient.sendNotification(this.documentRef);
+  }
+  async sendNotification(): Promise<void> {
+    if (!this.documentRef) {
+      throw new Error("Document not found");
+    }
+    await this.apiClient.sendNotification(this.documentRef);
   }
   async waitForSignature(): Promise<AVMSignedDocument> {
     const documentRef = this.documentRef;

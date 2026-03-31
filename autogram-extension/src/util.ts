@@ -1,3 +1,4 @@
+import { AvmRegistrationInfo } from "autogram-sdk/avm-api/lib/apiClient";
 import { ExtensionOptions, ExtensionOptionsString } from "./options/default";
 
 export function TODO(...rest: unknown[]): void {
@@ -27,6 +28,17 @@ export function isMobileDevice(): boolean {
 
   // Consider it mobile if it matches user agent OR (has touch + small screen + mobile features)
   return isMobileUA || (isTouchDevice && isSmallScreen && hasMobileFeatures);
+}
+
+export async function getAvmIntegrationRegistrationInfo(): Promise<AvmRegistrationInfo> {
+  const platform = "extension";
+  const integrationName =
+    browser.runtime.getManifest().name || "Autogram Extension";
+
+  const platformInfo = await browser.runtime.getPlatformInfo();
+  const platformName = platformInfo.os || "unknown";
+
+  return { platform, displayName: `${integrationName} (${platformName})` };
 }
 
 export function createAutogramOptionsCustomEvent(

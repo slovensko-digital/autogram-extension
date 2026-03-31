@@ -14,13 +14,17 @@ export interface AvmIntegrationDocument {
   lastModified: string | null;
 }
 
+
+export interface AvmRegistrationInfo {
+    platform: string;
+    displayName?: string;
+  }
+
 // TODO what does this do? Is this just integration client? Why does it have different API than the channel part?
 /**
  * Stateful integration with Autogram v mobile
  */
-export class AutogramVMobileIntegration
-  implements AutogramVMobileIntegrationPrivateInterface
-{
+export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPrivateInterface {
   private apiClient: AutogramVMobileIntegrationApiClient;
 
   /**
@@ -52,7 +56,10 @@ export class AutogramVMobileIntegration
    * Loads the key pair and integration GUID from the local database, or registers a new integration if not found.
    * Pre-condition: None. Post-condition: `getIntegrationGuid()` will return non-null.
    */
-  public async loadOrRegister() {
+  public async loadOrRegister({
+    platform = "integration",
+    displayName = "Integration"
+  }: AvmRegistrationInfo) {
     this.loadSubtleCrypto();
     // load
     this.keyPair = await this.getKeyPairFromDb();
@@ -61,7 +68,7 @@ export class AutogramVMobileIntegration
     log.debug(this.keyPair);
 
     if (!this.keyPair || !this.integrationGuid) {
-      await this.register();
+      await this.register({ platform, displayName });
     }
 
     log.debug("keys init", {
@@ -138,7 +145,10 @@ export class AutogramVMobileIntegration
   /**
    * Register a new integration with the Autogram v mobile server.
    */
-  private async register() {
+  private async register({
+    platform = "integration",
+    displayName = "Integration",
+  }: AvmRegistrationInfo) {
     if (this.keyPair && this.integrationGuid) {
       throw new Error("Already registered.");
     }
@@ -147,11 +157,11 @@ export class AutogramVMobileIntegration
 
     const publicKey = await this.getPublicKeyStr();
 
-    log.info("Registering integration", publicKey);
+    log.info("Registering integration", { displayName, platform, publicKey});
 
     const res = await this.apiClient.registerIntegration({
-      platform: "extension",
-      displayName: "Autogram Extension",
+      platform,
+      displayName,
       publicKey:
         "-----BEGIN PUBLIC KEY-----\n" +
         publicKey +
@@ -204,7 +214,9 @@ export class AutogramVMobileIntegration
    * Call after `addDocument()` when you want paired mobile devices to be notified.
    * Pre-condition: `addDocument()` completed. Errors are logged but do not propagate.
    */
-  public async sendNotification(documentRef: AvmIntegrationDocument): Promise<void> {
+  public async sendNotification(
+    documentRef: AvmIntegrationDocument
+  ): Promise<void> {
     if (!documentRef.guid || !documentRef.encryptionKey) {
       log.warn("Cannot send notification: document guid or key missing");
       return;
@@ -394,7 +406,7 @@ export class AutogramVMobileIntegration
 }
 
 export interface AutogramVMobileIntegrationPrivateInterface {
-  loadOrRegister(): Promise<void>;
+  loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   getQrCodeUrl(doc: AvmIntegrationDocument): Promise<string>;
   addDocument(documentToSign: DocumentToSign): Promise<AvmIntegrationDocument>;
   checkDocumentStatus(doc: AvmIntegrationDocument): Promise<GetDocumentResult>;
@@ -415,7 +427,7 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
   /**
    * Load existing or register new integration with the Autogram v mobile server
    */
-  loadOrRegister(): Promise<void>;
+  loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   /**
    * Get QR code URL for the document to be signed
    *
@@ -423,10 +435,20 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
    */
   getQrCodeUrl(): Promise<string>;
   /**
+   * Get QR code URL for pairing this integration with a mobile device.
+   *
+   * @returns URL string
+   */
+  getPairingQrCodeUrl(): Promise<string>;
+  /**
    * Add a document to be signed (currently only one document is supported)
    * @param documentToSign Document to be signed
    */
   addDocument(documentToSign: DocumentToSign): Promise<void>;
+  /**
+   * Send a push notification for the current document to paired devices.
+   */
+  sendNotification(): Promise<void>;
   /**
    * Waits for the document to be signed, resolving when the document is signed.
    *

@@ -29,12 +29,28 @@ import {
   UserCancelledSigningException,
 } from "./errors";
 import packageJson from "../package.json";
+import { AvmRegistrationInfo } from "./avm-api/lib/apiClient";
 
 export type SignedObject = DesktopSignResponseBody;
 // We have to leave this in because otherwise the custom elements are not registered
 export { AutogramRoot } from "./injected-ui/main";
 
 const log = createLogger("ag-sdk.CombinedClient");
+
+type MobileSigningUiData = {
+  signingUrl: string;
+  pairingUrl: string;
+};
+
+interface CombinedClientOptions extends AvmRegistrationInfo {
+  enableNotifications?: boolean;
+}
+
+const DEFAULT_OPTIONS: CombinedClientOptions = {
+  enableNotifications: true,
+  platform: "unknown",
+  displayName: "",
+};
 
 /**
  * CombinedClient combines desktop and mobile signing methods with UI to choose between them
@@ -58,7 +74,8 @@ export class CombinedClient {
     private ui: AutogramRoot,
     private clientMobileIntegration: AutogramVMobileIntegrationInterfaceStateful = new AvmSimpleChannel(),
     private clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
-    private resetSignRequestCallback: (() => void) | undefined = undefined
+    private resetSignRequestCallback: (() => void) | undefined = undefined,
+    private options: CombinedClientOptions = DEFAULT_OPTIONS
   ) {
     this.desktopClient = new DesktopClient(this.clientDesktopIntegration);
 
@@ -66,6 +83,7 @@ export class CombinedClient {
 
     // this.clientMobileIntegration = avmChannel;
     this.clientMobileIntegration.init();
+    this.ui.onRetryMobileNotification = this.retryMobileNotification.bind(this);
 
     // this.resetSignRequestCallback = resetSignRequestCallback;
 
@@ -81,7 +99,12 @@ export class CombinedClient {
   public static async init(
     clientMobileIntegration: AutogramVMobileIntegrationInterfaceStateful = new AvmSimpleChannel(),
     clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
-    resetSignRequestCallback?: () => void
+    resetSignRequestCallback?: () => void,
+    options: CombinedClientOptions = {
+      enableNotifications: true,
+      platform: "unknown",
+      displayName: "",
+    }
   ): Promise<CombinedClient> {
     // TODO: WIP
     log.debug(`init version ${packageJson.version}`);
@@ -293,13 +316,13 @@ export class CombinedClient {
     abortController: AbortController
   ): Promise<SignedObject> {
     try {
-      const url = await this.getSignatureMobileAvmUrl(
+      const { signingUrl, pairingUrl } = await this.getSignatureMobileUiData(
         signatureParameters,
         document,
         payloadMimeType
       );
       // TODO when the user closes the UI we should abort the signing ??
-      this.ui.showQRCode(url, abortController);
+      this.ui.showQRCode(signingUrl, pairingUrl, abortController);
 
       return await this.getSignatureMobileSignDocument(abortController);
     } catch (e) {
@@ -331,12 +354,12 @@ export class CombinedClient {
     }
   }
 
-  private async getSignatureMobileAvmUrl(
+  private async getSignatureMobileUiData(
     signatureParameters: SignatureParameters,
     document: { filename?: string; content: string },
     payloadMimeType: string
     // TODO add abortController here?
-  ) {
+  ): Promise<MobileSigningUiData> {
     const params = signatureParameters;
     const container =
       params.container == null
@@ -345,7 +368,10 @@ export class CombinedClient {
           ? "ASiC-E"
           : "ASiC-S";
 
-    await this.clientMobileIntegration.loadOrRegister();
+    await this.clientMobileIntegration.loadOrRegister({
+      platform: this.options.platform,
+      displayName: this.options.displayName,
+    });
     await this.clientMobileIntegration.addDocument({
       document: document,
       parameters: {
@@ -354,9 +380,33 @@ export class CombinedClient {
       },
       payloadMimeType: payloadMimeType,
     });
-    const url = await this.clientMobileIntegration.getQrCodeUrl();
-    log.debug({ url });
-    return url;
+    const [signingUrl, pairingUrl] = await Promise.all([
+      this.clientMobileIntegration.getQrCodeUrl(),
+      this.clientMobileIntegration.getPairingQrCodeUrl(),
+    ]);
+    log.debug({ signingUrl, pairingUrl });
+    return { signingUrl, pairingUrl };
+  }
+
+  private async getSignatureMobileAvmUrl(
+    signatureParameters: SignatureParameters,
+    document: { filename?: string; content: string },
+    payloadMimeType: string
+  ) {
+    const { signingUrl } = await this.getSignatureMobileUiData(
+      signatureParameters,
+      document,
+      payloadMimeType
+    );
+    return signingUrl;
+  }
+
+  private async retryMobileNotification(): Promise<void> {
+    try {
+      await this.clientMobileIntegration.sendNotification();
+    } catch (error) {
+      log.warn("Retrying mobile notification failed", error);
+    }
   }
 
   private async getSignatureMobileSignDocument(

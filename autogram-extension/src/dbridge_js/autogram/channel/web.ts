@@ -137,6 +137,20 @@ export class AvmChannelWeb
     const response = ZGetQrCodeUrlResponse.parse(obj);
     return response;
   }
+  async getPairingQrCodeUrl(): Promise<string> {
+    const obj = await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "getPairingQrCodeUrl",
+        args: null,
+        app: "avm",
+      })
+    ).catch(
+      mapTimeoutToSdkException("Časový limit vytvorenia párovacieho QR kódu vypršal")
+    );
+    const response = ZGetQrCodeUrlResponse.parse(obj);
+    return response;
+  }
   async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
     await withTimeout(
       10_000,
@@ -147,6 +161,18 @@ export class AvmChannelWeb
       })
     ).catch(
       mapTimeoutToSdkException("Časový limit pridania dokumentu vypršal")
+    );
+  }
+  async sendNotification(): Promise<void> {
+    await withTimeout(
+      10_000,
+      this.channel.sendMessage({
+        method: "sendNotification",
+        args: null,
+        app: "avm",
+      })
+    ).catch(
+      mapTimeoutToSdkException("Časový limit odoslania upozornenia do mobilu vypršal")
     );
   }
   async waitForSignature(

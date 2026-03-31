@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { desktopApiClient, AutogramVMobileIntegration, } from "autogram-sdk";
+import { desktopApiClient, AutogramVMobileIntegration } from "autogram-sdk";
 
 import type {
-  
   AVMDocumentToSign,
   DesktopSignResponseBody,
   DesktopServerInfo,
@@ -14,6 +13,7 @@ import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
 import type { SignedDocument } from "autogram-sdk/avm-api";
 import type { SignedObject } from "autogram-sdk/with-ui";
+import { getAvmIntegrationRegistrationInfo } from "../../util";
 
 const log = createLogger("ag-ext.bg.worker");
 
@@ -217,7 +217,9 @@ class AvmExecutor {
           documentRef
         );
         try {
-          await this.apiClient.loadOrRegister();
+          await this.apiClient.loadOrRegister(
+            await getAvmIntegrationRegistrationInfo()
+          );
 
           return {
             signedDocument: await this.waitForSignatureSubroutine(
@@ -279,7 +281,9 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      await this.apiClient.loadOrRegister();
+      await this.apiClient.loadOrRegister(
+        await getAvmIntegrationRegistrationInfo()
+      );
     },
     getQrCodeUrl: async (
       args: unknown,
@@ -294,16 +298,39 @@ class AvmExecutor {
       }
       return this.apiClient.getQrCodeUrl(doc);
     },
+    getPairingQrCodeUrl: async (args: unknown): Promise<string> => {
+      if (args !== null) {
+        throw new Error("Invalid args");
+      }
+      return this.apiClient.getPairingQrCodeUrl();
+    },
     addDocument: async (args: unknown, senderId: SenderId): Promise<void> => {
       const { documentToSign } = ZAddDocumentArgs.parse(args);
       const documentRef = await this.apiClient.addDocument(
         documentToSign as unknown as AVMDocumentToSign
       );
       await set(dbKeyDocumentRef(senderId), documentRef);
-      const storageData = await browser.storage.local.get({ options: { notifyPairedDevices: true } });
+      const storageData = await browser.storage.local.get({
+        options: { notifyPairedDevices: true },
+      });
       if (storageData.options?.notifyPairedDevices !== false) {
         await this.apiClient.sendNotification(documentRef);
       }
+    },
+    sendNotification: async (
+      args: unknown,
+      senderId: SenderId
+    ): Promise<void> => {
+      if (args !== null) {
+        throw new Error("Invalid args");
+      }
+      const documentRef = await get<AVMIntegrationDocument>(
+        dbKeyDocumentRef(senderId)
+      );
+      if (!documentRef) {
+        throw new Error("Document not found");
+      }
+      await this.apiClient.sendNotification(documentRef);
     },
 
     waitForSignature: async (

@@ -2,10 +2,9 @@ import browser from "webextension-polyfill";
 import { toSVG as bwipToSvg } from "@bwip-js/generic";
 import { get, set } from "idb-keyval";
 import { AutogramVMobileIntegration } from "autogram-sdk";
-import {
-  getOptions,
-} from "../options/content";
+import { getOptions } from "../options/content";
 import { createLogger } from "../log";
+import { getAvmIntegrationRegistrationInfo } from "../util";
 
 const log = createLogger("ag-ext.ent.options");
 const avmIntegration = new AutogramVMobileIntegration({
@@ -107,9 +106,9 @@ function scheduleQrRefresh() {
 
 async function showPairingQrCode() {
   const pairingQrStatus = document.getElementById("pairingQrStatus");
-  const pairingQrUrl = document.getElementById("pairingQrUrl") as
-    | HTMLTextAreaElement
-    | null;
+  const pairingQrUrl = document.getElementById(
+    "pairingQrUrl"
+  ) as HTMLTextAreaElement | null;
 
   if (!pairingQrStatus || !pairingQrUrl) {
     return;
@@ -118,7 +117,9 @@ async function showPairingQrCode() {
   pairingQrStatus.textContent = "Pripravujem párovací QR kód...";
 
   try {
-    await avmIntegration.loadOrRegister();
+    await avmIntegration.loadOrRegister(
+      await getAvmIntegrationRegistrationInfo()
+    );
     const pairingUrl = await avmIntegration.getPairingQrCodeUrl();
     pairingQrUrl.value = pairingUrl;
     qrIsOutdated = false;
@@ -143,9 +144,9 @@ async function showPairingQrCode() {
 
 async function copyPairingUrl() {
   const pairingQrStatus = document.getElementById("pairingQrStatus");
-  const pairingQrUrl = document.getElementById("pairingQrUrl") as
-    | HTMLTextAreaElement
-    | null;
+  const pairingQrUrl = document.getElementById(
+    "pairingQrUrl"
+  ) as HTMLTextAreaElement | null;
 
   if (!pairingQrStatus || !pairingQrUrl || !pairingQrUrl.value) {
     return;
@@ -162,9 +163,9 @@ async function copyPairingUrl() {
 
 function openPairingUrl() {
   const pairingQrStatus = document.getElementById("pairingQrStatus");
-  const pairingQrUrl = document.getElementById("pairingQrUrl") as
-    | HTMLTextAreaElement
-    | null;
+  const pairingQrUrl = document.getElementById(
+    "pairingQrUrl"
+  ) as HTMLTextAreaElement | null;
 
   if (!pairingQrStatus || !pairingQrUrl || !pairingQrUrl.value) {
     return;
@@ -184,7 +185,9 @@ async function loadPairedDevices() {
   container.replaceChildren();
 
   try {
-    await avmIntegration.loadOrRegister();
+    await avmIntegration.loadOrRegister(
+      await getAvmIntegrationRegistrationInfo()
+    );
     const devices = await avmIntegration.getDevices();
 
     status.textContent = "";
