@@ -24,8 +24,6 @@
   "include": ["src/**/*", "webpack/**/*"],
   "exclude": ["spec"],
   "ts-node": {
-    "compilerOptions": {
       "esm": true
-    }
   }
 }

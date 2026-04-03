@@ -4,7 +4,7 @@ import { get, set } from "idb-keyval";
 import { AutogramVMobileIntegration } from "autogram-sdk";
 import { getOptions } from "../options/content";
 import { createLogger } from "../log";
-import { getAvmIntegrationRegistrationInfo } from "../util";
+import { getAvmIntegrationRegistrationInfo } from "../util-extension";
 
 const log = createLogger("ag-ext.ent.options");
 const avmIntegration = new AutogramVMobileIntegration({
@@ -235,11 +235,24 @@ function initPairingQrControls() {
   void showPairingQrCode();
 }
 
+let optionsPageInitialized = false;
+
 function initOptionsPage() {
+  if (optionsPageInitialized) {
+    return;
+  }
+
+  optionsPageInitialized = true;
+
   restore_options();
   initPairingQrControls();
   void loadPairedDevices();
+
+  document.getElementById("save")?.addEventListener("click", save_options);
 }
 
-document.addEventListener("DOMContentLoaded", initOptionsPage);
-document.getElementById("save")?.addEventListener("click", save_options);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initOptionsPage, { once: true });
+} else {
+  initOptionsPage();
+}

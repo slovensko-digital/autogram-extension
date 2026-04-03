@@ -5,29 +5,27 @@
   "description": "Monorepo for Autogram Extension",
   "workspaces": [
     "autogram-sdk",
-    "autogram-extension"
+    "autogram-extension",
+    "example-avm-integration",
+    "example-extension-usage"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "watch:mv2": "run-s sdk:build watch:mv2:_parallel",
-    "watch:mv2:_parallel": "run-p \"ext:start:mv2\" \"sdk:build:watch\"",
-    "watch:mv3": "run-s sdk:build watch:mv3:_parallel",
-    "watch:mv3:_parallel": "run-p \"ext:start:mv3\" \"sdk:build:watch\"",
-    "sdk:build:watch": "npm run build:watch -w autogram-sdk",
-    "sdk:build": "npm run build -w autogram-sdk",
-    "ext:build": "npm run build:prod -w autogram-extension",
-    "ext:build:dev": "npm run build:dev -w autogram-extension",
-    "ext:start:mv2": "npm run start:mv2 -w autogram-extension",
-    "ext:start:mv3": "npm run start:mv3 -w autogram-extension",
-    "example-extension-usage": "cd example-extension-usage && vite --port 49675",
-    "example-avm-integration": "cd example-avm-integration && vite --port 49676",
-    "test": "npm test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "clean": "npm run clean --workspaces --if-present",
+    "dev": "turbo run dev:mv3 dev --filter=autogram-extension --filter=autogram-sdk --filter=example-extension-usage --filter=example-avm-integration",
+    "build": "turbo run build",
+    "watch:mv2": "turbo run dev:mv2",
+    "watch:mv3": "turbo run dev:mv3",
+    "example-extension-usage": "turbo run dev --filter=example-extension-usage",
+    "example-avm-integration": "turbo run dev --filter=example-avm-integration",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean",
     "start": "echo 'Please specify which extension manifest version to start: npm run watch:mv2 or npm run watch:mv3'",
-    "postinstall": "npm run sdk:build"
+    "build:sdk": "turbo run build --filter=autogram-sdk",
+    "build:extension": "turbo run build --filter=autogram-extension",
+    "build:dev": "turbo run build:dev --filter=autogram-extension"
   },
+  "packageManager": "npm@10.8.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/slovensko-digital/autogram-extension.git"
@@ -58,6 +56,7 @@
     "loglevel": "^1.9.2",
     "loglevel-plugin-prefix": "^0.8.4",
     "stream-browserify": "^3.0.0",
+    "turborepo": "^0.0.1",
     "vm-browserify": "^1.1.2",
     "zod": "^3.23.8"
   },
@@ -67,11 +66,12 @@
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "npm-run-all": "^4.1.5",
     "openapi-typescript": "^6.7.4",
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "turbo": "^2.9.3",
     "typescript": "^5.7.3",
     "vite": "^5.2.11"
   }

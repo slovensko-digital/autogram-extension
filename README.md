@@ -77,12 +77,12 @@ npm run clean
 
 ## Workspace Structure
 
-This monorepo uses npm workspaces:
+This monorepo uses npm workspaces with Turborepo task orchestration:
 
 - `/autogram-sdk` - SDK package
 - `/autogram-extension` - Extension package (depends on SDK)
 
-The extension automatically uses the local SDK version via workspace protocol.
+Turborepo resolves package task dependencies, so running extension build tasks from the root will automatically run SDK build first.
 
 ## Contributing
 

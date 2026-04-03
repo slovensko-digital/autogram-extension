@@ -130,20 +130,23 @@ class BaseInjector {
   }
 
   createScript() {
-    const url = browser.runtime.getURL("autogram-inject.bundle.js");
+    const url = browser.runtime.getURL("autogram-injectLoader.bundle.js");
+    const injectModuleUrl = browser.runtime.getURL("autogram-inject.bundle.js");
     log.debug("using script url", url);
 
-    const script = document.createElement("script");
+    const script = this.doc.createElement("script");
     script.src = url;
     script.type = "text/javascript";
+    script.setAttribute("data-autogram-inject-url", injectModuleUrl);
 
     const extensionOptions = this.extensionOptions;
+    const targetWindow = this.doc.defaultView ?? window;
     script.onload = function () {
       log.debug("script loaded");
 
       // Pass options via a custom event to avoid CSP issues with inline scripts
       const event = createAutogramOptionsCustomEvent(extensionOptions);
-      window.dispatchEvent(event);
+      targetWindow.dispatchEvent(event);
     };
     return script;
   }
@@ -210,9 +213,9 @@ class IntervalInjector extends BaseInjector {
     );
     log.debug("using script url", url);
 
-    const script = document.createElement("script");
+    const script = this.doc.createElement("script");
     script.src = url;
-    script.type = "text/javascript";
+    script.setAttribute("type", "module");
 
     script.onload = function () {
       log.debug("detect script load");

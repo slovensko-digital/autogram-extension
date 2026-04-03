@@ -1,5 +1,8 @@
 import path from "path";
-import * as webpack from "webpack";
+import webpack from "webpack";
+import type { Configuration } from "webpack";
+import { createRequire } from "module";
+import { fileURLToPath } from "url";
 // import { CleanWebpackPlugin } from "clean-webpack-plugin";
 // import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import { WebpackManifestPlugin } from "webpack-manifest-plugin";
@@ -8,7 +11,10 @@ import ESLintPlugin from "eslint-webpack-plugin";
 import "webpack-dev-server";
 import { manifestOptions } from "./manifest";
 import { manifestVersion } from "./manifest-version";
-import packageJson from "../package.json";
+import packageJson from "../package.json" with { type: "json" };
+
+const require = createRequire(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let commitHash;
 try {
@@ -21,7 +27,7 @@ try {
   commitHash = "unknown";
   console.error("Failed to get commit hash", e);
 }
-const config: webpack.Configuration = {
+const config: Configuration = {
   entry: {
     background: "./src/entrypoint/background.ts",
     content: "./src/entrypoint/content.ts",

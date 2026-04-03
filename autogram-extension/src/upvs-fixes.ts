@@ -3,8 +3,8 @@
  */
 import { isMobileDevice } from "./util";
 import { createLogger } from "./log";
-import cssSchrankaSlovenskoSk from "./static/upvs-fix-schranka-sksk.css"; // maybe this way of importing doesnt work?
-import cssSlovenskoSk from "./static/upvs-fix-sksk.css";
+import cssSchrankaSlovenskoSk from "./static/upvs-fix-schranka-sksk.css?raw";
+import cssSlovenskoSk from "./static/upvs-fix-sksk.css?raw";
 
 const log = createLogger("ag-ext.upvs-fixes");
 export function maybeInsertUpvsJsFixes(theWindow: Window) {
@@ -14,7 +14,7 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
   ) {
     enhanceLoginPage();
   }
-  
+
   if (
     theWindow.location.hostname.endsWith("schranka.slovensko.sk") &&
     isMobileDevice()
@@ -25,11 +25,11 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
 
     removeEmptyAttachmentCells();
   }
-  
+
   function enhanceLoginPage() {
     const container = document.querySelector("main > div.grid-row");
     if (!container) return;
-    
+
     function lastLoginCard(container: Element) {
       const lastId = localStorage.getItem("age-lastLoginCardId");
       if (lastId) {
@@ -38,24 +38,24 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
           container.prepend(lastCard);
         }
       }
-      
+
       const boxes = container.querySelectorAll(".column-one-half");
       boxes.forEach((box) => {
         const form = box.querySelector("form");
         const button = box.querySelector("button.button--wider");
-  
+
         if (button && form) {
           button.addEventListener("click", () => localStorage.setItem("age-lastLoginCardId", form.id));
         }
       });
     }
-  
+
     function insertMobileLoginInfoBox(container: Element) {
       if (localStorage.getItem("age-lastLoginCardId")) return;
-      
+
       const infoColumn = document.createElement("div");
       infoColumn.className = "column-one-half";
-    
+
       infoColumn.innerHTML = `
           <div class="box box--dark flexContainer">
             <div class="box__content">
@@ -73,15 +73,15 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
             </div>
           </div>
       `;
-    
+
       const column = container.querySelector(".column-one-half");
       container.insertBefore(infoColumn, column);
     }
-    
+
     lastLoginCard(container);
     insertMobileLoginInfoBox(container);
   }
-  
+
   function addHamburgerMenu() {
     const parent = document.querySelector(".header-global");
 

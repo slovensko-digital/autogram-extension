@@ -13,7 +13,7 @@ import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
 import type { SignedDocument } from "autogram-sdk/avm-api";
 import type { SignedObject } from "autogram-sdk/with-ui";
-import { getAvmIntegrationRegistrationInfo } from "../../util";
+import { getAvmIntegrationRegistrationInfo } from "../../util-extension";
 
 const log = createLogger("ag-ext.bg.worker");
 

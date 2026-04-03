@@ -53,9 +53,9 @@ class Site {
     public conflictResolution: ConflictResolutionStrategy
   ) {}
 
-  matchRuleExpl(str, rule) {
+  matchRuleExpl(str: string, rule: string) {
     // for this solution to work on any string, no matter what characters it has
-    const escapeRegex = (str) =>
+    const escapeRegex = (str: string) =>
       str.replace(/([.*+?^=!:${}()|\\[\]\\/\\])/g, "\\$1");
 
     // "."  => Find a single character, except newline or line terminator
@@ -142,7 +142,21 @@ supportedSites.addSite(
   );
 });
 
-const debugUrls = !(process.env.NODE_ENV === "production")
+const isProductionBuild =
+  typeof __IS_PRODUCTION__ !== "undefined"
+    ? __IS_PRODUCTION__
+    : process.env.NODE_ENV === "production";
+
+const includeDebugUrlsFromDefine =
+  typeof __INCLUDE_DEBUG_URLS__ !== "undefined" && __INCLUDE_DEBUG_URLS__;
+
+const includeDebugUrlsFromEnv =
+  typeof process !== "undefined" &&
+  typeof process.env !== "undefined" &&
+  process.env.AE_INCLUDE_DEBUG_URLS === "1";
+
+const debugUrls =
+  !isProductionBuild || includeDebugUrlsFromDefine || includeDebugUrlsFromEnv
   ? [
       "http://localhost:3000/*",
       "http://localhost:49675/*",

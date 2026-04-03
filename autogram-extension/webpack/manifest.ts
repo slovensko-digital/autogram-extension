@@ -3,11 +3,9 @@ import { enabledUrls } from "../src/supported-sites";
 import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
 import { FileDescriptor } from "webpack-manifest-plugin/dist/helpers";
+import packageJson from "../package.json" with { type: "json" };
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const packageJson = require("../package.json");
-
-function generateManifest(
+export function generateManifest(
   seed: Record<string, unknown>,
   files: FileDescriptor[],
   entries: Record<string, string[]>
@@ -130,7 +128,7 @@ function generateManifest(
         /* Common properties */
         ...common,
 
-        /* 
+        /*
         Browser toolbar/urlbar icon and button showing popup
         */
         page_action: {
