@@ -8,10 +8,23 @@ export {
 } from "./autogram-api/index";
 
 export type {
+  AutogramDesktopIntegrationInterface,
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody,
+  ServerInfo as DesktopServerInfo,
+  DesktopSigningState,
+  DesktopSigningStateConsumer,
 } from "./autogram-api/index";
+
+export {
+  UserCancelledSigningException,
+  AutogramSdkException,
+  AutogramAppNotInstalledException,
+} from "./errors";
+
+export { DesktopClient } from "./desktop-client";
+export type { DesktopSignOptions } from "./desktop-client";
 
 /* Autogram V Mobile */
 export {

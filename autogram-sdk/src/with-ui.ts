@@ -206,8 +206,6 @@ export class CombinedClient {
       };
 
       this.ui.desktopSigning(abortController);
-      await this.desktopClient.launch(abortController, stateConsumer);
-      stateConsumer({ type: "waitingForSignature" });
       return this.getSignatureDesktop(
         document,
         signatureParameters,
@@ -259,31 +257,24 @@ export class CombinedClient {
     onStateChange?: DesktopSigningStateConsumer
   ): Promise<SignedObject> {
     log.info("getSignatureDesktop");
-    return this.clientDesktopIntegration
-      .sign(document, signatureParameters, payloadMimeType, abortController)
-      .then((signedObject) => {
-        // TODO("restart SignRequest?");
+    const signedObject = await this.desktopClient.sign(
+      document,
+      signatureParameters,
+      payloadMimeType,
+      {
+        abortController,
+        onStateChange,
+      }
+    );
 
-        this.signerIdentificationListeners.forEach((cb) => cb());
-        this.signerIdentificationListeners = [];
-        this.signatureIndex++;
+    this.signerIdentificationListeners.forEach((cb) => cb());
+    this.signerIdentificationListeners = [];
+    this.signatureIndex++;
 
-        this.ui.hide();
-        this.ui.reset();
+    this.ui.hide();
+    this.ui.reset();
 
-        return signedObject;
-      })
-      .catch((reason) => {
-        if (reason instanceof UserCancelledSigningException) {
-          log.info("User cancelled request");
-          onStateChange?.({ type: "signingCancelled" });
-          this.ui.signingCancelled();
-          throw reason;
-        } else {
-          log.error("getSignatureDesktop failed", reason);
-          throw reason;
-        }
-      });
+    return signedObject;
   }
 
   private async getSignatureMobile(
