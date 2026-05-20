@@ -130,14 +130,12 @@ class BaseInjector {
   }
 
   createScript() {
-    const url = browser.runtime.getURL("autogram-injectLoader.bundle.js");
-    const injectModuleUrl = browser.runtime.getURL("autogram-inject.bundle.js");
+    const url = browser.runtime.getURL("autogram-inject.bundle.js");
     log.debug("using script url", url);
 
     const script = this.doc.createElement("script");
     script.src = url;
     script.type = "text/javascript";
-    script.setAttribute("data-autogram-inject-url", injectModuleUrl);
 
     const extensionOptions = this.extensionOptions;
     const targetWindow = this.doc.defaultView ?? window;
@@ -215,7 +213,7 @@ class IntervalInjector extends BaseInjector {
 
     const script = this.doc.createElement("script");
     script.src = url;
-    script.setAttribute("type", "module");
+    script.setAttribute("type", "text/javascript");
 
     script.onload = function () {
       log.debug("detect script load");

@@ -21,17 +21,14 @@ try {
 const packageJson = require("./package.json");
 const entryInputs = {
   background: path.resolve(__dirname, "src/entrypoint/background.ts"),
-  content: path.resolve(__dirname, "src/entrypoint/content-loader.ts"),
-  contentModule: path.resolve(__dirname, "src/entrypoint/content.ts"),
+  content: path.resolve(__dirname, "src/entrypoint/content.ts"),
   inject: path.resolve(__dirname, "src/entrypoint/inject.ts"),
-  injectLoader: path.resolve(__dirname, "src/entrypoint/inject-loader.ts"),
   injectIntervalDetectDitec: path.resolve(
     __dirname,
     "src/entrypoint/inject-interval-detect-ditec.ts"
   ),
   popup: path.resolve(__dirname, "src/entrypoint/popup.ts"),
-  options: path.resolve(__dirname, "src/entrypoint/options-loader.ts"),
-  optionsModule: path.resolve(__dirname, "src/entrypoint/options.ts"),
+  options: path.resolve(__dirname, "src/entrypoint/options.ts"),
   redirect: path.resolve(__dirname, "src/entrypoint/redirect.ts"),
 };
 

@@ -36,9 +36,9 @@
     "webpack:build-dev": "tsx webpack/webpack-build.ts",
     "manifest:webpack:watch-dev": "chokidar \"**/*.ts\" -c  \"tsx webpack/webpack-build.ts\"",
 
-    "vite:build-dev": "AE_INCLUDE_DEBUG_URLS=1 vite build",
-    "vite:build-prod": "NODE_ENV=production vite build",
-    "vite:watch": "AE_INCLUDE_DEBUG_URLS=1 vite build --watch",
+    "vite:build-dev": "AE_INCLUDE_DEBUG_URLS=1 tsx scripts/vite-build-iife.ts",
+    "vite:build-prod": "NODE_ENV=production tsx scripts/vite-build-iife.ts",
+    "vite:watch": "AE_INCLUDE_DEBUG_URLS=1 tsx scripts/vite-build-iife.ts --watch",
 
     "lint": "eslint src webpack",
     "test": "npx jest",
