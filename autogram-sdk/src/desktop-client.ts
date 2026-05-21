@@ -1,6 +1,7 @@
 import type {
   AutogramDesktopIntegrationInterface,
   AutogramDocument,
+  BatchEndResponseBody,
   SignResponseBody,
   SignatureParameters,
   DesktopSigningState,
@@ -23,6 +24,7 @@ export type DesktopSignOptions = {
   onStateChange?: DesktopSigningStateConsumer;
   onDesktopStateChange?: DesktopSigningStateConsumer;
   abortController?: AbortController;
+  batchId?: string;
 };
 
 export class DesktopClient {
@@ -48,6 +50,7 @@ export class DesktopClient {
         document,
         signatureParameters,
         payloadMimeType,
+        options?.batchId,
         abortController ?? undefined
       )
       .catch((error) => {
@@ -63,6 +66,51 @@ export class DesktopClient {
         }
         throw error;
       });
+  }
+
+  async startBatch(
+    totalNumberOfDocuments: number,
+    options?: Omit<DesktopSignOptions, "batchId">
+  ): Promise<string> {
+    const onStateChange =
+      options?.onStateChange ?? options?.onDesktopStateChange;
+    const abortController = options?.abortController;
+
+    await this.launch(abortController, onStateChange);
+    onStateChange?.({ type: "waitingForSignature" });
+
+    return this.clientDesktopIntegration
+      .startBatch(totalNumberOfDocuments, abortController ?? undefined)
+      .then((response) => {
+        if (!response.batchId) {
+          throw new UserCancelledSigningException();
+        }
+
+        return response.batchId;
+      })
+      .catch((error) => {
+        if (error instanceof UserCancelledSigningException) {
+          log.info("User cancelled batch signing");
+          onStateChange?.({ type: "signingCancelled" });
+        } else {
+          log.error("startBatch failed", error);
+          onStateChange?.({
+            type: "error",
+            message: (error as Error)?.message ?? String(error),
+          });
+        }
+        throw error;
+      });
+  }
+
+  endBatch(
+    batchId: string,
+    abortController?: AbortController
+  ): Promise<BatchEndResponseBody> {
+    return this.clientDesktopIntegration.endBatch(
+      batchId,
+      abortController ?? undefined
+    );
   }
 
   async launch(

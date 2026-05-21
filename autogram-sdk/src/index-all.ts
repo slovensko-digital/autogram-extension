@@ -12,6 +12,8 @@ export type {
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody,
+  BatchStartResponseBody as DesktopBatchStartResponseBody,
+  BatchEndResponseBody as DesktopBatchEndResponseBody,
   ServerInfo as DesktopServerInfo,
   DesktopSigningState,
   DesktopSigningStateConsumer,
