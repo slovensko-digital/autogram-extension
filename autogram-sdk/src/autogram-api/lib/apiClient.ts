@@ -299,6 +299,36 @@ export function apiClient(options?: ApiClientConfiguration) {
         return response.json();
       });
     },
+
+    signV1(
+      documents: [],
+      parameters: {},
+      batchId: string | null = null,
+      abortController: AbortController | null = null
+    ): Promise<SignResponseBody> {
+      const url = new URL("api/v1/sign", serverUrl);
+
+      const body = {
+        documents: documents,
+        parameters: parameters,
+        ...(batchId ? { batchId } : {}),
+      };
+
+      const init: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(body),
+        ...(abortController ? { signal: abortController.signal } : {}),
+      } as const;
+
+      return fetch(url.toString(), init).then((response) => {
+        if (response.status == 204) {
+          throw new UserCancelledSigningException();
+        }
+        return response.json();
+      });
+    },
   };
 }
 
@@ -418,6 +448,7 @@ export type DesktopSigningState =
   | { type: "waitingForSignature" }
   | { type: "appNotInstalled" }
   | { type: "signingCancelled" }
+  | { type: "appVersionTooLow"; requiredVersion: string; detectedVersion: string }
   | { type: "error"; message: string };
 
 export type DesktopSigningStateConsumer = (

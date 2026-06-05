@@ -82,4 +82,17 @@ export class AutogramDesktopSimpleChannel
       abortController ?? null
     );
   }
+  signV1(
+    documents: [],
+    parameters: {},
+    batchId?: string,
+    abortController?: AbortController
+  ): Promise<SignResponseBody> {
+    return this.apiClient.signV1(
+      documents,
+      parameters,
+      batchId ?? null,
+      abortController ?? null
+    );
+  }
 }
