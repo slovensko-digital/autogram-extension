@@ -82,7 +82,7 @@
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
     "vite": "^5.2.11",
-    "web-ext": "^7.4.0",
+    "web-ext": "^10.4.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.15.2",
