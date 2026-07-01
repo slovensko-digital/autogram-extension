@@ -20,3 +20,12 @@ export class AutogramAppNotInstalledException extends AutogramSdkException {
     this.name = "AutogramAppNotInstalledException";
   }
 }
+
+export class AutogramAppVersionTooLowException extends AutogramSdkException {
+  constructor(requiredVersion: string, detectedVersion: string) {
+    super(
+      `Autogram version ${requiredVersion} or higher is required. Detected version: ${detectedVersion}`
+    );
+    this.name = "AutogramAppVersionTooLowException";
+  }
+}

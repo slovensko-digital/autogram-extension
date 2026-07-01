@@ -299,6 +299,36 @@ export function apiClient(options?: ApiClientConfiguration) {
         return response.json();
       });
     },
+
+    signV1(
+      documents: VersionedAutogramDocument[],
+      parameters: VersionedSignatureParameters = {},
+      batchId: string | null = null,
+      abortController: AbortController | null = null
+    ): Promise<SignResponseBody> {
+      const url = new URL("api/v1/sign", serverUrl);
+
+      const body: VersionedSignRequestBody = {
+        documents: documents,
+        parameters: parameters,
+        ...(batchId ? { batchId } : {}),
+      };
+
+      const init: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(body),
+        ...(abortController ? { signal: abortController.signal } : {}),
+      } as const;
+
+      return fetch(url.toString(), init).then((response) => {
+        if (response.status == 204) {
+          throw new UserCancelledSigningException();
+        }
+        return response.json();
+      });
+    },
   };
 }
 
@@ -407,6 +437,33 @@ export type AutogramDocument = components["schemas"]["Document"];
 export type SignatureParameters = components["schemas"]["SignatureParameters"];
 type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
 export type SignResponseBody = components["schemas"]["SignResponseBody"];
+export type VisibleSignatureImage = {
+  filename?: string;
+  content: string;
+  mimeType: string;
+};
+
+export type VisibleSignature = {
+  fieldId: string;
+  text?: string;
+  image?: VisibleSignatureImage;
+};
+
+export type VersionedAutogramDocument = {
+  filename?: string;
+  content: string;
+  mimeType: string;
+  xdcParameters?: Record<string, unknown>;
+  visibleSignature?: VisibleSignature;
+};
+
+export type VersionedSignatureParameters = Record<string, unknown>;
+
+export type VersionedSignRequestBody = {
+  batchId?: string;
+  documents: VersionedAutogramDocument[];
+  parameters?: VersionedSignatureParameters;
+};
 
 /**
  * Represents the current state of the desktop signing process.
@@ -418,6 +475,7 @@ export type DesktopSigningState =
   | { type: "waitingForSignature" }
   | { type: "appNotInstalled" }
   | { type: "signingCancelled" }
+  | { type: "appVersionTooLow"; requiredVersion: string; detectedVersion: string }
   | { type: "error"; message: string };
 
 export type DesktopSigningStateConsumer = (

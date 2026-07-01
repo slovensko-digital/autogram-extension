@@ -11,6 +11,10 @@ export type {
   AutogramDesktopIntegrationInterface,
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
+  VersionedAutogramDocument as DesktopVersionedAutogramDocument,
+  VersionedSignatureParameters as DesktopVersionedSignatureParameters,
+  VisibleSignature as DesktopVisibleSignature,
+  VisibleSignatureImage as DesktopVisibleSignatureImage,
   SignResponseBody as DesktopSignResponseBody, // TODO we could unify SignResponseBody from desktop and SignedDocument from avm
   BatchStartResponseBody as DesktopBatchStartResponseBody,
   BatchEndResponseBody as DesktopBatchEndResponseBody,
