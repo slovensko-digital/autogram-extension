@@ -1,9 +1,12 @@
+import { version } from "js-base64";
 import type {
   AutogramDesktopIntegrationInterface,
   AutogramDocument,
   BatchEndResponseBody,
   SignResponseBody,
   SignatureParameters,
+  VersionedAutogramDocument,
+  VersionedSignatureParameters,
   DesktopSigningState,
   DesktopSigningStateConsumer,
 } from "./autogram-api/index";
@@ -71,8 +74,8 @@ export class DesktopClient {
 
   // signV1 exists in Autogram versions > 2.8.0 and is not supported by older versions. sign() should be used for maximum compatibility - single document signing. If Autgoram od an older version is running, signV1 will throw an error which should be handled by the caller (e.g. by falling back to sign() or showing a message to the user). signV1 is intended to be used with newer Autogram versions and supports multiple document signing and additional parameters.
   async signV1(
-    documents: [],
-    parameters: {},
+    documents: VersionedAutogramDocument[],
+    parameters: VersionedSignatureParameters,
     options?: DesktopSignOptions
   ): Promise<SignResponseBody> {
     const onStateChange = options?.onStateChange ?? options?.onDesktopStateChange;
@@ -167,9 +170,7 @@ export class DesktopClient {
         if (info.version === "dev")
           return; // skip version check for dev builds, as they may not follow semver format
 
-        const [majorInfo] = info.version.split(".");
-        const [majorRequired] = options.minimumAppVersion.split(".");
-        if (Number(majorInfo) < Number(majorRequired)) {
+        if (!DesktopClient.versionSatisfies(info.version, options.minimumAppVersion)) {
           onStateChange?.({ type: "appVersionTooLow", requiredVersion: options.minimumAppVersion, detectedVersion: info.version });
           throw new AutogramAppVersionTooLowException(options.minimumAppVersion, info.version);
         }
@@ -219,9 +220,7 @@ export class DesktopClient {
         if (info.version === "dev")
           return; // skip version check for dev builds, as they may not follow semver format
 
-        const [majorInfo] = info.version.split(".");
-        const [majorRequired] = options.minimumAppVersion.split(".");
-        if (Number(majorInfo) < Number(majorRequired)) {
+        if (!DesktopClient.versionSatisfies(info.version, options.minimumAppVersion)) {
           onStateChange?.({ type: "appVersionTooLow", requiredVersion: options.minimumAppVersion, detectedVersion: info.version });
           throw new AutogramAppVersionTooLowException(options.minimumAppVersion, info.version);
         }
@@ -237,6 +236,12 @@ export class DesktopClient {
       onStateChange?.({ type: "appNotInstalled" });
       throw new AutogramAppNotInstalledException();
     }
+  }
+
+  static versionSatisfies(version: string, requiredVersion: string): boolean {
+    let actual = version.split(".");
+    let required = requiredVersion.split(".");
+    return Number(actual[0]) >= Number(required[0]) && Number(actual[1]) >= Number(required[1]) && Number(actual[2]) >= Number(required[2]);
   }
 
   static stateType(_state: DesktopSigningState): _state is DesktopSigningState {

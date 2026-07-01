@@ -301,14 +301,14 @@ export function apiClient(options?: ApiClientConfiguration) {
     },
 
     signV1(
-      documents: [],
-      parameters: {},
+      documents: VersionedAutogramDocument[],
+      parameters: VersionedSignatureParameters = {},
       batchId: string | null = null,
       abortController: AbortController | null = null
     ): Promise<SignResponseBody> {
       const url = new URL("api/v1/sign", serverUrl);
 
-      const body = {
+      const body: VersionedSignRequestBody = {
         documents: documents,
         parameters: parameters,
         ...(batchId ? { batchId } : {}),
@@ -437,6 +437,33 @@ export type AutogramDocument = components["schemas"]["Document"];
 export type SignatureParameters = components["schemas"]["SignatureParameters"];
 type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
 export type SignResponseBody = components["schemas"]["SignResponseBody"];
+export type VisibleSignatureImage = {
+  filename?: string;
+  content: string;
+  mimeType: string;
+};
+
+export type VisibleSignature = {
+  fieldId: string;
+  text?: string;
+  image?: VisibleSignatureImage;
+};
+
+export type VersionedAutogramDocument = {
+  filename?: string;
+  content: string;
+  mimeType: string;
+  xdcParameters?: Record<string, unknown>;
+  visibleSignature?: VisibleSignature;
+};
+
+export type VersionedSignatureParameters = Record<string, unknown>;
+
+export type VersionedSignRequestBody = {
+  batchId?: string;
+  documents: VersionedAutogramDocument[];
+  parameters?: VersionedSignatureParameters;
+};
 
 /**
  * Represents the current state of the desktop signing process.
