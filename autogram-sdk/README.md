@@ -34,7 +34,7 @@ const { content, issuedBy, signedBy } = await client.sign(
 ## Usage on web (script tag)
 
 ```html
-<script src="dist/index.global.js"></script>
+<script src="dist/index-all.iife.js"></script>
 <script>
   const client = await AutogramSDK.CombinedClient.init();
 

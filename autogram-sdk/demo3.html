@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autogram SDK – DesktopClient demo</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        max-width: 640px;
+        margin: 40px auto;
+        padding: 0 20px;
+        color: #111;
+      }
+      h1 { font-size: 1.6rem; margin-bottom: 4px; }
+      p.subtitle { color: #555; margin-top: 0; }
+
+      #drop-zone {
+        border: 2px dashed #126dff;
+        border-radius: 10px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin: 24px 0;
+      }
+      #drop-zone.hover { background: #eef4ff; }
+      #drop-zone input { display: none; }
+      #drop-zone p { margin: 0; color: #126dff; font-weight: 600; font-size: 1rem; }
+      #drop-zone span { font-size: 0.85rem; color: #666; }
+
+      #status-box {
+        display: none;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+      }
+      #status-box.visible { display: block; }
+
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.95rem;
+      }
+      .step:last-child { border-bottom: none; }
+
+      .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: #e0e0e0;
+      }
+      .dot.active {
+        background: #126dff;
+        box-shadow: 0 0 0 3px #cce0ff;
+        animation: pulse 1s infinite;
+      }
+      .dot.done   { background: #22c55e; }
+      .dot.error  { background: #ef4444; }
+
+      @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 3px #cce0ff; }
+        50%       { box-shadow: 0 0 0 6px #cce0ff; }
+      }
+
+      #install-banner {
+        display: none;
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-top: 16px;
+      }
+      #install-banner.visible { display: block; }
+      #install-banner p { margin: 0 0 10px; font-weight: 600; color: #9a3412; }
+      #install-banner a {
+        display: inline-block;
+        background: #126dff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      #install-banner a:hover { background: #0d5ae0; }
+
+      #result {
+        display: none;
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-top: 16px;
+      }
+      #result.visible { display: flex; align-items: center; gap: 12px; }
+      #result p { margin: 0; font-weight: 600; color: #15803d; }
+      #result a {
+        margin-left: auto;
+        background: #22c55e;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+      #result a:hover { background: #16a34a; }
+
+      #cancel-btn {
+        display: none;
+        margin-top: 12px;
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 6px 16px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: #555;
+      }
+      #cancel-btn.visible { display: inline-block; }
+      #cancel-btn:hover { background: #f5f5f5; }
+    </style>
+  </head>
+  <body>
+    <h1>DesktopClient demo</h1>
+    <p class="subtitle">
+      Headless desktop signing — no built-in SDK modal, full control over UI.
+    </p>
+
+    <div id="drop-zone">
+      <input type="file" id="file-input" accept="application/pdf" />
+      <p>Vyberte alebo presuňte PDF súbor sem</p>
+      <span>Podporovaný formát: PDF</span>
+    </div>
+
+    <!-- Step-by-step progress -->
+    <div id="status-box">
+      <div class="step" id="step-checking">
+        <div class="dot" id="dot-checking"></div>
+        <span>Kontrolujem, či je Autogram spustený…</span>
+      </div>
+      <div class="step" id="step-launching">
+        <div class="dot" id="dot-launching"></div>
+        <span>Spúšťam Autogram…</span>
+      </div>
+      <div class="step" id="step-waiting">
+        <div class="dot" id="dot-waiting"></div>
+        <span>Čakám na podpísanie v Autograme…</span>
+      </div>
+    </div>
+
+    <!-- Not-installed banner -->
+    <div id="install-banner">
+      <p>Autogram nie je nainštalovaný.</p>
+      <a href="https://autogram.slovensko.digital" target="_blank" rel="noopener">
+        Stiahnuť Autogram
+      </a>
+    </div>
+
+    <!-- Success result -->
+    <div id="result">
+      <p>✅ Dokument bol úspešne podpísaný.</p>
+    </div>
+
+    <button id="cancel-btn">Zrušiť</button>
+
+    <!-- <script src="dist/demo.mjs" type="module"></script> -->
+    <script src="dist/index-all.iife.js"></script>
+
+    <script>
+      const { DesktopClient, UserCancelledSigningException, AutogramAppNotInstalledException } = AutogramSDK;
+
+      const dropZone   = document.getElementById("drop-zone");
+      const fileInput  = document.getElementById("file-input");
+      const statusBox  = document.getElementById("status-box");
+      const installBanner = document.getElementById("install-banner");
+      const resultBox  = document.getElementById("result");
+      const cancelBtn  = document.getElementById("cancel-btn");
+
+      // --- helpers -----------------------------------------------------------
+
+      const STEPS = ["checking", "launching", "waiting"];
+
+      function resetUI() {
+        STEPS.forEach(s => setDot(s, "idle"));
+        statusBox.classList.remove("visible");
+        installBanner.classList.remove("visible");
+        resultBox.classList.remove("visible");
+        cancelBtn.classList.remove("visible");
+        dropZone.style.opacity = "1";
+        dropZone.style.pointerEvents = "";
+      }
+
+      function setDot(step, mode /* idle | active | done | error */) {
+        const dot = document.getElementById("dot-" + step);
+        dot.className = "dot" + (mode !== "idle" ? " " + mode : "");
+      }
+
+      function toBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload  = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+        });
+      }
+
+      function setDownloadLink(content, filename) {
+        const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+        const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "signed_" + filename;
+        a.textContent = "Stiahnuť";
+        resultBox.appendChild(a);
+      }
+
+      // --- signing flow ------------------------------------------------------
+
+      let abortController = null;
+
+      cancelBtn.addEventListener("click", () => {
+        abortController?.abort();
+        resetUI();
+      });
+
+      async function signFile(file) {
+        resetUI();
+        abortController = new AbortController();
+
+        dropZone.style.opacity = "0.4";
+        dropZone.style.pointerEvents = "none";
+        statusBox.classList.add("visible");
+        cancelBtn.classList.add("visible");
+
+        const content = await toBase64(file);
+        const client = new DesktopClient();
+
+        try {
+          const signed = await client.sign(
+            { content, filename: file.name },
+            { level: "PAdES_BASELINE_B", checkPDFACompliance: false },
+            "application/pdf;base64",
+            {
+              abortController,
+              onStateChange(state) {
+                console.log("[DesktopClient] state:", state.type);
+
+                if (state.type === "checkingApp") {
+                  setDot("checking", "active");
+                }
+                if (state.type === "launchingApp") {
+                  setDot("checking", "done");
+                  setDot("launching", "active");
+                }
+                if (state.type === "waitingForSignature") {
+                  setDot("checking", "done");
+                  setDot("launching", "done");
+                  setDot("waiting",  "active");
+                }
+                if (state.type === "appNotInstalled") {
+                  setDot("checking",  "error");
+                  setDot("launching", "error");
+                  installBanner.classList.add("visible");
+                  cancelBtn.classList.remove("visible");
+                }
+                if (state.type === "signingCancelled") {
+                  STEPS.forEach(s => setDot(s, "idle"));
+                  cancelBtn.classList.remove("visible");
+                }
+                if (state.type === "error") {
+                  setDot("waiting", "error");
+                  cancelBtn.classList.remove("visible");
+                }
+              },
+            }
+          );
+
+          // success
+          STEPS.forEach(s => setDot(s, "done"));
+          cancelBtn.classList.remove("visible");
+          resultBox.classList.add("visible");
+          setDownloadLink(signed.content, file.name);
+
+        } catch (e) {
+          if (e instanceof UserCancelledSigningException) {
+            setDot("waiting", "error");
+          } else if (e instanceof AutogramAppNotInstalledException) {
+            // banner already shown via onStateChange
+          } else {
+            console.error("Signing failed:", e);
+            alert("Chyba pri podpisovaní: " + e.message);
+          }
+          cancelBtn.classList.remove("visible");
+          dropZone.style.opacity = "1";
+          dropZone.style.pointerEvents = "";
+        }
+      }
+
+      // --- file input wiring -------------------------------------------------
+
+      dropZone.addEventListener("click", () => fileInput.click());
+      dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("hover"); });
+      dropZone.addEventListener("dragleave", () => dropZone.classList.remove("hover"));
+      dropZone.addEventListener("drop", e => {
+        e.preventDefault();
+        dropZone.classList.remove("hover");
+        const file = e.dataTransfer.files?.[0];
+        if (file) signFile(file);
+      });
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files?.[0];
+        if (file) signFile(file);
+      });
+    </script>
+  </body>
+</html>

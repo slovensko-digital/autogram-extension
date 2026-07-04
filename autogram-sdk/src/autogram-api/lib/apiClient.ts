@@ -121,6 +121,47 @@ export function apiClient(options?: ApiClientConfiguration) {
       return fetch(url.toString(), init).then((response) => response.json());
     },
 
+    startBatch(
+      totalNumberOfDocuments: number,
+      abortController: AbortController | null = null
+    ): Promise<BatchStartResponseBody> {
+      const url = new URL("batch", serverUrl);
+      const body: BatchStartRequestBody = { totalNumberOfDocuments };
+
+      const init: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(body),
+        ...(abortController ? { signal: abortController.signal } : {}),
+      } as const;
+
+      return fetch(url.toString(), init).then((response) => {
+        if (response.status == 204) {
+          throw new UserCancelledSigningException();
+        }
+        return response.json();
+      });
+    },
+
+    endBatch(
+      batchId: string,
+      abortController: AbortController | null = null
+    ): Promise<BatchEndResponseBody> {
+      const url = new URL("batch", serverUrl);
+      const body: BatchEndRequestBody = { batchId };
+
+      const init: RequestInit = {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(body),
+        ...(abortController ? { signal: abortController.signal } : {}),
+      } as const;
+
+      return fetch(url.toString(), init).then((response) => response.json());
+    },
+
     /**
      * Wait for server to be in the requested state.
      *
@@ -195,8 +236,9 @@ export function apiClient(options?: ApiClientConfiguration) {
           } catch (error) {
             clearTimeout(requestTimeout);
 
-            if (error.name !== "AbortError") {
-              lastError = error;
+            const normalizedError = error instanceof Error ? error : new Error(String(error));
+            if (normalizedError.name !== "AbortError") {
+              lastError = normalizedError;
             }
           }
 
@@ -219,6 +261,8 @@ export function apiClient(options?: ApiClientConfiguration) {
      *
      * @param signatureParameters - Optional signature parameters.
      * @param payloadMimeType - Optional payload mime type, defaults to `'application/xml'` - plaintext XML. Must reflect document content type so should be changed if content is not a plaintext XML.
+     * @param batchId - Optional batch identifier. If provided, the document is signed inside the batch.
+     * @param abortController - Optional AbortController used to cancel the request.
      * @returns Signed document.
      */
     sign(
@@ -228,6 +272,7 @@ export function apiClient(options?: ApiClientConfiguration) {
         checkPDFACompliance: true,
       },
       payloadMimeType = "application/xml",
+      batchId: string | null = null,
       abortController: AbortController | null = null
     ): Promise<SignResponseBody> {
       const url = new URL("sign", serverUrl);
@@ -236,6 +281,7 @@ export function apiClient(options?: ApiClientConfiguration) {
         document,
         parameters: signatureParameters,
         payloadMimeType,
+        ...(batchId ? { batchId } : {}),
       };
 
       const init: RequestInit = {
@@ -257,6 +303,11 @@ export function apiClient(options?: ApiClientConfiguration) {
 }
 
 export type AutogramDesktopIntegrationInterface = ReturnType<typeof apiClient>;
+
+type BatchStartRequestBody = components["schemas"]["BatchStartRequestBody"];
+export type BatchStartResponseBody = components["schemas"]["BatchStartResponseBody"];
+type BatchEndRequestBody = components["schemas"]["BatchEndRequestBody"];
+export type BatchEndResponseBody = components["schemas"]["BatchEndResponseBody"];
 
 /**
  * Client configuration options.
@@ -363,6 +414,7 @@ export type SignResponseBody = components["schemas"]["SignResponseBody"];
 export type DesktopSigningState =
   | { type: "checkingApp" }
   | { type: "launchingApp" }
+  | { type: "appMayNotBeInstalled" }
   | { type: "waitingForSignature" }
   | { type: "appNotInstalled" }
   | { type: "signingCancelled" }

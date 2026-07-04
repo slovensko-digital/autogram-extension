@@ -12,6 +12,8 @@ export type {
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody, // TODO we could unify SignResponseBody from desktop and SignedDocument from avm
+  BatchStartResponseBody as DesktopBatchStartResponseBody,
+  BatchEndResponseBody as DesktopBatchEndResponseBody,
   ServerInfo as DesktopServerInfo,
   DesktopSigningState,
   DesktopSigningStateConsumer,

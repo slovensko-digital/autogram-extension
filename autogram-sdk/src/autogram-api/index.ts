@@ -6,6 +6,8 @@ export type {
   ServerInfo,
   SignatureParameters,
   SignResponseBody,
+  BatchStartResponseBody,
+  BatchEndResponseBody,
   AutogramDesktopIntegrationInterface,
   DesktopSigningState,
   DesktopSigningStateConsumer,
