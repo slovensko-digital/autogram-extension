@@ -2,6 +2,8 @@ import {
   apiClient,
   AutogramDesktopIntegrationInterface,
   AutogramDocument,
+  BatchEndResponseBody,
+  BatchStartResponseBody,
   ServerInfo,
   SignatureParameters,
   SignResponseBody,
@@ -50,16 +52,33 @@ export class AutogramDesktopSimpleChannel
       abortController
     );
   }
+  startBatch(
+    totalNumberOfDocuments: number,
+    abortController?: AbortController
+  ): Promise<BatchStartResponseBody> {
+    return this.apiClient.startBatch(
+      totalNumberOfDocuments,
+      abortController ?? null
+    );
+  }
+  endBatch(
+    batchId: string,
+    abortController?: AbortController
+  ): Promise<BatchEndResponseBody> {
+    return this.apiClient.endBatch(batchId, abortController ?? null);
+  }
   sign(
     document: AutogramDocument,
     signatureParameters?: SignatureParameters,
     payloadMimeType?: string,
+    batchId?: string,
     abortController?: AbortController
   ): Promise<SignResponseBody> {
     return this.apiClient.sign(
       document,
       signatureParameters,
       payloadMimeType,
+      batchId ?? null,
       abortController ?? null
     );
   }
