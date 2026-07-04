@@ -348,7 +348,10 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
         name: "ECDSA",
         namedCurve: "P-256",
       },
-      true,
+      // non-extractable: the private key can still be persisted to IndexedDB
+      // via structured clone and used for signing, but page scripts cannot
+      // export the raw key material; the public key is always exportable
+      false,
       ["sign", "verify"]
     );
     log.debug("Key pair generated", keyPair);

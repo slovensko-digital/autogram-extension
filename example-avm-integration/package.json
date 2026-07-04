@@ -8,5 +8,8 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "autogram-sdk": "file:../autogram-sdk"
   }
 }

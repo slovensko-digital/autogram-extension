@@ -1,5 +1,22 @@
-jest.mock("../../injected-ui");
-jest.mock("../../client");
+jest.mock("../autogram/autogram-implementation", () => {
+  const implementation = {
+    launch: (callback) => callback.onSuccess(),
+    setLanguage: () => {},
+    sign: async (_signatureId, _digestAlgUri, _policy, callback) =>
+      callback.onSuccess("signed-data"),
+    addObject: (_obj, callback) => callback.onSuccess(),
+    getSignature: async (_parameters, callback) =>
+      callback.onSuccess("signature-base64"),
+    getSignerIdentification: (callback) => callback.onSuccess("signer"),
+    getOriginalObject: (callback) => callback.onSuccess("original"),
+    getVersion: (callback) => callback.onSuccess("test-version"),
+  };
+  return {
+    DBridgeAutogramImpl: {
+      init: async () => implementation,
+    },
+  };
+});
 
 import { constructDitecX, DitecX } from "./ditecx";
 
@@ -63,27 +80,29 @@ describe("mocked", () => {
   });
 });
 
-describe("upvs", async () => {
+describe("upvs", () => {
   let ditecX: DitecX;
   beforeAll(async () => {
     ditecX = await constructDitecX();
   });
   test("basic", async () => {
     const ds = ditecX.dSigXadesJs;
-    await asPromise(ds.addTxtObject)(
+    await asPromise(ds.addTxtObject.bind(ds))(
       "objectId.txt",
       "objectDescription",
       "sourceTxt",
       "objectFormatIdentifier"
     );
-    await asPromise(ds.sign)(
+    await asPromise(ds.sign.bind(ds))(
       "signatureId",
       ds.SHA256,
       "signaturePolicyIdentifier"
     );
-    const signature = await asPromise(ds.getSignedXmlWithEnvelopeBase64)();
+    const signature = await asPromise(
+      ds.getSignedXmlWithEnvelopeBase64.bind(ds)
+    )();
 
-    expect(signature).toBe(expect.any(String));
+    expect(signature).toEqual(expect.any(String));
   });
 });
 

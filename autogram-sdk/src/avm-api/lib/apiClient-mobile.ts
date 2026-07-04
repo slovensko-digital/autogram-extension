@@ -237,7 +237,10 @@ export class AutogramVMobileClientApiClient {
     return this.readJsonOrThrow(response, PostDocumentSignResponse);
   }
 
-  private async readJsonOrThrow<T>(response: Response, schema: z.ZodType<T>) {
+  private async readJsonOrThrow<S extends z.ZodTypeAny>(
+    response: Response,
+    schema: S
+  ): Promise<z.output<S>> {
     if (!response.ok) {
       throw new Error(await this.readErrorText(response));
     }

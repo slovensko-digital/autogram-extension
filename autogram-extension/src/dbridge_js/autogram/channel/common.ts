@@ -42,6 +42,14 @@ export const ZSignResponse = z.object({
   issuedBy: z.string().default(""),
 });
 
+export const ZBatchStartResponse = z.object({
+  batchId: z.string().optional(),
+});
+
+export const ZBatchEndResponse = z.object({
+  status: z.enum(["FINISHED", "NOT_FINISHED"]).optional(),
+});
+
 declare global {
   /**
    * used in firefox extension to allow sending detail over extension interface

@@ -542,6 +542,20 @@ class AutogramExecutor {
         payloadMimeType
       );
     },
+    startBatch: async (args: unknown, senderId: SenderId) => {
+      const { totalNumberOfDocuments } = z
+        .object({ totalNumberOfDocuments: z.number() })
+        .parse(args);
+      const abortController = new AbortController();
+      this.abortControllers.set(senderId, abortController);
+      return this.client.startBatch(totalNumberOfDocuments, abortController);
+    },
+    endBatch: async (args: unknown, senderId: SenderId) => {
+      const { batchId } = z.object({ batchId: z.string() }).parse(args);
+      const abortController = new AbortController();
+      this.abortControllers.set(senderId, abortController);
+      return this.client.endBatch(batchId, abortController);
+    },
   };
 }
 

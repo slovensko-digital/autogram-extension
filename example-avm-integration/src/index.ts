@@ -125,7 +125,10 @@ async function loadOrRegisterIntegration() {
   applyBaseUrl();
   setStatus("Loading integration state...");
   logEvent(`Using AVM server ${integration.getBaseUrl()}`);
-  await integration.loadOrRegister();
+  await integration.loadOrRegister({
+    platform: "web",
+    displayName: "AVM example integration",
+  });
   const state = {
     baseUrl: integration.getBaseUrl(),
     integrationGuid: integration.getIntegrationGuid(),

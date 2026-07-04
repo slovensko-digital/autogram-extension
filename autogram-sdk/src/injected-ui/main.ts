@@ -390,10 +390,10 @@ function promiseWithResolvers<T>() {
 }
 function promiseWithResolversPolyfill<T>() {
   let resolve: (value: T) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     },
     reject: (reason?: unknown) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     };
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;

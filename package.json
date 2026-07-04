@@ -50,14 +50,9 @@
   },
   "homepage": "https://github.com/slovensko-digital/autogram-extension#readme",
   "dependencies": {
-    "crypto-browserify": "^3.12.0",
     "idb-keyval": "^6.2.1",
     "js-base64": "^3.7.7",
     "loglevel": "^1.9.2",
-    "loglevel-plugin-prefix": "^0.8.4",
-    "stream-browserify": "^3.0.0",
-    "turborepo": "^0.0.1",
-    "vm-browserify": "^1.1.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {

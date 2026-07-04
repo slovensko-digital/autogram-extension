@@ -117,20 +117,24 @@ export class CombinedClient {
       await new Promise<void>((resolve, reject) => {
         try {
           log.debug("CombinedClient init addEventListener");
-          const resolved = false;
-          const listener = root.addEventListener(
+          let resolved = false;
+          const settle = () => {
+            if (!resolved) {
+              resolved = true;
+              resolve();
+            }
+          };
+          root.addEventListener(
             "load",
             () => {
               log.debug("CombinedClient init load event");
-              if (!resolved) {
-                resolve();
-              }
+              settle();
             },
             { once: true }
           );
           if (root.isConnected) {
             log.debug("CombinedClient init already connected", { root });
-            resolve();
+            settle();
           }
         } catch (e) {
           log.error("CombinedClient init createUI failed", e);
@@ -151,7 +155,8 @@ export class CombinedClient {
       ui,
       clientMobileIntegration,
       clientDesktopIntegration,
-      resetSignRequestCallback
+      resetSignRequestCallback,
+      options
     );
   }
 

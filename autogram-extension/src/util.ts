@@ -1,4 +1,3 @@
-import type { AvmRegistrationInfo } from "autogram-sdk/avm-api/lib/apiClient";
 import { ExtensionOptions, ExtensionOptionsString } from "./options/default";
 
 export function TODO(...rest: unknown[]): void {

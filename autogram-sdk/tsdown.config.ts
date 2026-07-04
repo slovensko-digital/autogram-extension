@@ -9,6 +9,14 @@ const entries = [
   "src/avm-api/index.ts",
 ];
 
+function iifeEntryName(entry: string): string {
+  // "src/index.ts" -> "index", "src/avm-api/index.ts" -> "avm-api"
+  const parts = entry.replace(/^src\//, "").replace(/\.ts$/, "").split("/");
+  return parts.at(-1) === "index" && parts.length > 1
+    ? parts.slice(0, -1).join("-")
+    : parts.join("-");
+}
+
 const commonOptions = {
   platform: "browser" as const,
   minify: true,
@@ -54,7 +62,12 @@ export default defineConfig([
   ...entries.map((entry) => ({
     ...commonOptions,
     format: "iife" as const,
-    entry: [entry],
+    // Name entries explicitly: the nested index.ts entries would otherwise all
+    // emit a colliding "index.iife.js". Keep "index-all" etc. as flat names.
+    entry: { [iifeEntryName(entry)]: entry },
     globalName: "AutogramSDK",
+    // Each config in this array runs separately; only the first may clean dist,
+    // otherwise the iife builds delete the cjs/esm/dts output.
+    clean: false,
   })),
 ]);

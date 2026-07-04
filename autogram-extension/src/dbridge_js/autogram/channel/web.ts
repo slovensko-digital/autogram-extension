@@ -12,11 +12,15 @@ import {
   DesktopSignatureParameters,
   DesktopSignResponseBody,
   DesktopServerInfo,
+  DesktopBatchStartResponseBody,
+  DesktopBatchEndResponseBody,
 } from "autogram-sdk";
 import {
   ChannelMessage,
   EVENT_MESSAGE_RESPONSE_CS_TO_INJ,
   EVENT_SEND_MESSAGE_INJ_TO_CS,
+  ZBatchEndResponse,
+  ZBatchStartResponse,
   ZChannelResponse,
   ZGetLaunchUrlResponse,
   ZGetQrCodeUrlResponse,
@@ -97,6 +101,27 @@ export class AutogramDesktopChannel
     const response = ZSignResponse.parse(obj);
     log.debug("sign response", obj, response);
     return response;
+  }
+
+  /* abortController is not forwarded because abort handlers can't cross execution contexts */
+  async startBatch(
+    totalNumberOfDocuments: number
+  ): Promise<DesktopBatchStartResponseBody> {
+    const obj = await this.channel.sendMessage({
+      method: "startBatch",
+      args: { totalNumberOfDocuments },
+      app: "autogram",
+    });
+    return ZBatchStartResponse.parse(obj);
+  }
+
+  async endBatch(batchId: string): Promise<DesktopBatchEndResponseBody> {
+    const obj = await this.channel.sendMessage({
+      method: "endBatch",
+      args: { batchId },
+      app: "autogram",
+    });
+    return ZBatchEndResponse.parse(obj);
   }
 }
 
@@ -332,10 +357,10 @@ async function withTimeout<T>(timeoutMs: number, promise: Promise<T>) {
 
 function promiseWithResolversPolyfill<T>() {
   let resolve: (value: T) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     },
     reject: (reason?: unknown) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     };
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;
