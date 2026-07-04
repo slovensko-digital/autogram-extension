@@ -31,6 +31,19 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         flex-shrink: 0;
       }
 
+      .inline-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 0;
+      }
+
+      .inline-status .spinner,
+      .inline-status p {
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+
       @keyframes ag-spin {
         to {
           transform: rotate(360deg);
@@ -145,6 +158,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
   render() {
     let title = "Prebieha podpisovanie Autogramom";
     let content;
+    let useFullWidthLayout = false;
 
     switch (this.state.type) {
       case "checkingApp":
@@ -156,34 +170,78 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
 
       case "launchingApp":
         content = html`
-          <div class="spinner"></div>
-          <p>Spúšťam Autogram…</p>
-          <p>Ak sa aplikácia nespustila automaticky, otvorte ju ručne.</p>
+          <div class="inline-status">
+            <div class="spinner"></div>
+            <p>Spúšťam Autogram…</p>
+          </div>
         `;
         break;
 
       case "waitingForSignature":
         content = html`
           <div class="spinner"></div>
-          <p>Podpisovanie pokračuje v desktopovej aplikácii Autogram.</p>
+          <p>Podpisovanie pokračuje v aplikácii Autogram.</p>
+        `;
+        break;
+
+      case "appMayNotBeInstalled":
+        title = "Autogram sa zatiaľ nespustil";
+        useFullWidthLayout = true;
+        content = html`
+          <div class="not-installed">
+            <div class="inline-status">
+              <div class="spinner"></div>
+              <p>Spúšťam Autogram…</p>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+              <div class="not-installed-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#f59e0b"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Máte nainštalovaný Autogram?</h2>
+              </div>
+            </div>
+            <p>
+              Autogram sa po pokuse o spustenie zatiaľ neprihlásil. Možno nie je
+              nainštalovaný alebo sa ešte len spúšťa.
+            </p>
+            <p>
+              Ešte chvíľu čakáme na odpoveď aplikácie. Ak sa nespustí, zobrazíme
+              ďalšie pokyny na inštaláciu.
+            </p>
+            <a
+              class="download-btn"
+              href="https://autogram.slovensko.digital"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ${unsafeSVG(downloadSvg)}
+              Stiahnuť Autogram
+            </a>
+          </div>
         `;
         break;
 
       case "appNotInstalled":
         title = "Autogram nie je nainštalovaný";
+        useFullWidthLayout = true;
         content = html`
           <div class="not-installed">
-            <div class="not-installed-icon">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
-              </svg>
-            </div>
-            <div>
-              <h2>Autogram nie je nainštalovaný</h2>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+              <div class="not-installed-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Autogram nie je nainštalovaný</h2>
+              </div>
             </div>
             <p>
-              Na podpisovanie dokumentov je potrebná desktopová aplikácia
-              Autogram. Postupujte podľa nasledujúcich krokov:
+              Na podpisovanie dokumentov je potrebná  aplikácia Autogram. Postupujte podľa nasledujúcich krokov:
             </p>
             <ol>
               <li>
@@ -195,7 +253,6 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
                   >autogram.slovensko.digital</a
                 >.
               </li>
-              <li>Po inštalácii spustite aplikáciu Autogram.</li>
               <li>Vráťte sa na túto stránku a skúste podpisovanie znova.</li>
             </ol>
             <a
@@ -227,7 +284,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
       default:
         content = html`
           <div class="spinner"></div>
-          <p>Podpisovanie pokračuje v desktopovej aplikácii Autogram.</p>
+          <p>Podpisovanie pokračuje v aplikácii Autogram.</p>
         `;
     }
 
@@ -238,9 +295,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
           ${unsafeSVG(closeSvg)}
         </button>
       </div>
-      ${this.state.type === "appNotInstalled"
-        ? content
-        : html`<div class="main">${content}</div>`}
+      ${useFullWidthLayout ? content : html`<div class="main">${content}</div>`}
     `;
   }
 }

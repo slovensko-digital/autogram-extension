@@ -195,8 +195,9 @@ export function apiClient(options?: ApiClientConfiguration) {
           } catch (error) {
             clearTimeout(requestTimeout);
 
-            if (error.name !== "AbortError") {
-              lastError = error;
+            const normalizedError = error instanceof Error ? error : new Error(String(error));
+            if (normalizedError.name !== "AbortError") {
+              lastError = normalizedError;
             }
           }
 
@@ -363,6 +364,7 @@ export type SignResponseBody = components["schemas"]["SignResponseBody"];
 export type DesktopSigningState =
   | { type: "checkingApp" }
   | { type: "launchingApp" }
+  | { type: "appMayNotBeInstalled" }
   | { type: "waitingForSignature" }
   | { type: "appNotInstalled" }
   | { type: "signingCancelled" }
