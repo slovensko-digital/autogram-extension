@@ -9,6 +9,7 @@ import {
   defaultOptionsStorage,
   ExtensionOptions,
 } from "../../options/default";
+import { DitecErrorCodes } from "./types";
 
 const log = createLogger("ag-ext.ditecx");
 
@@ -68,11 +69,7 @@ export async function constructDitecX(
       },
     },
     utils: {
-      ERROR_CANCELLED: 1,
-      ERROR_GENERAL: -200,
-      ERROR_NOT_INSTALLED: -201,
-      ERROR_LAUNCH_FAILED: -202,
-      ERROR_LAUNCH_FORBIDDEN: -203,
+      ...DitecErrorCodes,
       isDitecError: function (error) {
         log.debug("isDitecError", error);
         return true;

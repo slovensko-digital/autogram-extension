@@ -53,6 +53,32 @@ const { content, issuedBy, signedBy } = await client.sign(
 </script>
 ```
 
+## Error handling
+
+All SDK errors carry a machine-readable code. Classify them with
+`AutogramError.is()` (works even for errors that crossed a `postMessage`
+boundary, where `instanceof` fails):
+
+```typescript
+import { AutogramError } from "autogram-sdk";
+
+try {
+  await client.sign(...);
+} catch (e) {
+  if (AutogramError.is(e, "user-cancelled")) {
+    // user closed the dialog — not a failure
+  } else if (AutogramError.is(e, "app-not-installed")) {
+    // point the user to autogram.slovensko.digital
+  } else {
+    throw e;
+  }
+}
+```
+
+See [docs/API.md](./docs/API.md) for the full API reference,
+[docs/MIGRATION.md](./docs/MIGRATION.md) for upgrade notes, and
+[docs/API-PROPOSAL.md](./docs/API-PROPOSAL.md) for the redesign roadmap.
+
 ## Advanced usage — channels
 
 For most web applications the basic usage above is all you need — `CombinedClient.init()` called without arguments works out of the box.

@@ -20,10 +20,12 @@ export type {
 } from "./autogram-api/index";
 
 export {
+  AutogramError,
   UserCancelledSigningException,
   AutogramSdkException,
   AutogramAppNotInstalledException,
 } from "./errors";
+export type { AutogramErrorCode, SerializedAutogramError } from "./errors";
 
 export { DesktopClient } from "./desktop-client";
 export type { DesktopSignOptions } from "./desktop-client";
@@ -43,4 +45,4 @@ export type {
 } from "./avm-api/index";
 export { AutogramVMobileSimulation } from "./avm-api/index";
 export { CombinedClient } from "./with-ui";
-export type { SignedObject } from "./with-ui";
+export type { SignedObject } from "./types";

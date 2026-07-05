@@ -7,9 +7,9 @@
 import type {
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
-  SignResponseBody as DesktopSignResponseBody,
   SignatureParameters,
 } from "./autogram-api/index";
+import type { SignedObject } from "./types";
 
 import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
 import { AvmSimpleChannel } from "./channel-avm";
@@ -23,15 +23,11 @@ import type {
 import { AutogramDesktopSimpleChannel } from "./channel-desktop";
 import { DesktopClient, type DesktopSignOptions } from "./desktop-client";
 import { createLogger } from "./log";
-import {
-  AutogramAppNotInstalledException,
-  AutogramSdkException,
-  UserCancelledSigningException,
-} from "./errors";
+import { AutogramError } from "./errors";
 import packageJson from "../package.json";
 import { AvmRegistrationInfo } from "./avm-api/lib/apiClient";
 
-export type SignedObject = DesktopSignResponseBody;
+export type { SignedObject } from "./types";
 // We have to leave this in because otherwise the custom elements are not registered
 export { AutogramRoot } from "./injected-ui/main";
 
@@ -199,14 +195,14 @@ export class CombinedClient {
           : signedObject.content,
       };
     } catch (e) {
-      if (e instanceof UserCancelledSigningException) {
+      if (AutogramError.is(e, "user-cancelled")) {
         log.info("User cancelled request");
         this.ui.signingCancelled();
         throw e;
-      } else if (e instanceof AutogramAppNotInstalledException) {
+      } else if (AutogramError.is(e, "app-not-installed")) {
         log.error("Autogram app not installed", e);
         throw e;
-      } else if (e instanceof AutogramSdkException) {
+      } else if (AutogramError.is(e)) {
         this.ui.showError(e.message);
       }
       log.error("Signing failed", e);

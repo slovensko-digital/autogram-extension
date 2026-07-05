@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { desktopApiClient, AutogramVMobileIntegration } from "autogram-sdk";
+import {
+  desktopApiClient,
+  AutogramVMobileIntegration,
+  AutogramError,
+} from "autogram-sdk";
 
 import type {
   AVMDocumentToSign,
@@ -12,7 +16,7 @@ import { get, set } from "idb-keyval";
 import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
 import type { SignedDocument } from "autogram-sdk/avm-api";
-import type { SignedObject } from "autogram-sdk/with-ui";
+import type { SignedObject } from "autogram-sdk";
 import { getAvmIntegrationRegistrationInfo } from "../../util-extension";
 
 const log = createLogger("ag-ext.bg.worker");
@@ -106,6 +110,9 @@ export class BackgroundWorker {
               JSON.stringify({
                 message: error.message,
                 name: error.name,
+                // `code` lets the other side rehydrate the error precisely;
+                // `name` remains as fallback for errors without one.
+                ...(AutogramError.is(error) ? { code: error.code } : {}),
                 cause: error.cause,
                 error: error,
               })

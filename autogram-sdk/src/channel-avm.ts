@@ -10,7 +10,7 @@ import {
   AvmRegistrationInfo,
 } from "./avm-api/lib/apiClient";
 import { createLogger } from "./log";
-import { SignedObject } from "./with-ui";
+import { SignedObject } from "./types";
 
 const log = createLogger("ag-sdk:AvmSimpleChannel");
 

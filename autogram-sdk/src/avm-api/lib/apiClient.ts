@@ -4,7 +4,7 @@ import z from "zod";
 import { paths } from "./avm-api.generated";
 import { Base64 } from "js-base64";
 import { createLogger } from "../../log";
-import { SignedObject } from "../../with-ui";
+import { SignedObject } from "../../types";
 
 const log = createLogger("ag-sdk:AvmIntegration");
 

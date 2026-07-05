@@ -17,7 +17,7 @@ import {
   AvmChannelWeb,
   WebChannelCaller,
 } from "./channel/web";
-import { InputObject } from "../ditecx/types";
+import { InputObject, toDitecError } from "../ditecx/types";
 import { createLogger } from "../../log";
 import { ExtensionOptions } from "../../options/default";
 
@@ -197,6 +197,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
       callback.onSuccess(response.content);
     } catch (e) {
       log.error(e);
+      callback.onError?.(toDitecError(e));
     }
   }
 

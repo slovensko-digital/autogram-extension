@@ -1,3 +1,53 @@
+import { AutogramError } from "autogram-sdk";
+
+/**
+ * Error codes matching Ditec D.Bridge `ditec.utils.ERROR_*` constants,
+ * which portal code (e.g. slovensko.sk) uses to distinguish error causes.
+ */
+export const DitecErrorCodes = {
+  ERROR_CANCELLED: 1,
+  ERROR_GENERAL: -200,
+  ERROR_NOT_INSTALLED: -201,
+  ERROR_LAUNCH_FAILED: -202,
+  ERROR_LAUNCH_FORBIDDEN: -203,
+} as const;
+
+/**
+ * Error object shape passed to Ditec-style `onError` callbacks.
+ */
+export interface DitecError {
+  code: number;
+  message: string;
+}
+
+/**
+ * Maps SDK exceptions to Ditec-style error objects so portal code can
+ * distinguish user cancellation from real failures via `error.code`.
+ *
+ * Uses {@link AutogramError.is} instead of `instanceof` because errors that
+ * cross the extension message bridge are serialized to plain objects and
+ * lose their prototype chain.
+ */
+export function toDitecError(e: unknown): DitecError {
+  const message = errorMessage(e);
+  if (AutogramError.is(e, "user-cancelled")) {
+    return { code: DitecErrorCodes.ERROR_CANCELLED, message };
+  }
+  if (AutogramError.is(e, "app-not-installed")) {
+    return { code: DitecErrorCodes.ERROR_NOT_INSTALLED, message };
+  }
+  return { code: DitecErrorCodes.ERROR_GENERAL, message };
+}
+
+function errorMessage(e: unknown): string {
+  if (typeof e === "object" && e !== null) {
+    const candidate = e as { message?: unknown };
+    if (typeof candidate.message === "string") {
+      return candidate.message;
+    }
+  }
+  return String(e);
+}
 
 export interface ObjectXadesXml {
   type: "XadesXml";

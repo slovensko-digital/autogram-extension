@@ -3,7 +3,8 @@ import {
   AVMDocumentToSign,
   AVMSignedDocument,
   randomUUID,
-  UserCancelledSigningException,
+  AutogramError,
+  AutogramSdkException,
 } from "autogram-sdk";
 
 import {
@@ -300,13 +301,9 @@ export class WebChannelCaller {
     }
 
     if (data.error) {
-      // This is becuase if we try to move the error over serialized interface (postMessage) we lose the type
-      // TODO: instead of doing this, we should probably have either Result type that will be serializable?
-      if (data.error?.error?.name === "UserCancelledSigningException") {
-        promiseWithResolvers.reject(new UserCancelledSigningException());
-      } else {
-        promiseWithResolvers.reject(data.error);
-      }
+      // Errors lose their prototype chain when serialized over postMessage;
+      // fromJSON rehydrates them (by `code`, falling back to legacy names).
+      promiseWithResolvers.reject(AutogramError.fromJSON(data.error));
     } else {
       promiseWithResolvers.resolve(data.result);
     }
@@ -377,13 +374,6 @@ class AutogramTimeoutError extends Error {
   }
 }
 
-class AutogramSdkException extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AutogramSdkException";
-  }
-}
-
 function mapTimeoutToSdkException<T>(contextMessage: string) {
   return (error: unknown): T => {
     log.debug(
@@ -404,7 +394,7 @@ function mapTimeoutToSdkException<T>(contextMessage: string) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (error as any)?.name === "AutogramTimeoutError"
     ) {
-      throw new AutogramSdkException(contextMessage);
+      throw new AutogramSdkException(contextMessage, "timeout");
     }
     throw error;
   };
