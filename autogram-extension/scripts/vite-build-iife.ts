@@ -4,6 +4,7 @@ import { execSync } from "child_process";
 import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import { build, type InlineConfig } from "vite";
+import type { RollupWatcher } from "rollup";
 import { generateManifest } from "../webpack/manifest";
 
 type FileDescriptor = {
@@ -48,6 +49,8 @@ const entryInputs: Record<string, string> = {
   options: path.resolve(projectRoot, "src/entrypoint/options.ts"),
   redirect: path.resolve(projectRoot, "src/entrypoint/redirect.ts"),
 };
+
+const watchers: RollupWatcher[] = [];
 
 const defineValues = {
   "import.meta.env.AE_MANIFEST_VERSION": JSON.stringify(manifestVersion),
@@ -142,7 +145,6 @@ async function buildEntry(entryName: string, entryPath: string) {
       rollupOptions: {
         external: ["crypto", "stream", "vm", "buffer", "events"],
         output: {
-          inlineDynamicImports: true,
           extend: true,
         },
       },
@@ -153,7 +155,10 @@ async function buildEntry(entryName: string, entryPath: string) {
     },
   };
 
-  await build(config);
+  const result = await build(config);
+  if (shouldWatch) {
+    watchers.push(result as RollupWatcher);
+  }
 }
 
 async function setupDist() {
@@ -192,6 +197,21 @@ async function main() {
   const watchNote = shouldWatch ? " (watch mode)" : "";
   console.log(`Built extension bundles in ${mode}${watchNote}.`);
   console.log(`Output: ${toPosixPath(path.relative(projectRoot, distDir))}`);
+}
+
+let shuttingDown = false;
+
+async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
+  await Promise.all(watchers.map((watcher) => watcher.close()));
+  process.exit(0);
+}
+
+if (shouldWatch) {
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
 
 main().catch((error) => {
