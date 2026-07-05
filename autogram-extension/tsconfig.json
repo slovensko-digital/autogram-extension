@@ -22,9 +22,7 @@
     }
   },
   "include": ["src/**/*", "webpack/**/*"],
-  // webpack-build/webpack-watch are the legacy build path; they depend on
-  // webpack-merge which is no longer installed
-  "exclude": ["spec", "webpack/webpack-build.ts", "webpack/webpack-watch.ts"],
+  "exclude": ["spec"],
   "ts-node": {
       "esm": true
   }

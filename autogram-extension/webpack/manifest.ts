@@ -1,9 +1,18 @@
-import { ManifestPluginOptions as WMPOptions } from "webpack-manifest-plugin";
 import { enabledUrls } from "../src/supported-sites";
 import { CommonManifest, ManifestV2, ManifestV3 } from "./manifest-types";
 import { manifestVersion } from "./manifest-version";
-import { FileDescriptor } from "webpack-manifest-plugin/dist/helpers";
 import packageJson from "../package.json" with { type: "json" };
+
+export interface FileDescriptor {
+  chunk?: undefined;
+  isAsset: boolean;
+  isChunk: boolean;
+  isInitial: boolean;
+  isModuleAsset: boolean;
+  name: string;
+  path: string;
+}
+
 
 export function generateManifest(
   seed: Record<string, unknown>,
@@ -203,8 +212,3 @@ export function generateManifest(
       };
   }
 }
-
-export const manifestOptions: WMPOptions = {
-  fileName: "manifest.json",
-  generate: generateManifest,
-};
