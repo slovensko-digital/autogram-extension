@@ -1,15 +1,13 @@
 jest.mock("../autogram/autogram-implementation", () => {
   const implementation = {
-    launch: (callback) => callback.onSuccess(),
+    launch: async () => {},
     setLanguage: () => {},
-    sign: async (_signatureId, _digestAlgUri, _policy, callback) =>
-      callback.onSuccess("signed-data"),
-    addObject: (_obj, callback) => callback.onSuccess(),
-    getSignature: async (_parameters, callback) =>
-      callback.onSuccess("signature-base64"),
-    getSignerIdentification: (callback) => callback.onSuccess("signer"),
-    getOriginalObject: (callback) => callback.onSuccess("original"),
-    getVersion: (callback) => callback.onSuccess("test-version"),
+    sign: async () => {},
+    addObject: () => {},
+    getSignature: async () => "signature-base64",
+    getSignerIdentification: () => "signer",
+    getOriginalObject: () => "original",
+    getVersion: () => "test-version",
   };
   return {
     DBridgeAutogramImpl: {
@@ -47,8 +45,8 @@ describe("mocked", () => {
   test("basic", (done) => {
     const ds = ditecX.dSigXadesJs;
 
-    const runTest = (signedData) => {
-      expect(signedData).toBeTruthy();
+    // sign() resolves void; reaching onSuccess means the add→sign chain completed.
+    const runTest = () => {
       done();
     };
 

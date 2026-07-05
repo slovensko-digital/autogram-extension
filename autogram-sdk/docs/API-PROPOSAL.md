@@ -290,11 +290,17 @@ Each phase must ship with an updated [API.md](./API.md) and a
 
 ## Follow-ups (not part of the six phases)
 
-- Migrate the extension's Ditec adapter layer (`autogram-implementation.ts`,
-  `sign-request.ts`) to the unified `DocumentToSign`/`SignedDocumentResult`
-  and a promise-based `ImplementationInterface` (see "Ditec adapter layer"
-  above). Lower risk as a standalone change; the adapter still uses the
-  deprecated positional `sign` today.
+- ✅ **Ditec adapter migration** (extension-internal, no SDK version bump):
+  `ImplementationInterface` is now promise-based; the Ditec
+  `{onSuccess, onError}` convention is shimmed once at the adapter edge
+  (`DSigAdapter.resolve` in `dsig-base-adapter.ts`), so a rejected promise
+  (or a synchronous throw) always reaches the portal's `onError` — the
+  per-method try/catch and the swallow-prone `getSignature` catch are gone.
+  `SignRequest.documentToSign` emits the unified `DocumentToSign`, and
+  `DBridgeAutogramImpl.getSignature` calls the unified
+  `client.sign(document, parameters)` returning `SignedDocumentResult`
+  (keeping all signers), doing the `decodeBase64` transform itself. The
+  fixed `dSigXades*` method signatures are unchanged.
 - Wire `MobileClient.pairedDevices()` into the dialog (notify-vs-scan)
   — needs a new `avmService.pairedDevices` bridge method and a
   `SigningState` variant.

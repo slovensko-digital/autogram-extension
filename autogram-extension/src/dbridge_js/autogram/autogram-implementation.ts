@@ -1,23 +1,19 @@
 import {
   DesktopSignatureParameters,
-  DesktopSignResponseBody,
+  SignedDocumentResult,
 } from "autogram-sdk";
+import { Base64 } from "js-base64";
 import { CombinedClient, createAutogramClient } from "autogram-sdk/with-ui";
 import { TODO } from "../../util";
 import { SigningStatus, SignRequest } from "../ditecx/sign-request";
 
-import {
-  ImplementationInterface,
-  OnErrorCallback,
-  OnSuccessCallback,
-  OnSuccessCallback1,
-} from "../ditecx/implementation";
+import { ImplementationInterface } from "../ditecx/implementation";
 import {
   AutogramDesktopChannel,
   AvmChannelWeb,
   WebChannelCaller,
 } from "./channel/web";
-import { InputObject, toDitecError } from "../ditecx/types";
+import { InputObject } from "../ditecx/types";
 import { createLogger } from "../../log";
 import { ExtensionOptions } from "../../options/default";
 
@@ -76,7 +72,7 @@ async function createRestorePointHash(
 export class DBridgeAutogramImpl implements ImplementationInterface {
   private signRequest: SignRequest;
   private language = "sk";
-  private signedObject: DesktopSignResponseBody;
+  private signedResult: SignedDocumentResult;
 
   private client: CombinedClient;
 
@@ -110,8 +106,8 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     );
   }
 
-  public async launch(callback: OnSuccessCallback): Promise<void> {
-    callback.onSuccess();
+  public async launch(): Promise<void> {
+    // The app is launched lazily when a signature is requested.
   }
 
   public setLanguage(language: string) {
@@ -124,8 +120,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   public async sign(
     signatureId: string,
     digestAlgUri: string,
-    signaturePolicyIdentifier: string,
-    callback: OnSuccessCallback & OnErrorCallback
+    signaturePolicyIdentifier: string
   ): Promise<void> {
     if (this.signRequest.signingStatus !== SigningStatus.new) {
       log.error("Signing non-new sign request");
@@ -137,11 +132,9 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     this.signRequest.signaturePolicyIdentifier = signaturePolicyIdentifier;
 
     this.signRequest.signingStatus = SigningStatus.started;
-    // this.launch(callback);
-    callback.onSuccess();
   }
 
-  public addObject(obj: InputObject, callback: OnSuccessCallback): void {
+  public addObject(obj: InputObject): void {
     if (this.signRequest.signingStatus == SigningStatus.signed) {
       log.warn("Resetting sign request");
       this.resetSignRequest();
@@ -152,79 +145,77 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     }
     log.info(obj);
     this.signRequest.addObject(obj);
-    log.debug(callback);
-    callback.onSuccess();
   }
 
+  /**
+   * Signs the current request and returns the signed content. Any failure
+   * rejects the promise; the adapter edge maps it to the portal's
+   * `onError` (see {@link DSigAdapter.resolve}).
+   */
   public async getSignature(
     parameters: Partial<DesktopSignatureParameters>,
-    callback: OnSuccessCallback1,
     decodeBase64 = false
-  ): Promise<void> {
-    try {
-      log.debug("Options in getSignature", this.extensionOptions);
-      if (this.extensionOptions.restorePointEnabled) {
-        log.debug("Creating restore point for signing session");
-        const restorePoint = await createRestorePointHash(
-          this.signRequest,
-          window.location.href,
-          parameters
-        );
+  ): Promise<string> {
+    log.debug("Options in getSignature", this.extensionOptions);
+    if (this.extensionOptions.restorePointEnabled) {
+      log.debug("Creating restore point for signing session");
+      const restorePoint = await createRestorePointHash(
+        this.signRequest,
+        window.location.href,
+        parameters
+      );
 
-        const restorePointClient = this.client;
-        if (typeof restorePointClient.useRestorePoint !== "function") {
-          log.warn("SDK client does not support restore points");
-        } else {
-          const restored = await restorePointClient.useRestorePoint(restorePoint);
-          if (restored) {
-            log.info("We can restore previous signing session");
-            this.signedObject = restored;
-            this.signRequest.signingStatus = SigningStatus.signed;
-            callback.onSuccess(restored.content);
-            return;
-          }
+      if (typeof this.client.useRestorePoint !== "function") {
+        log.warn("SDK client does not support restore points");
+      } else {
+        const restored = await this.client.useRestorePoint(restorePoint);
+        if (restored) {
+          log.info("We can restore previous signing session");
+          this.signedResult = {
+            content: restored.content,
+            mimeType: "application/octet-stream",
+            encoding: "base64",
+            signatures: [
+              { signedBy: restored.signedBy, issuedBy: restored.issuedBy },
+            ],
+          };
+          this.signRequest.signingStatus = SigningStatus.signed;
+          // Restored content is returned as-is (historical behavior).
+          return restored.content;
         }
       }
-
-      const response = await this.client.sign(
-        this.signRequest.document,
-        this.signRequest.signatureParameters(parameters),
-        this.signRequest.payloadMimeType,
-        decodeBase64
-      );
-      this.signedObject = response;
-      this.signRequest.signingStatus = SigningStatus.signed;
-      callback.onSuccess(response.content);
-    } catch (e) {
-      log.error(e);
-      callback.onError?.(toDitecError(e));
     }
+
+    const result = await this.client.sign(
+      this.signRequest.documentToSign,
+      this.signRequest.signatureParameters(parameters)
+    );
+    this.signedResult = result;
+    this.signRequest.signingStatus = SigningStatus.signed;
+    return decodeBase64 ? Base64.decode(result.content) : result.content;
   }
 
-  public getSignerIdentification(callback: OnSuccessCallback1): void {
+  public getSignerIdentification(): string {
     this.assertSignedRequest();
-    if (this.signedObject?.signedBy) {
-      callback.onSuccess(this.signedObject?.signedBy);
-    } else {
-      callback.onSuccess(
-        `CN=(Používateľ Autogramu #${this.client.getSignatureIndex()})`
-      );
+    const signatures = this.signedResult?.signatures ?? [];
+    const signedBy = signatures[signatures.length - 1]?.signedBy;
+    if (signedBy) {
+      return signedBy;
     }
+    return `CN=(Používateľ Autogramu #${this.client.getSignatureIndex()})`;
     // TODO skontrolovat ci preco nepouzivame takto riesene (asi si to pyta pred vypytanim si podpisu - kedze dsig podporuje taky flow)
     // this.signerIdentificationListeners.push(() => {
-    // callback.onSuccess(this.signedObject?.signedBy);
+    // callback.onSuccess(this.signedResult?.signatures.at(-1)?.signedBy);
     // });
   }
 
-  public getOriginalObject(callback: OnSuccessCallback1) {
+  public getOriginalObject(): InputObject {
     this.assertSignedRequest();
-    callback.onSuccess(this.signRequest.object);
+    return this.signRequest.object;
   }
 
-  public getVersion(callback: OnSuccessCallback1) {
-    const fakeVersion =
-      '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
-    callback.onSuccess(fakeVersion);
+  public getVersion(): string {
+    return '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
   }
 
   // Private methods

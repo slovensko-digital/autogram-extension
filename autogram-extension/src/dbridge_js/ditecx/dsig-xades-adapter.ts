@@ -17,7 +17,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.log("addXmlObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesXml",
         objectId,
@@ -47,7 +47,7 @@ export class DSigXadesAdapter extends DSigAdapter {
   ) {
     this.log("addXmlObject2", arguments);
 
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesXml",
         objectId,
@@ -74,7 +74,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("addPdfObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesPdf",
         objectId,
@@ -96,7 +96,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     this.log("addTxtObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpTxt",
         objectId,
@@ -115,7 +115,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     callback
   ) {
     // this.stub("addPngObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesPng",
         objectId,
@@ -169,7 +169,7 @@ export class DSigXadesAdapter extends DSigAdapter {
   }
   getSignedXmlWithEnvelope(callback) {
     this.log("getSignedXmlWithEnvelope", arguments);
-    this.__implementation.getSignature(
+    this.getSignature(
       {
         container: undefined,
         containerXmlns: undefined,
@@ -182,7 +182,7 @@ export class DSigXadesAdapter extends DSigAdapter {
   }
   getSignedXmlWithEnvelopeBase64(callback) {
     this.log("getSignedXmlWithEnvelopeBase64", arguments);
-    this.__implementation.getSignature(
+    this.getSignature(
       { container: "ASiC_E", packaging: "ENVELOPED" },
       callback
     );

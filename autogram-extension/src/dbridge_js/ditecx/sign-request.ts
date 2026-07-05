@@ -1,4 +1,4 @@
-import { DesktopSignatureParameters } from "autogram-sdk";
+import { DesktopSignatureParameters, DocumentToSign } from "autogram-sdk";
 import {
   ObjectStrategy,
 } from "./filetype-strategy/base-strategy";
@@ -135,6 +135,26 @@ export class SignRequest {
 
   get payloadMimeType() {
     return this.objectInfo.payloadMimeType;
+  }
+
+  /**
+   * The document in the SDK's unified {@link DocumentToSign} shape: the
+   * strategy's content/filename plus the MIME type and encoding split out
+   * of the legacy `payloadMimeType` (`";base64"` suffix → `encoding`).
+   */
+  get documentToSign(): DocumentToSign {
+    const payloadMimeType = this.objectInfo.payloadMimeType;
+    const base64Suffix = ";base64";
+    const isBase64 = payloadMimeType.endsWith(base64Suffix);
+    const mimeType = isBase64
+      ? payloadMimeType.slice(0, -base64Suffix.length)
+      : payloadMimeType;
+    return {
+      content: this.objectInfo.document.content,
+      filename: this.objectInfo.document.filename,
+      mimeType,
+      encoding: isBase64 ? "base64" : "utf-8",
+    };
   }
 }
 

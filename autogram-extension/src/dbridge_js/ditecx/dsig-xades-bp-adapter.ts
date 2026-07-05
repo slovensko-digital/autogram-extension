@@ -24,7 +24,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ): void {
     this.log("addXmlObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpXml",
         objectId,
@@ -58,7 +58,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
   ) {
     this.log("addXmlObject2", arguments);
 
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBp2Xml",
         objectId,
@@ -74,7 +74,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
 
   getSignatureWithASiCEnvelopeBase64(callback) {
     this.log("getSignatureWithASiCEnvelopeBase64", arguments);
-    this.__implementation.getSignature(
+    this.getSignature(
       {
         container: "ASiC_E",
         packaging: "ENVELOPING",
@@ -101,7 +101,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ) {
     this.log("addTxtObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpTxt",
         objectId,
@@ -120,7 +120,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ) {
     this.log("addPngObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpPng",
         objectId,
@@ -143,7 +143,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("addPdfObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpPdf",
         objectId,
