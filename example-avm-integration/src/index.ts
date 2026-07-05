@@ -76,6 +76,12 @@ let currentDeviceDataToSign: AVMDocumentDataToSignResponse | null = null;
 let pushInbox: PushInboxItem[] = [];
 let pushWorkerRegistration: ServiceWorkerRegistration | null = null;
 let pushWorkerBound = false;
+let testSignerPrivateKey: CryptoKey | null = null;
+
+const TEST_SIGNER_CERTIFICATE_BASE64_DER =
+  "MIIDbTCCAlWgAwIBAgIUJjb31j60fS42yFeZtPYGb43rVgswDQYJKoZIhvcNAQELBQAwRjELMAkGA1UEBhMCU0sxGTAXBgNVBAoMEEF1dG9ncmFtIEV4YW1wbGUxHDAaBgNVBAMME0Jyb3dzZXIgVGVzdCBTaWduZXIwHhcNMjYwNzA1MTkwMzA4WhcNMzYwNzAyMTkwMzA4WjBGMQswCQYDVQQGEwJTSzEZMBcGA1UECgwQQXV0b2dyYW0gRXhhbXBsZTEcMBoGA1UEAwwTQnJvd3NlciBUZXN0IFNpZ25lcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANx1SHbsMqvlLBMj7sOJWwPS7umhb74mS+gWzdVTq6imkfjl/ZvMeqRD4sHW10i2o58QbuEeQZtNZL0FV4RUc9MIA9pzMS+XAbGQTSg2HGxeBsN+JDwQJG9wiQt9xUOSfOZQGegodw7LJkkucAFEDquK3ph/1gwmd4GEsCnnP5EffIX3g6FFutmg5Li8JC6jibMLfd7v7rKMdF58zJinusUrsFOVAIIxiYkENmmOokE21ofJuDwkJ7lZa2aa2ZuJTm1vTGk8wThtDIULkWzwk1I11btTdOX523ekjQElUcwMUVRL+hAK4ln2p/ZPR1oaU9zH+4Gk5P0/ZX0PqB4bGdsCAwEAAaNTMFEwHQYDVR0OBBYEFJZZrHJPrtQwVg1M9xh8CzFUYC0vMB8GA1UdIwQYMBaAFJZZrHJPrtQwVg1M9xh8CzFUYC0vMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAMVurtsyBOHCMYSzkQMvo/y84h+D83LVnu5a4P9yh+AZ9N1etUvGC9EZwTuQOGFVaIJFSsLx8VI4pgX63Ob9F1fqPVdaDunWouP06m/TCdZ10oHxyAxOL5t08sRjWTHXvUEU9EdWXfP9Ucf7cWZDx7xbrVpisTdw5g3AlkGyBrBVk+tLk5t1937nDcXmHCfqx01k3QTzTbn1rOWxG0lbntDS516RBaCAQpDEQqp2HMZnqSKi39OmHZJAHZ3ZU2Ho49KYEGg97V1Fu5YFzd9NMBSbfc6OqfkBZG4bmMXG/P08aucWiEsbyH+/gD69or+vM4yqhe9usoHGGBBu3wUPiD8=";
+const TEST_SIGNER_PRIVATE_KEY_PKCS8_BASE64 =
+  "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDcdUh27DKr5SwTI+7DiVsD0u7poW++JkvoFs3VU6uoppH45f2bzHqkQ+LB1tdItqOfEG7hHkGbTWS9BVeEVHPTCAPaczEvlwGxkE0oNhxsXgbDfiQ8ECRvcIkLfcVDknzmUBnoKHcOyyZJLnABRA6rit6Yf9YMJneBhLAp5z+RH3yF94OhRbrZoOS4vCQuo4mzC33e7+6yjHRefMyYp7rFK7BTlQCCMYmJBDZpjqJBNtaHybg8JCe5WWtmmtmbiU5tb0xpPME4bQyFC5Fs8JNSNdW7U3Tl+dt3pI0BJVHMDFFUS/oQCuJZ9qf2T0daGlPcx/uBpOT9P2V9D6geGxnbAgMBAAECggEAKW0Uh9xMjUaMKLCY3j+CTc6mPFqsn8Ocgek/FnYZjKB4T5gQNuWOqi1jf986JxzC1FIHM+A2ndNGOcq2LlScSyx3ZOY+eN3cYJxoE0VPxAFLLhMXBf5WimZQKkug9NijBbhJlfl8ndgIwrmqLGK4iv2WZHupIjFcRYdEfytII6G4oWOgCnUKvgzxPwv5TYfPVRwoZTFlUf82ryFMzPKOvOqZHDu6D2da9jFVDf/ddJy+Dwd/jkvs0p3jWi1QjZNqjPVmXk199h6itHx2agiwETZQaAHYcGqqRlpN+YxNpvKvI2YG1yN76ET/6J+JtT0oyz4udUnEo3zqqm/l1VJqEQKBgQD6bGIcXhrVytTpv7LuQC3fz7Ny7GZTZoY7s8tmyDrg0ycY1649KJAoQQb2ve1B0ikw1aAeHqnIMQmpJY8bimOGci0J2ylo575WjjC9c8fXJ9jd1ajTueKHCnWMvJmJgeTCsrOWCt80zNwbGsbekP+ks+Re5KLSY3b/OxHOsqK32QKBgQDhXhLZErW16NMFbeD6smwqoLBBTMKjJYOzyPB4Ci/Io+QUS+1IyItxAY33nQ9VfVSPj9ScIsTVA1bDz9KKWX1AxVDd7ZkGYNfFIwEZpKe5hwwiEZCYGnYGI8qHCYYqYaM4nDU1M/T2v+kiXsbejWJRW4Hv0QjvIbOmcVWL+zDi0wKBgAdEifxkxsaZomA+TgUYG7y5HG4jajzVZuPoreiHux23QxU3fTkNKlHgwUD79hzI6qUeLg1xul+y/KLKEkMsWwMV4TS+BY+j2iRM8CEvcQdPgr29a67pYCenKA4zkwkomekEoq2iFyRDJcgrmMXw01qGVgRjAk600ElL/5JOIObRAoGBANkrXvxBFEtcNWTo8kCCiMs3F0GFp5WxQ82Ol3MFVfCBRfrtA5X8cqqN9fEjLzCRWlgRIK7orkYaNpTwghEBlTpCKeAB4lEMJ0B3r8q3KU0VvvJhfLWl4g+ek742xku21KNrm7ZOAAN7ATw2mmrBUXnWtUqUY4iUMFr2oZoHj58zAoGBAKZ4cfPISF9JrecMb5vFmEfEociVAAQvjkptp2oix2Dtqz/W1leI7d1jg8l8VYNewo3W4qcj2OzZzFW3MHJ38HYx1RUdDnShGBKOjp1/1/P/ExHpZ8m1P6o9XeuYjtwXXHecmFM+EDxX4zaHt/WhuNtPB8F1qp8I0nP4AQu3Jc2g";
 
 function currentBaseUrl() {
   return ($("baseUrl").el as HTMLInputElement).value.trim();
@@ -393,6 +399,55 @@ async function prepareDataToSign() {
   logDevice("Prepared AVM dataToSign structure.");
 }
 
+function useBuiltInTestSigner() {
+  ($("signingCertificateInput").el as HTMLTextAreaElement).value =
+    TEST_SIGNER_CERTIFICATE_BASE64_DER;
+  logDevice("Loaded built-in browser test signing certificate.");
+}
+
+async function getTestSignerPrivateKey() {
+  if (testSignerPrivateKey) {
+    return testSignerPrivateKey;
+  }
+
+  testSignerPrivateKey = await globalThis.crypto.subtle.importKey(
+    "pkcs8",
+    base64ToArrayBuffer(TEST_SIGNER_PRIVATE_KEY_PKCS8_BASE64),
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256",
+    },
+    false,
+    ["sign"]
+  );
+
+  return testSignerPrivateKey;
+}
+
+async function signPreparedDataToSignWithTestSigner() {
+  if (!currentDeviceDataToSign) {
+    throw new Error("Prepare dataToSign before generating a test signature.");
+  }
+
+  const privateKey = await getTestSignerPrivateKey();
+  const signatureBuffer = await globalThis.crypto.subtle.sign(
+    { name: "RSASSA-PKCS1-v1_5" },
+    privateKey,
+    base64ToArrayBuffer(currentDeviceDataToSign.dataToSign)
+  );
+
+  ($("signedDataInput").el as HTMLTextAreaElement).value =
+    arrayBufferToBase64(signatureBuffer);
+  logDevice("Generated signedData using the built-in browser test signer.");
+}
+
+async function completeRequestWithTestSigner() {
+  useBuiltInTestSigner();
+  await prepareDataToSign();
+  await signPreparedDataToSignWithTestSigner();
+  await submitSignedResponse();
+}
+
 async function submitSignedResponse() {
   if (!currentDeviceRequest) {
     throw new Error("Load an incoming request before submitting a response.");
@@ -628,6 +683,15 @@ function arrayBufferToBase64(arrayBuffer: ArrayBuffer) {
     binary += String.fromCharCode(...chunk);
   }
   return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64: string) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes.buffer;
 }
 
 function setQrUrl(url: string) {
@@ -1040,6 +1104,18 @@ function installGlobalFunctions() {
     true
   );
   globalThis["prepareDataToSign"] = runAction(prepareDataToSign, true);
+  globalThis["useBuiltInTestSigner"] = runAction(
+    async () => useBuiltInTestSigner(),
+    true
+  );
+  globalThis["signPreparedDataToSignWithTestSigner"] = runAction(
+    signPreparedDataToSignWithTestSigner,
+    true
+  );
+  globalThis["completeRequestWithTestSigner"] = runAction(
+    completeRequestWithTestSigner,
+    true
+  );
   globalThis["submitSignedResponse"] = runAction(submitSignedResponse, true);
   globalThis["initializePushInbox"] = runAction(initializePushInbox, true);
   globalThis["refreshPushInbox"] = runAction(refreshPushInbox, true);
@@ -1100,5 +1176,6 @@ async function bootstrapPushInbox() {
 bindFileInput();
 installGlobalFunctions();
 applyBaseUrl();
+useBuiltInTestSigner();
 preloadIncomingRequestFromLocation();
 void bootstrapPushInbox();
