@@ -7,8 +7,14 @@
 import type {
   AutogramDocument as DesktopAutogramDocument,
   SignatureParameters,
+  DesktopSigningStateConsumer,
 } from "./autogram-api/index";
-import type { SignedObject } from "./types";
+import type {
+  DocumentToSign,
+  SignedDocumentResult,
+  SignedObject,
+} from "./types";
+import { toLegacySignedObject, toPayloadMimeType } from "./types";
 
 import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
 import { AvmSimpleChannel } from "./channel-avm";
@@ -62,6 +68,14 @@ export interface AutogramClientOptions {
   platform?: string;
   /** Display name reported when registering the AVM integration. */
   displayName?: string;
+}
+
+/** Options of the unified {@link CombinedClient.sign} form. */
+export interface ClientSignOptions {
+  /** Cancels the signing step. */
+  signal?: AbortSignal;
+  /** Desktop launch/signing progress updates. */
+  onState?: DesktopSigningStateConsumer;
 }
 
 /**
@@ -206,39 +220,75 @@ export class CombinedClient {
   }
 
   /**
+   * Signs a document (unified form). The result keeps every signer and
+   * the MIME type of the signed artifact.
+   *
+   * @param document document to sign, with its own `mimeType`/`encoding`
+   * @param parameters how to sign the document
+   */
+  public async sign(
+    document: DocumentToSign,
+    parameters?: SignatureParameters,
+    options?: ClientSignOptions
+  ): Promise<SignedDocumentResult>;
+  /**
+   * Signs a document (legacy positional form).
    *
    * @param document document to sign
    * @param signatureParameters how to sign the document
    * @param payloadMimeType mime type of the input document
    * @param decodeBase64 if false the content will be (stay) base64 encoded, if true we will decode it
-   * @returns
+   * @deprecated Prefer the unified form: `sign(document, parameters?, options?)`
+   * with the MIME type on the document.
    */
   public async sign(
     document: DesktopAutogramDocument,
     signatureParameters: SignatureParameters,
     payloadMimeType: string,
-    decodeBase64 = false,
+    decodeBase64?: boolean,
     options?: DesktopSignOptions
-  ) {
+  ): Promise<SignedObject>;
+  public async sign(
+    document: DocumentToSign | DesktopAutogramDocument,
+    parametersArg?: SignatureParameters,
+    mimeTypeOrOptions?: string | ClientSignOptions,
+    decodeBase64 = false,
+    legacyOptions?: DesktopSignOptions
+  ): Promise<SignedDocumentResult | SignedObject> {
+    const isLegacyForm = typeof mimeTypeOrOptions === "string";
     try {
       this.desktopScreenActive = false;
-      const signedObject = await this.flow.sign(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        { onDesktopStateChange: options?.onDesktopStateChange }
+
+      if (isLegacyForm) {
+        const result = await this.flow.sign(
+          document as DesktopAutogramDocument,
+          parametersArg ?? {},
+          mimeTypeOrOptions,
+          { onDesktopStateChange: legacyOptions?.onDesktopStateChange }
+        );
+        this.afterSuccessfulSignature();
+        const signedObject = toLegacySignedObject(result);
+        return {
+          ...signedObject,
+          content: decodeBase64
+            ? Base64.decode(signedObject.content)
+            : signedObject.content,
+        };
+      }
+
+      const unifiedDocument = document as DocumentToSign;
+      const options = mimeTypeOrOptions;
+      const result = await this.flow.sign(
+        {
+          content: unifiedDocument.content,
+          filename: unifiedDocument.filename,
+        },
+        parametersArg ?? {},
+        toPayloadMimeType(unifiedDocument),
+        { onDesktopStateChange: options?.onState, signal: options?.signal }
       );
-
-      this.signerIdentificationListeners.forEach((cb) => cb());
-      this.signerIdentificationListeners = [];
-      this.signatureIndex++;
-
-      return {
-        ...signedObject,
-        content: decodeBase64
-          ? Base64.decode(signedObject.content)
-          : signedObject.content,
-      };
+      this.afterSuccessfulSignature();
+      return result;
     } catch (e) {
       if (AutogramError.is(e, "user-cancelled")) {
         log.info("User cancelled request");
@@ -297,6 +347,13 @@ export class CombinedClient {
         this.ui.reset();
         break;
     }
+  }
+
+  /** Runs the signer-identification listeners and bumps the counter. */
+  private afterSuccessfulSignature() {
+    this.signerIdentificationListeners.forEach((cb) => cb());
+    this.signerIdentificationListeners = [];
+    this.signatureIndex++;
   }
 
   private async retryMobileNotification(): Promise<void> {

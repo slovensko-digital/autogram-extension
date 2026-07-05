@@ -16,8 +16,13 @@ import type {
 } from "./autogram-api/index";
 import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
 import { DesktopClient } from "./desktop-client";
-import { SigningMethod } from "./types";
-import type { SignedObject } from "./types";
+import {
+  SigningMethod,
+  fromAvmSignedDocument,
+  fromDesktopResponse,
+} from "./types";
+import type { SignedDocumentResult, SignedObject } from "./types";
+import { AutogramError } from "./errors";
 import { createLogger } from "./log";
 
 const log = createLogger("ag-sdk:flow");
@@ -70,6 +75,8 @@ export interface SigningFlowOptions {
 
 export interface SigningFlowSignOptions {
   onDesktopStateChange?: DesktopSigningStateConsumer;
+  /** Cancels the signing step (not the method chooser). */
+  signal?: AbortSignal;
 }
 
 /**
@@ -97,11 +104,21 @@ export class SigningFlow {
     signatureParameters: SignatureParameters,
     payloadMimeType: string,
     options?: SigningFlowSignOptions
-  ): Promise<SignedObject> {
+  ): Promise<SignedDocumentResult> {
+    if (options?.signal?.aborted) {
+      throw new AutogramError("aborted", "Signing aborted");
+    }
+
+    const abortController = new AbortController();
+    options?.signal?.addEventListener(
+      "abort",
+      () => abortController.abort(options.signal?.reason),
+      { once: true }
+    );
+
     const signingMethod = await this.delegate.chooseMethod();
     log.debug("User chose signing method", signingMethod);
 
-    const abortController = new AbortController();
     switch (signingMethod) {
       case SigningMethod.reader:
         return this.signDesktop(
@@ -154,7 +171,7 @@ export class SigningFlow {
     payloadMimeType: string,
     abortController: AbortController,
     onDesktopStateChange?: DesktopSigningStateConsumer
-  ): Promise<SignedObject> {
+  ): Promise<SignedDocumentResult> {
     log.info("signDesktop");
 
     const emit = (state: DesktopSigningState) => {
@@ -176,7 +193,7 @@ export class SigningFlow {
     );
 
     this.delegate.onState({ type: "done" }, abortController);
-    return signedObject;
+    return fromDesktopResponse(signedObject, signatureParameters);
   }
 
   private async signMobile(
@@ -184,7 +201,7 @@ export class SigningFlow {
     signatureParameters: SignatureParameters,
     payloadMimeType: string,
     abortController: AbortController
-  ): Promise<SignedObject> {
+  ): Promise<SignedDocumentResult> {
     try {
       this.delegate.onState(
         { type: "mobile", state: "preparing" },
@@ -212,7 +229,7 @@ export class SigningFlow {
     signatureParameters: SignatureParameters,
     payloadMimeType: string,
     abortController: AbortController
-  ): Promise<SignedObject> {
+  ): Promise<SignedDocumentResult> {
     try {
       this.delegate.onState(
         { type: "mobile", state: "preparing" },
@@ -271,7 +288,7 @@ export class SigningFlow {
 
   private async waitForMobileSignature(
     abortController: AbortController
-  ): Promise<SignedObject> {
+  ): Promise<SignedDocumentResult> {
     const signedDocument = await this.mobile.waitForSignature(abortController);
     log.debug({ signedDocument });
     if (signedDocument === null || signedDocument === undefined) {
@@ -281,11 +298,6 @@ export class SigningFlow {
     this.delegate.onState({ type: "done" }, abortController);
     this.mobile.reset();
 
-    return {
-      content: signedDocument.content,
-      signedBy:
-        signedDocument.signers?.at(-1)?.signedBy ?? "Používateľ Autogramu",
-      issuedBy: signedDocument.signers?.at(-1)?.issuedBy ?? "(neznámy)",
-    };
+    return fromAvmSignedDocument(signedDocument);
   }
 }

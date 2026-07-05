@@ -2,8 +2,8 @@
 
 Status: agreed direction (2026-07); implemented incrementally.
 Phases 1–2 shipped in 0.2.0, phase 3 in 0.3.0, phase 4 in 0.4.0,
-phase 5 in 0.5.0.
-Step-by-step instructions for the remaining phases:
+phase 5 in 0.5.0, phase 6 in 0.6.0. **All six phases are shipped.**
+Original step-by-step instructions are preserved in
 [REFACTOR-HANDOFF.md](./REFACTOR-HANDOFF.md).
 
 Fixed external surfaces that this proposal must not change:
@@ -272,9 +272,29 @@ shimmed once at the adapter edge (a rejected promise always reaches
    positional `CombinedClient.init` deprecated; `SigningMethod` moved to
    core `types.ts` (UI path re-exports). `window.open` for
    mobile-on-mobile moved to the delegate so the flow is DOM-free.
-6. **Unified document model flip + entry-point reorganization**: switch
-   public signatures to `DocumentToSign`/`SignedDocument`; deprecated
-   aliases for one release; delete `index-all.ts`.
+6. ✅ **Unified document model + entry-point reorganization** (0.6.0):
+   `DocumentToSign` / `SignedDocumentResult` / `SignatureInfo` and the
+   converters (`toPayloadMimeType`, `fromDesktopResponse`,
+   `fromAvmSignedDocument`, `toLegacySignedObject`) in core `types.ts`;
+   `SigningFlow` returns `SignedDocumentResult`; `CombinedClient.sign`
+   gained a unified overload (`sign(document, parameters?, options?)`)
+   returning it, with the positional form kept and deprecated. `./ui`
+   entry-point alias added. `index-all.ts` reduced to `export * from
+   "./index"` plus the UI-only symbols so the two entry points cannot
+   drift (kept rather than deleted — the IIFE script-tag build depends on
+   it). The unified result keeps every signer and the artifact MIME type,
+   which the old flattening discarded.
 
 Each phase must ship with an updated [API.md](./API.md) and a
 [MIGRATION.md](./MIGRATION.md) section.
+
+## Follow-ups (not part of the six phases)
+
+- Migrate the extension's Ditec adapter layer (`autogram-implementation.ts`,
+  `sign-request.ts`) to the unified `DocumentToSign`/`SignedDocumentResult`
+  and a promise-based `ImplementationInterface` (see "Ditec adapter layer"
+  above). Lower risk as a standalone change; the adapter still uses the
+  deprecated positional `sign` today.
+- Wire `MobileClient.pairedDevices()` into the dialog (notify-vs-scan)
+  — needs a new `avmService.pairedDevices` bridge method and a
+  `SigningState` variant.

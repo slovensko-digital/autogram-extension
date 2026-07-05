@@ -8,24 +8,23 @@ async function main() {
     const file = filePicker.files?.[0];
     if (!file) return;
 
-    const signedObject = await client.sign(
+    const signed = await client.sign(
       {
         content: await file.text(),
+        mimeType: file.type,
         filename: file.name,
       },
       {
         level: "XAdES_BASELINE_B",
         container: "ASiC_E",
-      },
-      file.type,
-      true
+      }
     );
 
-    console.log(signedObject);
+    console.log(signed);
 
     const a = document.createElement("a");
-    const blob = new Blob([signedObject.content], {
-      type: "text/plain",
+    const blob = new Blob([signed.content], {
+      type: signed.mimeType,
     });
     const url = URL.createObjectURL(blob);
     a.href = url;

@@ -1,5 +1,59 @@
 # Migration guide
 
+## 0.5.0 → 0.6.0
+
+No breaking changes. A unified document/result model is introduced; the
+old positional `sign` form still works and returns the old shape.
+
+### Unified `sign` form
+
+**Before (0.5.x, still supported):**
+
+```typescript
+const { content, signedBy, issuedBy } = await client.sign(
+  { content, filename },
+  parameters,
+  "application/pdf;base64",   // MIME type + encoding as a suffix
+  true                        // decodeBase64
+);
+```
+
+**After (0.6.0):**
+
+```typescript
+const { content, mimeType, signatures } = await client.sign(
+  { content, mimeType: "application/pdf", encoding: "base64", filename },
+  parameters,
+  { signal, onState }
+);
+```
+
+Differences:
+
+- The MIME type and encoding move onto the document
+  (`{ mimeType, encoding }`); the `";base64"` suffix and the
+  `decodeBase64` flag are gone from the new form.
+- The result is a `SignedDocumentResult` that keeps **every** signer
+  (`signatures: [{ signedBy, issuedBy }, ...]`) and the artifact
+  `mimeType` — the old form flattened to the last signer only.
+- `options.signal` (an `AbortSignal`) cancels the signing step.
+
+The SDK detects which form you called by the third argument: a `string`
+selects the deprecated positional form (unchanged behavior, returns
+`SignedObject`), otherwise the unified form is used.
+
+Conversion helpers are exported from `autogram-sdk`:
+`toPayloadMimeType`, `fromDesktopResponse`, `fromAvmSignedDocument`,
+`toLegacySignedObject`.
+
+### New entry-point alias
+
+`autogram-sdk/ui` is added as an alias of `autogram-sdk/with-ui` (same
+module). `with-ui` keeps working.
+
+`SignedObject`, `DocumentToSign`, `SignedDocumentResult` and the
+converters are all exported from the package root.
+
 ## 0.4.0 → 0.5.0
 
 No breaking changes. The signing flow logic was extracted from

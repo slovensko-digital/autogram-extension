@@ -17,18 +17,18 @@ import { createAutogramClient } from "autogram-sdk/with-ui";
 
 const client = await createAutogramClient();
 
-const { content, issuedBy, signedBy } = await client.sign(
+const { content, mimeType, signatures } = await client.sign(
   {
     content: "hello world",
+    mimeType: "text/plain",
     filename: "hello.txt",
   },
   {
     level: "XAdES_BASELINE_B",
     container: "ASiC_E",
-  },
-  "text/plain",
-  true
+  }
 );
+// content is Base64; signatures is [{ signedBy, issuedBy }, ...]
 ```
 
 ## Usage on web (script tag)
@@ -38,17 +38,16 @@ const { content, issuedBy, signedBy } = await client.sign(
 <script>
   const client = await AutogramSDK.createAutogramClient();
 
-  const { content, issuedBy, signedBy } = await client.sign(
+  const { content, mimeType, signatures } = await client.sign(
     {
       content: "hello world",
+      mimeType: "text/plain",
       filename: "hello.txt",
     },
     {
       level: "XAdES_BASELINE_B",
       container: "ASiC_E",
-    },
-    "text/plain",
-    true
+    }
   );
 </script>
 ```

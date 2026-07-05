@@ -1,89 +1,18 @@
 /**
- * @module autogram-index
+ * @module autogram-index-all
+ * Everything from the headless entry point ({@link module:autogram-index})
+ * plus the dialog UI (`CombinedClient` / `createAutogramClient`).
+ *
+ * This is the entry point used for the script-tag IIFE build
+ * (`dist/index-all.iife.js`, global `AutogramSDK`). Importing it has the
+ * custom-element side effects of `with-ui`, so it must run in a browser
+ * page context.
+ *
+ * It re-exports `./index` wholesale so the two entry points can never
+ * drift apart — only genuinely UI-specific symbols are added here.
  */
 
-/* Autogram Desktop */
-export {
-  apiClient as desktopApiClient,
-} from "./autogram-api/index";
+export * from "./index";
 
-export type {
-  AutogramDesktopIntegrationInterface,
-  SignatureParameters as DesktopSignatureParameters,
-  AutogramDocument as DesktopAutogramDocument,
-  SignResponseBody as DesktopSignResponseBody,
-  BatchStartResponseBody as DesktopBatchStartResponseBody,
-  BatchEndResponseBody as DesktopBatchEndResponseBody,
-  ServerInfo as DesktopServerInfo,
-  DesktopSigningState,
-  DesktopSigningStateConsumer,
-} from "./autogram-api/index";
-
-export {
-  AutogramError,
-  UserCancelledSigningException,
-  AutogramSdkException,
-  AutogramAppNotInstalledException,
-} from "./errors";
-export type { AutogramErrorCode, SerializedAutogramError } from "./errors";
-
-export { DesktopClient } from "./desktop-client";
-export type { DesktopSignOptions } from "./desktop-client";
-
-export {
-  MobileClient,
-  SignatureRequest,
-  RestorePointStore,
-  toSignedObject,
-} from "./mobile";
-export type {
-  RequestToken,
-  PairedDevice,
-  SignatureRequestStatus,
-  RestorePointResult,
-  MobileIntegrationBackend,
-} from "./mobile";
-
-export {
-  defineRpcService,
-  createRpcClient,
-  createRpcHandler,
-  serializeRpcError,
-  ZRpcRequestFrame,
-  ZRpcAbortFrame,
-  ZRpcCallerFrame,
-  ZRpcResponseFrame,
-} from "./rpc";
-export type {
-  RpcMethodDef,
-  RpcMethods,
-  RpcServiceDef,
-  RpcClient,
-  RpcClientTransport,
-  RpcContext,
-  RpcImpl,
-  RpcHandler,
-  RpcRequestFrame,
-  RpcAbortFrame,
-  RpcCallerFrame,
-  RpcResponseFrame,
-} from "./rpc";
-
-/* Autogram V Mobile */
-export {
-  AutogramVMobileIntegration,
-  randomUUID,
-  GetDocumentsResponse as AVMGetDocumentsResponse,
-} from "./avm-api/index";
-
-export type {
-  AutogramVMobileIntegrationInterfaceStateful,
-  SignedDocument as AVMSignedDocument,
-  DocumentToSign as AVMDocumentToSign,
-  AvmIntegrationDocument as AVMIntegrationDocument,
-} from "./avm-api/index";
-export { AutogramVMobileSimulation } from "./avm-api/index";
 export { CombinedClient, createAutogramClient } from "./with-ui";
-export type { AutogramClientOptions } from "./with-ui";
-export { SigningMethod } from "./types";
-export type { SignedObject } from "./types";
+export type { AutogramClientOptions, ClientSignOptions } from "./with-ui";

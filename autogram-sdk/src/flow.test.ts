@@ -100,7 +100,13 @@ describe("SigningFlow desktop path", () => {
       onDesktopStateChange: (s) => desktopStates.push(s.type),
     });
 
-    expect(result).toEqual(DESKTOP_RESPONSE);
+    // container is set, so the artifact is an ASiC-E container
+    expect(result).toEqual({
+      content: "c2lnbmVk",
+      mimeType: "application/vnd.etsi.asic-e+zip",
+      encoding: "base64",
+      signatures: [{ signedBy: "CN=John Smith", issuedBy: "CN=SVK eID ACA2" }],
+    });
     expect(delegate.states[0]).toEqual({
       type: "desktop",
       state: { type: "checkingApp" },
@@ -117,17 +123,23 @@ describe("SigningFlow desktop path", () => {
 });
 
 describe("SigningFlow mobile path", () => {
-  test("uploads, shows QR, waits, flattens last signer, resets channel", async () => {
+  test("uploads, shows QR, waits, keeps all signers, resets channel", async () => {
     const delegate = fakeDelegate(SigningMethod.mobile);
     const mobile = fakeMobile();
     const flow = new SigningFlow(fakeDesktop(), mobile, delegate, OPTIONS);
 
     const result = await flow.sign(DOCUMENT, PARAMS, "application/xml");
 
+    // the unified result keeps every signer and the real MIME type
     expect(result).toEqual({
       content: "bW9iaWxl",
-      signedBy: "CN=Last",
-      issuedBy: "CN=Issuer2",
+      mimeType: "application/vnd.etsi.asic-e+zip",
+      encoding: "base64",
+      filename: "doc.asice",
+      signatures: [
+        { signedBy: "CN=First", issuedBy: "CN=Issuer1" },
+        { signedBy: "CN=Last", issuedBy: "CN=Issuer2" },
+      ],
     });
 
     expect(delegate.states).toEqual([
@@ -164,7 +176,7 @@ describe("SigningFlow mobile path", () => {
     });
   });
 
-  test("falls back to the default signer identification", async () => {
+  test("returns no signatures when the AVM document has none", async () => {
     const delegate = fakeDelegate(SigningMethod.mobile);
     const mobile = fakeMobile({
       waitForSignature: async () => ({ ...MOBILE_SIGNED, signers: undefined }),
@@ -172,8 +184,9 @@ describe("SigningFlow mobile path", () => {
     const flow = new SigningFlow(fakeDesktop(), mobile, delegate, OPTIONS);
 
     const result = await flow.sign(DOCUMENT, PARAMS, "application/xml");
-    expect(result.signedBy).toBe("Používateľ Autogramu");
-    expect(result.issuedBy).toBe("(neznámy)");
+    // the legacy fallback identification is applied by toLegacySignedObject,
+    // not by the flow — the raw result carries no signatures
+    expect(result.signatures).toEqual([]);
   });
 });
 

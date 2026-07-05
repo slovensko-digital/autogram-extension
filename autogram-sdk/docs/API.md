@@ -1,4 +1,4 @@
-# Autogram SDK — public API (0.5.x)
+# Autogram SDK — public API (0.6.x)
 
 This documents the supported public surface of `autogram-sdk`. Anything not
 listed here (internal channels, injected-ui internals, generated API types
@@ -8,8 +8,8 @@ beyond those re-exported) may change without notice.
 
 | Import | Contents |
 | --- | --- |
-| `autogram-sdk` | Types, errors, low-level clients (`DesktopClient`, `AutogramVMobileIntegration`), generated API clients. Safe to import anywhere (no DOM side effects). |
-| `autogram-sdk/with-ui` | `CombinedClient` — the full signing flow with the built-in dialog UI. Importing this module registers custom elements, so import it only in a browser page context. |
+| `autogram-sdk` | Types, errors, low-level clients (`DesktopClient`, `AutogramVMobileIntegration`, `MobileClient`), generated API clients. Safe to import anywhere (no DOM side effects). |
+| `autogram-sdk/ui` (alias `autogram-sdk/with-ui`) | `createAutogramClient` / `CombinedClient` — the full signing flow with the built-in dialog UI. Importing this module registers custom elements, so import it only in a browser page context. |
 | `autogram-sdk/autogram-api` | Low-level Autogram desktop HTTP API client (generated from OpenAPI). |
 | `autogram-sdk/avm-api` | Low-level Autogram v Mobile (AVM) server API client (generated from OpenAPI) and device-side client used for simulations. |
 
@@ -24,11 +24,9 @@ import { createAutogramClient } from "autogram-sdk/with-ui";
 
 const client = await createAutogramClient();
 
-const { content, signedBy, issuedBy } = await client.sign(
-  { content: "hello world", filename: "hello.txt" },   // document
-  { level: "XAdES_BASELINE_B", container: "ASiC_E" },  // signature parameters
-  "text/plain",                                        // payload MIME type
-  true                                                 // decode Base64 result
+const { content, mimeType, signatures } = await client.sign(
+  { content: "hello world", mimeType: "text/plain", filename: "hello.txt" },
+  { level: "XAdES_BASELINE_B", container: "ASiC_E" }
 );
 ```
 
@@ -56,20 +54,54 @@ The positional factory `CombinedClient.init(mobileChannel?,
 desktopChannel?, resetSignRequestCallback?, options?)` is **deprecated**
 but keeps working; it is equivalent to the options form above.
 
-### `client.sign(document, signatureParameters, payloadMimeType, decodeBase64?, options?)`
+### `client.sign(document, parameters?, options?)`
 
-Returns `Promise<SignedObject>`. Throws `AutogramError` (see
+Returns `Promise<SignedDocumentResult>`. Throws `AutogramError` (see
 [Errors](#errors)); user cancellation is an error with code `user-cancelled`.
 
+- `document` — `DocumentToSign`:
+  - `content` — the document bytes/text
+  - `mimeType` — MIME type of `content`, **without** any `";base64"` suffix
+  - `encoding` — `"utf-8"` (default) or `"base64"`
+  - `filename` — optional
+- `parameters` — see `SignatureParameters` (generated from the desktop
+  OpenAPI spec); notable fields: `level`, `container`, `packaging`,
+  `digestAlgorithm`, XML/XSD/XSLT fields for XAdES.
+- `options.signal` — an `AbortSignal` that cancels the signing step.
+- `options.onState` — receives `DesktopSigningState` updates when the
+  desktop path is used.
+
+`SignedDocumentResult`:
+
+```typescript
+interface SignedDocumentResult {
+  content: string;                 // Base64
+  mimeType: string;                // MIME type of the signed artifact
+  encoding: "utf-8" | "base64";
+  filename?: string;
+  signatures: Array<{ signedBy?: string; issuedBy?: string }>; // all signers
+}
+```
+
+#### Deprecated positional form
+
+The previous signature is still available and behaves exactly as before,
+returning the legacy `SignedObject` (`{ content, signedBy, issuedBy }`,
+last signer only):
+
+```typescript
+client.sign(document, signatureParameters, payloadMimeType, decodeBase64?, options?)
+```
+
 - `document` — `{ content: string; filename?: string }`
-- `signatureParameters` — see `SignatureParameters` (generated from the
-  desktop OpenAPI spec); notable fields: `level`, `container`,
-  `packaging`, `digestAlgorithm`, XML/XSD/XSLT fields for XAdES.
-- `payloadMimeType` — MIME type of `document.content`. Append `;base64`
-  when the content is Base64-encoded binary.
+- `payloadMimeType` — MIME type of `document.content`; append `;base64`
+  for Base64-encoded binary.
 - `decodeBase64` — when `true`, the returned `content` is Base64-decoded.
-- `options.onDesktopStateChange` — receives `DesktopSigningState` updates
-  when the desktop path is used.
+- `options.onDesktopStateChange` — desktop state updates.
+
+Prefer the unified form; convert between shapes with `toLegacySignedObject`,
+`fromDesktopResponse`, `fromAvmSignedDocument` and `toPayloadMimeType`
+(all exported from `autogram-sdk`).
 
 ### `client.useRestorePoint(restorePoint)`
 
@@ -194,14 +226,32 @@ enableIntegration?)`, `getPairingQrCodeUrl`, `sendNotification(docRef)`,
 
 ## Types
 
+### `DocumentToSign` / `SignedDocumentResult` (`autogram-sdk`)
+
+The unified signing types (see [`client.sign`](#clientsigndocument-parameters-options)).
+`DocumentToSign` carries the MIME type on the document;
+`SignedDocumentResult` keeps every signer and the artifact MIME type.
+
+Converters (all exported from `autogram-sdk`):
+
+- `toPayloadMimeType(document)` — MIME type + encoding → the wire
+  `payloadMimeType` (`";base64"` suffix convention).
+- `fromDesktopResponse(response, parameters?)` — desktop
+  `SignResponseBody` → `SignedDocumentResult`.
+- `fromAvmSignedDocument(document)` — AVM signed document →
+  `SignedDocumentResult` (keeps all signers).
+- `toLegacySignedObject(result)` — `SignedDocumentResult` →
+  `SignedObject` (last signer, historical fallback identification).
+
 ### `SignedObject` (`autogram-sdk`)
 
-Unified result of a signing operation:
+Legacy result of a signing operation, returned by the deprecated
+positional `sign` form:
 
 ```typescript
 interface SignedObject {
   content: string;   // signed document, Base64 (unless decodeBase64 was used)
-  signedBy: string;  // DN of the signing certificate
+  signedBy: string;  // DN of the signing certificate (last signer)
   issuedBy: string;  // DN of the certificate issuer
 }
 ```

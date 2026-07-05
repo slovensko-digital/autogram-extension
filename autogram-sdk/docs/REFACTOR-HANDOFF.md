@@ -1,25 +1,32 @@
 # Refactor handoff — remaining work, step by step
 
-This document describes exactly how to finish the API refactor on branch
-`pom/rearchitect-api`. It is written to be executable without additional
-context. Read [API-PROPOSAL.md](./API-PROPOSAL.md) first for the design
-rationale; this file is the "how", that one is the "why".
+> **All six phases are shipped** (SDK 0.6.0). This document is kept as a
+> record of the plan and the ground rules; the "remaining work" below is
+> done. See [API-PROPOSAL.md](./API-PROPOSAL.md) for the final phase
+> summary and the follow-ups that were intentionally left out of the six
+> phases. The ground rules and toolchain gotchas still apply to any
+> further work.
 
-## Current state (as of this document)
+This document describes exactly how the API refactor on branch
+`pom/rearchitect-api` was carried out. It is written to be executable
+without additional context. Read [API-PROPOSAL.md](./API-PROPOSAL.md)
+first for the design rationale; this file is the "how", that one is the
+"why".
+
+## Final state
 
 | Phase | Status | Commit |
 | --- | --- | --- |
-| 1. Bug fixes (shadowed exception, swallowed `getSignature` errors) | ✅ committed | `1b0bc68` |
-| 2. `AutogramError` + codes + serialization (SDK 0.2.0) | ✅ committed | `1b0bc68` |
-| 3. `MobileClient` / `SignatureRequest` / `RestorePointStore` (SDK 0.3.0) | ✅ committed | `dbf7341` |
-| 4. Typed RPC layer for the extension bridge | ✅ code complete, verified, **uncommitted** | — |
-| 5. Flow/UI split + options-object facade | ❌ not started | — |
-| 6. Unified document model + entry-point reorg | ❌ not started | — |
+| 1. Bug fixes (shadowed exception, swallowed `getSignature` errors) | ✅ | `1b0bc68` |
+| 2. `AutogramError` + codes + serialization (SDK 0.2.0) | ✅ | `1b0bc68` |
+| 3. `MobileClient` / `SignatureRequest` / `RestorePointStore` (SDK 0.3.0) | ✅ | `dbf7341` |
+| 4. Typed RPC layer for the extension bridge (SDK 0.4.0) | ✅ | `596a786` |
+| 5. Flow/UI split + options-object facade (SDK 0.5.0) | ✅ | `971349d` |
+| 6. Unified document model + entry-point reorg (SDK 0.6.0) | ✅ | this commit |
 
-Verified at time of writing: `npm run typecheck`, `npm run build`,
-`npm test` (SDK: 43 tests in `errors.test.ts`, `mobile.test.ts`,
-`rpc.test.ts`; extension: 11 tests) — all green. `npm run lint` was NOT
-yet run for phase 4.
+All verified green: `npm run typecheck`, `npm run build`, `npm test`
+(SDK ~69 tests across `errors`, `mobile`, `rpc`, `flow`, `types`;
+extension 11 tests), `npm run lint`.
 
 ## Ground rules (apply to every step)
 

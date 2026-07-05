@@ -1,6 +1,6 @@
 {
   "name": "autogram-sdk",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": false,
   "description": "SDK for Autogram signer",
   "main": "dist/index.js",
@@ -11,6 +11,12 @@
       "require": "./dist/index.js"
     },
     "./with-ui": {
+      "types": "./dist/with-ui.d.ts",
+      "import": "./dist/with-ui.mjs",
+      "require": "./dist/with-ui.js",
+      "default": "./dist/with-ui.mjs"
+    },
+    "./ui": {
       "types": "./dist/with-ui.d.ts",
       "import": "./dist/with-ui.mjs",
       "require": "./dist/with-ui.js",
