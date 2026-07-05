@@ -50,6 +50,7 @@ export {
 export type { AutogramErrorCode, SerializedAutogramError } from "./errors";
 
 export type { SignedObject } from "./types";
+export { SigningMethod } from "./types";
 
 export { DesktopClient } from "./desktop-client";
 export type { DesktopSignOptions } from "./desktop-client";

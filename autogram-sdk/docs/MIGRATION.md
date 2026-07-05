@@ -1,5 +1,43 @@
 # Migration guide
 
+## 0.4.0 → 0.5.0
+
+No breaking changes. The signing flow logic was extracted from
+`CombinedClient` into an internal, headless controller; the public
+behavior is unchanged.
+
+### Prefer `createAutogramClient` over `CombinedClient.init`
+
+**Before (0.4.x):**
+
+```typescript
+const client = await CombinedClient.init(
+  new MyAvmChannel(),
+  new MyDesktopChannel(),
+  () => {},
+  { enableNotifications: true, platform: "web", displayName: "My app" }
+);
+```
+
+**After (0.5.0):**
+
+```typescript
+const client = await createAutogramClient({
+  mobileChannel: new MyAvmChannel(),
+  desktopChannel: new MyDesktopChannel(),
+  onResetSignRequest: () => {},
+  platform: "web",
+  displayName: "My app",
+});
+```
+
+`CombinedClient.init` keeps working but is deprecated. `SigningMethod`
+is now also exported from the package root (`autogram-sdk`); the old
+import path (`injected-ui/types`) still re-exports it.
+
+The internal flow controller (`src/flow.ts`) is not part of the public
+API — do not import it directly.
+
 ## 0.3.0 → 0.4.0
 
 0.4.0 adds the typed RPC layer (`defineRpcService`, `createRpcClient`,

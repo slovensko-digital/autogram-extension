@@ -13,9 +13,9 @@ npm install autogram-sdk
 ## Usage (module import)
 
 ```typescript
-import { CombinedClient } from ".";
+import { createAutogramClient } from "autogram-sdk/with-ui";
 
-const client = await CombinedClient.init();
+const client = await createAutogramClient();
 
 const { content, issuedBy, signedBy } = await client.sign(
   {
@@ -36,7 +36,7 @@ const { content, issuedBy, signedBy } = await client.sign(
 ```html
 <script src="dist/index-all.iife.js"></script>
 <script>
-  const client = await AutogramSDK.CombinedClient.init();
+  const client = await AutogramSDK.createAutogramClient();
 
   const { content, issuedBy, signedBy } = await client.sign(
     {
@@ -89,13 +89,13 @@ This separation makes it possible to move the network calls into a different exe
 
 ```typescript
 // Simple case — use defaults, no channels needed, communicate directly
-const client = await CombinedClient.init();
+const client = await createAutogramClient();
 
 // Advanced case — inject custom channel implementations
-const client = await CombinedClient.init(
-  new MyAvmChannel(),      // implements AutogramVMobileIntegrationInterfaceStateful
-  new MyDesktopChannel(),  // implements AutogramDesktopIntegrationInterface
-);
+const client = await createAutogramClient({
+  mobileChannel: new MyAvmChannel(),      // implements AutogramVMobileIntegrationInterfaceStateful
+  desktopChannel: new MyDesktopChannel(), // implements AutogramDesktopIntegrationInterface
+});
 ```
 
 ## Development

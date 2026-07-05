@@ -4,6 +4,16 @@
  * This module must stay dependency-free so any layer can import it.
  */
 
+/** How the user chose to sign. */
+export enum SigningMethod {
+  /** Autogram desktop app with a card reader. */
+  reader,
+  /** Autogram mobile app, paired via QR code shown on this device. */
+  mobile,
+  /** Autogram mobile app on the same device the page runs on. */
+  mobileOnMobile,
+}
+
 /**
  * Result of a signing operation, unified across desktop and mobile backends.
  *

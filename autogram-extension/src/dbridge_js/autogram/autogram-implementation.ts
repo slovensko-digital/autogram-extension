@@ -2,7 +2,7 @@ import {
   DesktopSignatureParameters,
   DesktopSignResponseBody,
 } from "autogram-sdk";
-import { CombinedClient } from "autogram-sdk/with-ui";
+import { CombinedClient, createAutogramClient } from "autogram-sdk/with-ui";
 import { TODO } from "../../util";
 import { SigningStatus, SignRequest } from "../ditecx/sign-request";
 
@@ -101,11 +101,11 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     const webChannelCaller = new WebChannelCaller();
     webChannelCaller.init();
     return new DBridgeAutogramImpl(
-      await CombinedClient.init(
-        new AvmChannelWeb(webChannelCaller),
-        new AutogramDesktopChannel(webChannelCaller),
-        () => {}
-      ),
+      await createAutogramClient({
+        mobileChannel: new AvmChannelWeb(webChannelCaller),
+        desktopChannel: new AutogramDesktopChannel(webChannelCaller),
+        onResetSignRequest: () => {},
+      }),
       extensionOptions
     );
   }

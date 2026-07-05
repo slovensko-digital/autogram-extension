@@ -1,4 +1,4 @@
-# Autogram SDK — public API (0.4.x)
+# Autogram SDK — public API (0.5.x)
 
 This documents the supported public surface of `autogram-sdk`. Anything not
 listed here (internal channels, injected-ui internals, generated API types
@@ -13,16 +13,16 @@ beyond those re-exported) may change without notice.
 | `autogram-sdk/autogram-api` | Low-level Autogram desktop HTTP API client (generated from OpenAPI). |
 | `autogram-sdk/avm-api` | Low-level Autogram v Mobile (AVM) server API client (generated from OpenAPI) and device-side client used for simulations. |
 
-## Signing with UI: `CombinedClient` (`autogram-sdk/with-ui`)
+## Signing with UI: `createAutogramClient` (`autogram-sdk/with-ui`)
 
 The recommended way to sign documents from a web page. Shows a dialog where
 the user picks a signing method (desktop app / mobile app), then drives the
 chosen flow.
 
 ```typescript
-import { CombinedClient } from "autogram-sdk/with-ui";
+import { createAutogramClient } from "autogram-sdk/with-ui";
 
-const client = await CombinedClient.init();
+const client = await createAutogramClient();
 
 const { content, signedBy, issuedBy } = await client.sign(
   { content: "hello world", filename: "hello.txt" },   // document
@@ -32,24 +32,29 @@ const { content, signedBy, issuedBy } = await client.sign(
 );
 ```
 
-### `CombinedClient.init(mobileChannel?, desktopChannel?, resetSignRequestCallback?, options?)`
+### `createAutogramClient(options?)`
 
-Async factory (waits for the dialog UI element to attach).
+Async factory (waits for the dialog UI element to attach). Returns a
+`CombinedClient`. All options are optional:
 
 - `mobileChannel` — implementation of `AutogramVMobileIntegrationInterfaceStateful`;
   defaults to `AvmSimpleChannel` (direct HTTPS calls to the AVM server).
 - `desktopChannel` — implementation of `AutogramDesktopIntegrationInterface`;
   defaults to `AutogramDesktopSimpleChannel` (direct HTTP calls to the local
   desktop app, with a Safari loopback fallback).
-- `resetSignRequestCallback` — called when the client resets its state.
-- `options.enableNotifications` — send push notifications to paired mobile
+- `onResetSignRequest` — called when the client resets its state.
+- `enableNotifications` — send push notifications to paired mobile
   devices (default `true`).
-- `options.platform` / `options.displayName` — how this integration
-  identifies itself when registering with the AVM server.
+- `platform` / `displayName` — how this integration identifies itself
+  when registering with the AVM server.
 
 Channels only need to be provided when network calls must happen in a
 different execution context (the browser extension routes them through its
 background worker; see the repository README).
+
+The positional factory `CombinedClient.init(mobileChannel?,
+desktopChannel?, resetSignRequestCallback?, options?)` is **deprecated**
+but keeps working; it is equivalent to the options form above.
 
 ### `client.sign(document, signatureParameters, payloadMimeType, decodeBase64?, options?)`
 
@@ -303,9 +308,12 @@ custom channels.
 
 ## Stability notes
 
-- `CombinedClient.init`'s positional signature and `sign`'s positional
-  parameters are candidates for an options-object redesign; see
-  [API-PROPOSAL.md](./API-PROPOSAL.md) for the roadmap.
+- The internal flow controller (`SigningFlow`, `SigningState`,
+  `SigningFlowDelegate` in `src/flow.ts`) is deliberately **not** exported
+  from the package root: its shape may change until the redesign settles.
+  Build on `createAutogramClient` instead.
+- `sign`'s positional parameters are a candidate for an options-object
+  redesign; see [API-PROPOSAL.md](./API-PROPOSAL.md) for the roadmap.
 - `AutogramVMobileIntegrationInterfaceStateful` (the channel contract used
   by `CombinedClient`) is public because the browser extension implements
   it, but its hidden-current-document design is planned to be replaced by

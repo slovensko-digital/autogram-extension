@@ -1,7 +1,8 @@
 # API redesign proposal / roadmap
 
 Status: agreed direction (2026-07); implemented incrementally.
-Phases 1–2 shipped in 0.2.0, phase 3 in 0.3.0, phase 4 in 0.4.0.
+Phases 1–2 shipped in 0.2.0, phase 3 in 0.3.0, phase 4 in 0.4.0,
+phase 5 in 0.5.0.
 Step-by-step instructions for the remaining phases:
 [REFACTOR-HANDOFF.md](./REFACTOR-HANDOFF.md).
 
@@ -263,9 +264,14 @@ shimmed once at the adapter edge (a rejected promise always reaches
    `background-worker.ts` rewritten on top. Desktop calls became
    abortable over the bridge, `batchId` is forwarded, and the
    hand-written schema drift (`fsFormId`, required `level`) is fixed.
-5. **Flow/UI split + facade**: extract the flow controller and the unified
-   `SigningState`; introduce `createAutogramClient`; keep
-   `CombinedClient.init()` as a deprecated wrapper for one release.
+5. ✅ **Flow/UI split + facade** (0.5.0): headless `SigningFlow` +
+   `SigningFlowDelegate` + `SigningState` in `src/flow.ts` (kept
+   `@internal`, unit-tested without custom elements); `CombinedClient`
+   implements the delegate by driving the Lit dialog and keeps its public
+   API; `createAutogramClient(options)` added as the preferred factory,
+   positional `CombinedClient.init` deprecated; `SigningMethod` moved to
+   core `types.ts` (UI path re-exports). `window.open` for
+   mobile-on-mobile moved to the delegate so the flow is DOM-free.
 6. **Unified document model flip + entry-point reorganization**: switch
    public signatures to `DocumentToSign`/`SignedDocument`; deprecated
    aliases for one release; delete `index-all.ts`.

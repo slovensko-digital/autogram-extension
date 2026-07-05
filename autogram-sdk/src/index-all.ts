@@ -83,5 +83,7 @@ export type {
   AvmIntegrationDocument as AVMIntegrationDocument,
 } from "./avm-api/index";
 export { AutogramVMobileSimulation } from "./avm-api/index";
-export { CombinedClient } from "./with-ui";
+export { CombinedClient, createAutogramClient } from "./with-ui";
+export type { AutogramClientOptions } from "./with-ui";
+export { SigningMethod } from "./types";
 export type { SignedObject } from "./types";
