@@ -3,6 +3,8 @@ import {
   desktopApiClient,
   AutogramVMobileIntegration,
   AutogramError,
+  MobileClient,
+  RestorePointStore,
 } from "autogram-sdk";
 
 import type {
@@ -187,10 +189,15 @@ export class BackgroundWorker {
 }
 
 class AvmExecutor {
-  private apiClient = new AutogramVMobileIntegration({
-    get,
-    set,
-  });
+  private client = new MobileClient(
+    new AutogramVMobileIntegration({ get, set })
+  );
+  private restorePoints = new RestorePointStore(
+    { get, set },
+    this.client,
+    // historical key prefix — keeps previously persisted restore points readable
+    "autogram:avm:restorePoint:"
+  );
   // TODO: store this somewhere, so we can use it after worker is resumed??
   private abortControllers = new Map<SenderId, AbortController>();
 
@@ -224,7 +231,7 @@ class AvmExecutor {
           documentRef
         );
         try {
-          await this.apiClient.loadOrRegister(
+          await this.client.register(
             await getAvmIntegrationRegistrationInfo()
           );
 
@@ -248,6 +255,11 @@ class AvmExecutor {
     documentRef: AVMIntegrationDocument,
     senderId: SenderId
   ) {
+    const request = this.client.resumeRequest(documentRef);
+    if (!request) {
+      throw new Error("Document guid or key missing");
+    }
+
     const abortController = new AbortController();
     this.abortControllers.set(senderId, abortController);
 
@@ -267,10 +279,9 @@ class AvmExecutor {
       browser.alarms.clear(alarmName);
       set(dbKeyWaitingForSignature(senderId), undefined);
     });
-    const res = await this.apiClient.waitForSignature(
-      documentRef,
-      abortController
-    );
+    const res = await request.waitForSignature({
+      signal: abortController.signal,
+    });
 
     browser.alarms.clear(alarmName);
     log.debug("res", res);
@@ -288,9 +299,7 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      await this.apiClient.loadOrRegister(
-        await getAvmIntegrationRegistrationInfo()
-      );
+      await this.client.register(await getAvmIntegrationRegistrationInfo());
     },
     getQrCodeUrl: async (
       args: unknown,
@@ -299,30 +308,32 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      const doc = await get(dbKeyDocumentRef(senderId));
-      if (!doc) {
+      const request = this.client.resumeRequest(
+        await get<AVMIntegrationDocument>(dbKeyDocumentRef(senderId))
+      );
+      if (!request) {
         throw new Error("Document not found");
       }
-      return this.apiClient.getQrCodeUrl(doc);
+      return request.qrCodeUrl();
     },
     getPairingQrCodeUrl: async (args: unknown): Promise<string> => {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      return this.apiClient.getPairingQrCodeUrl();
+      return this.client.pairingQrCodeUrl();
     },
     addDocument: async (args: unknown, senderId: SenderId): Promise<void> => {
       const { documentToSign } = ZAddDocumentArgs.parse(args);
-      const documentRef = await this.apiClient.addDocument(
-        documentToSign as unknown as AVMDocumentToSign
-      );
-      await set(dbKeyDocumentRef(senderId), documentRef);
       const storageData = await browser.storage.local.get({
         options: { notifyPairedDevices: true },
       });
-      if (storageData.options?.notifyPairedDevices !== false) {
-        await this.apiClient.sendNotification(documentRef);
-      }
+      const request = await this.client.requestSignature(
+        documentToSign as unknown as AVMDocumentToSign,
+        {
+          notifyDevices: storageData.options?.notifyPairedDevices !== false,
+        }
+      );
+      await set(dbKeyDocumentRef(senderId), request.token);
     },
     sendNotification: async (
       args: unknown,
@@ -331,13 +342,13 @@ class AvmExecutor {
       if (args !== null) {
         throw new Error("Invalid args");
       }
-      const documentRef = await get<AVMIntegrationDocument>(
-        dbKeyDocumentRef(senderId)
+      const request = this.client.resumeRequest(
+        await get<AVMIntegrationDocument>(dbKeyDocumentRef(senderId))
       );
-      if (!documentRef) {
+      if (!request) {
         throw new Error("Document not found");
       }
-      await this.apiClient.sendNotification(documentRef);
+      await request.notifyDevices();
     },
 
     waitForSignature: async (
@@ -390,81 +401,16 @@ class AvmExecutor {
       senderId: SenderId
     ): Promise<SignedObject | null> => {
       const { restorePoint } = ZUseRestorePointArgs.parse(args);
-      const dbKeyRestorePoint = `autogram:avm:restorePoint:${restorePoint}`;
+      const currentToken =
+        (await get<AVMIntegrationDocument>(dbKeyDocumentRef(senderId))) ??
+        null;
 
-      // TODO fix this method
-
-      // Try to load the saved document reference
-      const savedDocumentRefKey = await get<string>(dbKeyRestorePoint);
-
-      if (!savedDocumentRefKey) {
-        const documentRefKey = dbKeyDocumentRef(senderId);
-        // No restore point found, save current state if we have a document
-        if (documentRefKey) {
-          await set(dbKeyRestorePoint, documentRefKey);
-          log.info("Created new restore point", restorePoint);
-        }
+      const result = await this.restorePoints.use(restorePoint, currentToken);
+      if (result.outcome === "none") {
         return null;
       }
-
-      const savedDocumentRef =
-        await get<AVMIntegrationDocument>(savedDocumentRefKey);
-
-      if (!savedDocumentRef) {
-        log.debug("No saved document reference found for restore point");
-        return null;
-      }
-
-      // Restore point found, check if document is already signed
-      try {
-        if (!savedDocumentRef.guid || !savedDocumentRef.encryptionKey) {
-          log.debug("Invalid saved document reference", savedDocumentRef);
-          return null;
-        }
-
-        // Check document status without polling
-
-        if (typeof this.apiClient.checkDocumentStatus !== "function") {
-          log.warn("AVM client does not support checkDocumentStatus");
-          return null;
-        }
-        const documentResult =
-          await this.apiClient.checkDocumentStatus(savedDocumentRef);
-
-        log.debug("Document status from restore point", documentResult);
-
-        if (documentResult.status === "signed") {
-          // Document is signed, restore state and return true
-          await set(dbKeyDocumentRef(senderId), savedDocumentRef);
-          log.info(
-            "Restore point used - document already signed",
-            restorePoint
-          );
-          // Clean up restore point
-          // await set(dbKeyRestorePoint, undefined);
-          return {
-            content: documentResult.document.content,
-            issuedBy:
-              documentResult.document.signers
-                ?.map((s) => s.issuedBy || "")
-                .join(", ") || "",
-            signedBy:
-              documentResult.document.signers
-                ?.map((s) => s.signedBy || "")
-                .join(", ") || "",
-          };
-        } else {
-          // `not found` or `pending`
-          // TODO: does this make sense?
-          // Document not signed yet, restore state for continued signing
-          await set(dbKeyDocumentRef(senderId), savedDocumentRef);
-          log.info("Restore point used - document pending", restorePoint);
-          return null;
-        }
-      } catch (error) {
-        log.error("Error checking restore point", error);
-        return null;
-      }
+      await set(dbKeyDocumentRef(senderId), result.token);
+      return result.outcome === "signed" ? result.signedObject : null;
     },
   };
 }

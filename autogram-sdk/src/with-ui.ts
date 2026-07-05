@@ -199,6 +199,10 @@ export class CombinedClient {
         log.info("User cancelled request");
         this.ui.signingCancelled();
         throw e;
+      } else if (AutogramError.is(e, "aborted")) {
+        // deliberate abort (user closed the dialog, timeout) — no error dialog
+        log.info("Signing aborted");
+        throw e;
       } else if (AutogramError.is(e, "app-not-installed")) {
         log.error("Autogram app not installed", e);
         throw e;

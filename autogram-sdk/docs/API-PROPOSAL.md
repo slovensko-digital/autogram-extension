@@ -1,7 +1,7 @@
 # API redesign proposal / roadmap
 
 Status: agreed direction (2026-07); implemented incrementally.
-Phase 1 (bug fixes) and Phase 2 (errors) shipped in SDK 0.2.0.
+Phases 1–2 shipped in SDK 0.2.0; phase 3 shipped in SDK 0.3.0.
 
 Fixed external surfaces that this proposal must not change:
 
@@ -244,12 +244,15 @@ shimmed once at the adapter edge (a rejected promise always reaches
    calling `onError` (now maps to Ditec error codes via `toDitecError`).
 2. ✅ **Errors** (0.2.0): `AutogramError` + codes + `toJSON`/`fromJSON`/`is`;
    bridge uses them; `with-ui` ↔ `avm-api` cycle broken via core `types.ts`.
-3. **Mobile signature requests**: `SignatureRequest` wrapper over
-   `AutogramVMobileIntegration` (already ref-explicit); reimplement
-   `AvmSimpleChannel` and the background `AvmExecutor` on request tokens;
-   delete both `useRestorePoint` implementations in favor of token
-   persistence; surface `pairedDevices()` to the UI for the
-   notify-vs-scan decision.
+3. ✅ **Mobile signature requests** (0.3.0): `MobileClient` +
+   `SignatureRequest` over `AutogramVMobileIntegration` (via the
+   structural `MobileIntegrationBackend` contract); `AvmSimpleChannel`
+   and the background `AvmExecutor` reimplemented on request tokens;
+   both `useRestorePoint` implementations replaced by the shared
+   `RestorePointStore` (reads the legacy string-pointer format).
+   `pairedDevices()` is exposed on `MobileClient`; wiring the
+   notify-vs-scan decision into the dialog UI is deferred to phase 5
+   (it needs the flow controller and a bridge method, phase 4).
 4. **RPC layer**: method tables + `createRpcClient`/`createRpcHandler`;
    rewrite `channel/web.ts` and `background-worker.ts` against them;
    generic abort frames.

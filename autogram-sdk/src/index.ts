@@ -53,3 +53,17 @@ export type { SignedObject } from "./types";
 
 export { DesktopClient } from "./desktop-client";
 export type { DesktopSignOptions } from "./desktop-client";
+
+export {
+  MobileClient,
+  SignatureRequest,
+  RestorePointStore,
+  toSignedObject,
+} from "./mobile";
+export type {
+  RequestToken,
+  PairedDevice,
+  SignatureRequestStatus,
+  RestorePointResult,
+  MobileIntegrationBackend,
+} from "./mobile";

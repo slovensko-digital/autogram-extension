@@ -30,6 +30,20 @@ export type { AutogramErrorCode, SerializedAutogramError } from "./errors";
 export { DesktopClient } from "./desktop-client";
 export type { DesktopSignOptions } from "./desktop-client";
 
+export {
+  MobileClient,
+  SignatureRequest,
+  RestorePointStore,
+  toSignedObject,
+} from "./mobile";
+export type {
+  RequestToken,
+  PairedDevice,
+  SignatureRequestStatus,
+  RestorePointResult,
+  MobileIntegrationBackend,
+} from "./mobile";
+
 /* Autogram V Mobile */
 export {
   AutogramVMobileIntegration,

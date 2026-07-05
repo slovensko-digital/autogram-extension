@@ -1,5 +1,67 @@
 # Migration guide
 
+## 0.2.0 → 0.3.0
+
+0.3.0 introduces the explicit mobile signing API (`MobileClient` /
+`SignatureRequest` / `RestorePointStore`). No breaking changes — the
+stateful channel interface and `AutogramVMobileIntegration` keep working —
+but new code should use signature requests.
+
+### Prefer `MobileClient` over driving `AutogramVMobileIntegration` directly
+
+**Before (0.2.x):**
+
+```typescript
+const avm = new AutogramVMobileIntegration({ get, set });
+await avm.loadOrRegister({ platform: "web", displayName: "My app" });
+const docRef = await avm.addDocument(documentToSign);
+const qrUrl = await avm.getQrCodeUrl(docRef);
+await avm.sendNotification(docRef);
+const signed = await avm.waitForSignature(docRef, abortController);
+```
+
+**After (0.3.0):**
+
+```typescript
+const mobile = new MobileClient(new AutogramVMobileIntegration({ get, set }));
+await mobile.register({ platform: "web", displayName: "My app" });
+const request = await mobile.requestSignature(documentToSign); // notifies paired devices
+const qrUrl = await request.qrCodeUrl({ pairDevice: true });
+const signed = await request.waitForSignature({ signal });
+```
+
+Differences to note:
+
+- `waitForSignature` takes `{ signal?: AbortSignal }` instead of an
+  `AbortController`, and rejects with `AutogramError` code `aborted`
+  (previously a plain `Error("Aborted")`). If you matched on the message
+  string, switch to `AutogramError.is(e, "aborted")`.
+- `request.token` is plain JSON — persist it and call
+  `mobile.resumeRequest(token)` to continue after a reload. This replaces
+  hand-rolled persistence of `AvmIntegrationDocument` references (the
+  shapes are identical, so existing persisted references work as tokens).
+
+### Restore points unified in `RestorePointStore`
+
+`AvmSimpleChannel.useRestorePoint` and the extension background worker now
+share one implementation. Previously persisted restore points keep
+working: the store reads both the token format and the extension's legacy
+string-pointer format, and both call sites keep their historical key
+prefixes (`restorePoint:` / `autogram:avm:restorePoint:`). Behavior
+changes:
+
+- Restore points are now deleted after a successful signed-restore (the
+  background worker previously leaked them).
+- The background worker now snapshots the request token at restore-point
+  creation instead of storing a live pointer, so a subsequently added
+  document no longer silently retargets an existing restore point.
+
+### Deliberate aborts no longer show the error dialog
+
+`CombinedClient.sign` treats `AutogramError` code `aborted` (user closed
+the dialog, wait timeout) like a cancellation: the error is rethrown to
+the caller but no error screen is shown.
+
 ## 0.1.x → 0.2.0
 
 0.2.0 hardens error handling and untangles internal module dependencies.

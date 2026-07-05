@@ -1,4 +1,4 @@
-# Autogram SDK — public API (0.2.x)
+# Autogram SDK — public API (0.3.x)
 
 This documents the supported public surface of `autogram-sdk`. Anything not
 listed here (internal channels, injected-ui internals, generated API types
@@ -107,33 +107,85 @@ checkingApp → launchingApp → (appMayNotBeInstalled) → waitingForSignature
 signingCancelled | error
 ```
 
-## Mobile-only integration: `AutogramVMobileIntegration` (`autogram-sdk`)
+## Mobile-only signing: `MobileClient` (`autogram-sdk`)
 
-Stateless-per-document client for the AVM server. Persists integration
-keys through the `DBInterface` you provide (e.g. `idb-keyval`'s
-`get`/`set`).
+The recommended headless mobile API. Long-lived state (integration keys,
+device pairings) belongs to the client; each document is an independent,
+resumable `SignatureRequest`.
 
 ```typescript
-import { AutogramVMobileIntegration } from "autogram-sdk";
+import { AutogramVMobileIntegration, MobileClient } from "autogram-sdk";
 import { get, set } from "idb-keyval";
 
-const avm = new AutogramVMobileIntegration({ get, set });
-await avm.loadOrRegister({ platform: "web", displayName: "My app" });
+const mobile = new MobileClient(new AutogramVMobileIntegration({ get, set }));
+await mobile.register({ platform: "web", displayName: "My app" });
 
-const docRef = await avm.addDocument({ document, parameters, payloadMimeType });
-const qrUrl = await avm.getQrCodeUrl(docRef);      // show as QR code
-await avm.sendNotification(docRef);                // notify paired devices
-const signed = await avm.waitForSignature(docRef, abortController);
+const request = await mobile.requestSignature({
+  document: { content, filename },
+  parameters: { level: "XAdES_BASELINE_B" },
+  payloadMimeType: "text/plain",
+});
+
+if ((await mobile.pairedDevices()).length > 0) {
+  // paired phone gets a push notification — no QR scan needed
+  // (requestSignature already notified; request.notifyDevices() re-sends)
+} else {
+  showQr(await request.qrCodeUrl({ pairDevice: true })); // scanning also pairs
+}
+
+const signed = await request.waitForSignature({ signal: abortSignal });
 ```
 
+### `MobileClient`
+
+- `register(info)` — load the persisted integration or register a new one
+  (idempotent).
+- `pairedDevices()` — devices that can be reached by push notification.
+- `pairingQrCodeUrl()` — QR that pairs a device without signing anything.
+- `requestSignature(documentToSign, { notifyDevices? })` — upload a
+  document; notifies paired devices by default.
+- `resumeRequest(token)` — recreate a `SignatureRequest` from a persisted
+  token (`null` if the token is invalid).
+
+### `SignatureRequest`
+
+- `token` — plain JSON-serializable `{ guid, encryptionKey, lastModified }`;
+  persist it to resume the request after a reload or worker restart.
+- `qrCodeUrl({ pairDevice? })` — URL to show as QR; with `pairDevice` the
+  scan also pairs the device for future push notifications.
+- `notifyDevices()` — push notification to paired devices (failures are
+  logged, never thrown — keep the QR as fallback).
+- `status()` — `{ state: "pending" | "expired" }` or
+  `{ state: "signed", document }` (single check, no polling).
+- `waitForSignature({ signal? })` — polls until signed; rejects with
+  `AutogramError` code `aborted` when the signal fires.
+
+Documents auto-delete from the AVM server 24 hours after upload —
+`status()` reports `expired` after that. Note that a QR scan is inherently
+per-document (the QR encodes the document GUID + key); "scan once, sign
+many" works through pairing + notifications.
+
+### `RestorePointStore`
+
+Persists request tokens under caller-chosen identifiers so a signing
+session survives page reloads (e.g. when the OS suspends the browser while
+the user signs in the mobile app):
+
+```typescript
+const store = new RestorePointStore({ get, set }, mobile);
+const result = await store.use(restorePointId, currentRequest?.token ?? null);
+// result.outcome: "none" | "pending" (resume waiting) | "signed" (done)
+```
+
+### Low-level: `AutogramVMobileIntegration`
+
+Direct client for the AVM server API, used as the backend of
+`MobileClient` (any `MobileIntegrationBackend` implementation works, which
+is how the browser extension bridges calls to its background worker).
 Key methods: `loadOrRegister`, `addDocument`, `getQrCodeUrl(docRef,
 enableIntegration?)`, `getPairingQrCodeUrl`, `sendNotification(docRef)`,
 `checkDocumentStatus(docRef)`, `waitForSignature(docRef, abortController)`,
 `getDevices`, `setBaseUrl`/`getBaseUrl`, `getIntegrationGuid`.
-
-`AvmIntegrationDocument` (`{ guid, encryptionKey, lastModified }`) is a
-plain serializable reference — persist it to resume waiting for a signature
-later (this is what restore points do).
 
 ## Types
 
