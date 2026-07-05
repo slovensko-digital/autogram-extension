@@ -1,5 +1,33 @@
 # Migration guide
 
+## 0.3.0 → 0.4.0
+
+0.4.0 adds the typed RPC layer (`defineRpcService`, `createRpcClient`,
+`createRpcHandler` — see the "RPC bridge" section of [API.md](./API.md))
+and rewrites the browser extension's bridge on top of it. **Web-page SDK
+consumers are unaffected** — no public API changed.
+
+For the extension (this repository):
+
+- The injected ↔ content ↔ background wire format changed to generic RPC
+  frames (`{id, service, method, payload}` / `{id, ok, payload}` /
+  `{id, abort: true}`). All three scripts ship in one extension release,
+  so there is no cross-version concern.
+- Method schemas live in one place
+  (`src/dbridge_js/autogram/channel/services.ts`); the per-method caller
+  and dispatcher boilerplate in `channel/web.ts` and
+  `background-worker.ts` is generated from it.
+- Cancellation is generic: every request can be aborted with an abort
+  frame. Desktop `sign`, `waitForStatus`, `startBatch` and `endBatch`
+  are now abortable across the bridge (previously the `AbortController`
+  was silently dropped). The AVM-specific `abortWaitForSignature` wire
+  method is gone.
+- `batchId` is now forwarded on desktop `sign` (previously dropped by
+  the bridge).
+- The desktop signature-parameters schema now matches the generated
+  OpenAPI type: `level` is optional and `fsFormId` is no longer
+  stripped by validation.
+
 ## 0.2.0 → 0.3.0
 
 0.3.0 introduces the explicit mobile signing API (`MobileClient` /

@@ -44,6 +44,31 @@ export type {
   MobileIntegrationBackend,
 } from "./mobile";
 
+export {
+  defineRpcService,
+  createRpcClient,
+  createRpcHandler,
+  serializeRpcError,
+  ZRpcRequestFrame,
+  ZRpcAbortFrame,
+  ZRpcCallerFrame,
+  ZRpcResponseFrame,
+} from "./rpc";
+export type {
+  RpcMethodDef,
+  RpcMethods,
+  RpcServiceDef,
+  RpcClient,
+  RpcClientTransport,
+  RpcContext,
+  RpcImpl,
+  RpcHandler,
+  RpcRequestFrame,
+  RpcAbortFrame,
+  RpcCallerFrame,
+  RpcResponseFrame,
+} from "./rpc";
+
 /* Autogram V Mobile */
 export {
   AutogramVMobileIntegration,

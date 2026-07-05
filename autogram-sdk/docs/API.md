@@ -1,4 +1,4 @@
-# Autogram SDK — public API (0.3.x)
+# Autogram SDK — public API (0.4.x)
 
 This documents the supported public surface of `autogram-sdk`. Anything not
 listed here (internal channels, injected-ui internals, generated API types
@@ -259,6 +259,47 @@ Concrete classes (kept for compatibility; all extend `AutogramError`):
 `AutogramAppNotInstalledException` (`app-not-installed`),
 `AutogramSdkException(message, code?)` (generic, deprecated — prefer
 `AutogramError` with a specific code).
+
+## RPC bridge (advanced, for embedders)
+
+For environments where SDK calls must cross execution contexts (the
+browser extension bridges page ↔ content script ↔ background worker),
+the SDK ships a typed RPC layer. A service is defined once as a method
+table — zod args/result schemas plus timeout policy — and both sides are
+generated from it:
+
+```typescript
+import { defineRpcService, createRpcClient, createRpcHandler } from "autogram-sdk";
+import { z } from "zod";
+
+const service = defineRpcService("my-service", {
+  greet: {
+    args: z.object({ name: z.string() }),
+    result: z.string(),
+    timeoutMs: 10_000,
+    timeoutMessage: "Greeting timed out",
+  },
+});
+
+// caller side — transport moves plain JSON frames (postMessage/CustomEvent/Port)
+const client = createRpcClient(service, transport);
+await client.greet({ name: "svet" }, { signal });   // typed, abortable
+
+// handler side
+const handler = createRpcHandler(service, {
+  greet: async (args, context) => `ahoj ${args.name}`, // context.signal fires on abort
+});
+```
+
+Both sides validate against the same schemas; errors cross the boundary
+as serialized `AutogramError`s and are rehydrated on the caller. Client
+`AbortSignal`s and timeouts emit abort frames, so the handler's
+`context.signal` fires and long-running work is cancelled on the far
+side too. `handler.abortSender(senderId)` cancels everything from one
+caller (e.g. on port disconnect).
+
+Most applications never need this — it exists for embedders implementing
+custom channels.
 
 ## Stability notes
 

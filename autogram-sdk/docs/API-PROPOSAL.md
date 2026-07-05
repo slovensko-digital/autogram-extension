@@ -1,7 +1,9 @@
 # API redesign proposal / roadmap
 
 Status: agreed direction (2026-07); implemented incrementally.
-Phases 1–2 shipped in SDK 0.2.0; phase 3 shipped in SDK 0.3.0.
+Phases 1–2 shipped in 0.2.0, phase 3 in 0.3.0, phase 4 in 0.4.0.
+Step-by-step instructions for the remaining phases:
+[REFACTOR-HANDOFF.md](./REFACTOR-HANDOFF.md).
 
 Fixed external surfaces that this proposal must not change:
 
@@ -253,9 +255,14 @@ shimmed once at the adapter edge (a rejected promise always reaches
    `pairedDevices()` is exposed on `MobileClient`; wiring the
    notify-vs-scan decision into the dialog UI is deferred to phase 5
    (it needs the flow controller and a bridge method, phase 4).
-4. **RPC layer**: method tables + `createRpcClient`/`createRpcHandler`;
-   rewrite `channel/web.ts` and `background-worker.ts` against them;
-   generic abort frames.
+4. ✅ **RPC layer** (0.4.0): `src/rpc.ts` with frames, `defineRpcService`,
+   `createRpcClient` (typed proxy, per-method timeouts, AbortSignal →
+   abort frames) and `createRpcHandler` (validating dispatcher with
+   `context.signal`/`requestId`/`senderId`); extension method tables in
+   `channel/services.ts`; `channel/web.ts`, `channel/content.ts` and
+   `background-worker.ts` rewritten on top. Desktop calls became
+   abortable over the bridge, `batchId` is forwarded, and the
+   hand-written schema drift (`fsFormId`, required `level`) is fixed.
 5. **Flow/UI split + facade**: extract the flow controller and the unified
    `SigningState`; introduce `createAutogramClient`; keep
    `CombinedClient.init()` as a deprecated wrapper for one release.
