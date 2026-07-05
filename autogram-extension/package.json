@@ -4,7 +4,7 @@
   "private": true,
   "description": "Rozšírenie umožnuje používať podpisovač Autogram od Slovensko.Digital na štátnych portáloch.",
   "type": "module",
-  "main": "./webpack/manifest.ts",
+  "main": "./manifest/manifest.ts",
   "scripts": {
     "start": "echo 'Please specify manifest version: npm run start:mv2 or npm run start:mv3'",
     "start:mv2": "npm run dev:mv2",
@@ -35,7 +35,7 @@
     "vite:build-prod": "NODE_ENV=production tsx scripts/vite-build-iife.ts",
     "vite:watch": "AE_INCLUDE_DEBUG_URLS=1 tsx scripts/vite-build-iife.ts --watch",
 
-    "lint": "eslint src webpack",
+    "lint": "eslint src manifest scripts",
     "test": "npx jest",
     "release": "./scripts/release.sh",
     "clean": "rm -rf dist web-ext-artifacts",

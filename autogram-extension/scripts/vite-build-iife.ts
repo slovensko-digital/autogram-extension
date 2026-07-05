@@ -3,9 +3,8 @@ import path from "path";
 import { execSync } from "child_process";
 import { createRequire } from "module";
 import { fileURLToPath } from "url";
-import { build, type InlineConfig } from "vite";
-import type { RollupWatcher } from "rollup";
-import { generateManifest } from "../webpack/manifest";
+import { build, type InlineConfig, type Rolldown } from "vite";
+import { generateManifest } from "../manifest/manifest";
 
 type FileDescriptor = {
   chunk?: undefined;
@@ -50,7 +49,7 @@ const entryInputs: Record<string, string> = {
   redirect: path.resolve(projectRoot, "src/entrypoint/redirect.ts"),
 };
 
-const watchers: RollupWatcher[] = [];
+const watchers: Rolldown.RolldownWatcher[] = [];
 
 const defineValues = {
   "import.meta.env.AE_MANIFEST_VERSION": JSON.stringify(manifestVersion),
@@ -148,16 +147,13 @@ async function buildEntry(entryName: string, entryPath: string) {
           extend: true,
         },
       },
-      commonjsOptions: {
-        transformMixedEsModules: true,
-      },
       watch: shouldWatch ? {} : undefined,
     },
   };
 
   const result = await build(config);
   if (shouldWatch) {
-    watchers.push(result as RollupWatcher);
+    watchers.push(result as Rolldown.RolldownWatcher);
   }
 }
 
