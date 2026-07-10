@@ -14,10 +14,44 @@ export const DitecErrorCodes = {
 
 /**
  * Error object shape passed to Ditec-style `onError` callbacks.
+ *
+ * Must be a real `Error` with `name === "DitecError"`: portal code branches
+ * on exactly that (e.g. schranka.slovensko.sk DSignerMulti.js does
+ * `if (e.name === 'DitecError') ... else throw e`, and silences
+ * `code === 1` cancellations only inside that branch).
  */
-export interface DitecError {
+export interface DitecError extends Error {
   code: number;
-  message: string;
+  detail?: string;
+}
+
+export function isDitecError(e: unknown): e is DitecError {
+  return (
+    e != null &&
+    typeof e === "object" &&
+    "name" in e &&
+    (e as { name?: unknown }).name === "DitecError"
+  );
+}
+
+/**
+ * Builds an error matching `ditec.utils.createDitecError` from the original
+ * D.Bridge scripts: an `Error` decorated with name, code, detail and the
+ * Ditec `toString` format.
+ */
+export function createDitecError(
+  code: number,
+  message: string,
+  detail?: string
+): DitecError {
+  const error = new Error(message) as DitecError;
+  error.name = "DitecError";
+  error.code = code;
+  error.detail = detail;
+  error.toString = function () {
+    return `${error.name}(${error.code}) ${error.message}`;
+  };
+  return error;
 }
 
 /**
@@ -29,14 +63,25 @@ export interface DitecError {
  * lose their prototype chain.
  */
 export function toDitecError(e: unknown): DitecError {
+  if (isDitecError(e)) {
+    return e;
+  }
   const message = errorMessage(e);
+  const detail =
+    typeof e === "object" && e !== null && typeof (e as Error).stack === "string"
+      ? (e as Error).stack
+      : undefined;
   if (AutogramError.is(e, "user-cancelled")) {
-    return { code: DitecErrorCodes.ERROR_CANCELLED, message };
+    return createDitecError(DitecErrorCodes.ERROR_CANCELLED, message, detail);
   }
   if (AutogramError.is(e, "app-not-installed")) {
-    return { code: DitecErrorCodes.ERROR_NOT_INSTALLED, message };
+    return createDitecError(
+      DitecErrorCodes.ERROR_NOT_INSTALLED,
+      message,
+      detail
+    );
   }
-  return { code: DitecErrorCodes.ERROR_GENERAL, message };
+  return createDitecError(DitecErrorCodes.ERROR_GENERAL, message, detail);
 }
 
 function errorMessage(e: unknown): string {
@@ -96,15 +141,21 @@ export interface ObjectXades2Xml {
   transformType: string;
 }
 
+/**
+ * BP `addXmlObject2` input. Field names follow the real
+ * `dSigXadesBpJs.addXmlObject2` signature: the third argument is the form
+ * identifier URI and the fourth is a base64-encoded XML data container
+ * (see schranka.slovensko.sk DSignerMulti.js `addFileXmlASiC`).
+ */
 export interface ObjectXadesBp2Xml {
   type: "XadesBp2Xml";
   objectId: string;
   objectDescription: string;
-  namespaceUri: string;
-  /** data */
-  sourceXml: string;
-  sourceXsd: string;
-  sourceXsl: string;
+  objectFormatIdentifier: string;
+  /** data: base64-encoded XML data container (XDC) */
+  xdcXDCB64: string;
+  xdcUsedXSD: string;
+  xdcUsedXSLT: string;
 }
 
 export interface ObjectXadesBpTxt {

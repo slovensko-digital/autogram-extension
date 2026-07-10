@@ -3,13 +3,43 @@ import {
   AutogramAppNotInstalledException,
   AutogramSdkException,
 } from "autogram-sdk";
-import { DitecErrorCodes, toDitecError } from "./types";
+import {
+  createDitecError,
+  DitecErrorCodes,
+  isDitecError,
+  toDitecError,
+} from "./types";
 
 describe("toDitecError", () => {
   test("user cancellation maps to ERROR_CANCELLED", () => {
     const error = toDitecError(new UserCancelledSigningException());
     expect(error.code).toBe(DitecErrorCodes.ERROR_CANCELLED);
     expect(error.message).toBeTruthy();
+  });
+
+  test("produces the DitecError shape portal code branches on", () => {
+    // schranka.slovensko.sk: `if (e.name === 'DitecError') ... else throw e`
+    const error = toDitecError(new UserCancelledSigningException());
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe("DitecError");
+    expect(isDitecError(error)).toBe(true);
+    expect(error.toString()).toBe(
+      `DitecError(${error.code}) ${error.message}`
+    );
+  });
+
+  test("passes through an existing DitecError without re-wrapping", () => {
+    const original = createDitecError(
+      DitecErrorCodes.ERROR_NOT_INSTALLED,
+      "not installed"
+    );
+    expect(toDitecError(original)).toBe(original);
+  });
+
+  test("keeps the original stack as detail", () => {
+    const cause = new AutogramSdkException("boom");
+    const error = toDitecError(cause);
+    expect(error.detail).toBe(cause.stack);
   });
 
   test("app not installed maps to ERROR_NOT_INSTALLED", () => {

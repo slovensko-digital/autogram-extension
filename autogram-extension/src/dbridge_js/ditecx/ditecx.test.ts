@@ -106,6 +106,49 @@ describe("upvs", () => {
 
 describe("financnasprava", () => {});
 
+// Method surface exercised by schranka.slovensko.sk DSignerMulti.js
+describe("schranka portal compatibility", () => {
+  let ditecX: DitecX;
+  beforeAll(async () => {
+    ditecX = await constructDitecX();
+  });
+
+  test("deploy exists on the non-BP object and succeeds", (done) => {
+    ditecX.dSigXadesJs.deploy(
+      { platforms: ["dotNet", "java"] },
+      { onSuccess: () => done(), onError: done }
+    );
+  });
+
+  test("setSigningTimeProcessing completes via onSuccess", (done) => {
+    ditecX.dSigXadesJs.setSigningTimeProcessing(false, true, {
+      onSuccess: () => done(),
+      onError: done,
+    });
+  });
+
+  test("unsupported methods fail via onError with a DitecError", (done) => {
+    ditecX.dSigXadesJs.sign11("id", "alg", "policy", "eid", "euri", "edescr", {
+      onSuccess: () => done(new Error("sign11 must not succeed")),
+      onError: (e: { name?: string; code?: number }) => {
+        expect(e.name).toBe("DitecError");
+        expect(e.code).toBeLessThan(0);
+        done();
+      },
+    });
+  });
+
+  test("BP timestamp methods fail via onError instead of TypeError", (done) => {
+    ditecX.dSigXadesBpJs.getSignatureTimeStampTokenBase64({
+      onSuccess: () => done(new Error("must not succeed")),
+      onError: (e: { name?: string }) => {
+        expect(e.name).toBe("DitecError");
+        done();
+      },
+    });
+  });
+});
+
 function asPromise<T = unknown>(
   fn: (...args: unknown[]) => void
 ): (...args: unknown[]) => Promise<T> {

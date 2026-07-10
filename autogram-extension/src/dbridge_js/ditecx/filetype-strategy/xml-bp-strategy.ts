@@ -78,24 +78,24 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
 
   get document(): DesktopAutogramDocument {
     return {
-      content: this.obj.sourceXml,
+      content: this.obj.xdcXDCB64,
       filename: this.obj.objectId,
     };
   }
   get objSchema(): string {
-    return Base64.encode(this.obj.sourceXsd);
+    return Base64.encode(this.obj.xdcUsedXSD);
   }
   get objTransformation(): string {
-    return Base64.encode(this.obj.sourceXsl);
+    return Base64.encode(this.obj.xdcUsedXSLT);
   }
   get formVersion() {
-    return this.obj.namespaceUri;
+    return this.obj.objectFormatIdentifier;
   }
   get objectId() {
     return this.obj.objectId;
   }
   get identifier() {
-    return this.obj.namespaceUri;
+    return this.obj.objectFormatIdentifier;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     if (this.isXmlDataContainer()) {

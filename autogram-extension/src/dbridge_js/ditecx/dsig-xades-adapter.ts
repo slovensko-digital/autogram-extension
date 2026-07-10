@@ -127,6 +127,9 @@ export class DSigXadesAdapter extends DSigAdapter {
     );
   }
 
+  /* XAdES_ZEP v1.1/v2.0 data envelopes are not supported by Autogram;
+   * fail via onError so the portal shows an error instead of hanging
+   * (schranka.slovensko.sk calls these for XadesZepSignatureVersion 1.1/2.0). */
   sign11(
     signatureId,
     digestAlgUri,
@@ -136,7 +139,7 @@ export class DSigXadesAdapter extends DSigAdapter {
     dataEnvelopeDescr,
     callback
   ) {
-    this.stub("sign11", arguments);
+    this.unsupported("sign11", callback);
   }
   sign20(
     signatureId,
@@ -147,25 +150,22 @@ export class DSigXadesAdapter extends DSigAdapter {
     dataEnvelopeDescr,
     callback
   ) {
-    this.stub("sign20", arguments);
-    // this.__implementation.sign(
-    //   signatureId,
-    //   digestAlgUri,
-    //   signaturePolicyIdentifier,
-    //   callback
-    // );
+    this.unsupported("sign20", callback);
   }
 
   // ---------------
+  /**
+   * Autogram includes the signing time itself; the GUI-display preference
+   * has no equivalent, so this succeeds as a no-op (schranka.slovensko.sk
+   * calls it before every XAdES `sign` and waits for the callback).
+   */
   setSigningTimeProcessing(displayGui, includeSigningTime, callback) {
-    this.stub("setSigningTimeProcessing", arguments);
+    this.log("setSigningTimeProcessing", arguments);
+    callback?.onSuccess?.();
   }
   setWindowSize(width, height, callback) {
     this.stub("", arguments);
     callback.onSuccess();
-  }
-  setCertificateFilter(filterID, callback) {
-    this.stub("", arguments);
   }
   getSignedXmlWithEnvelope(callback) {
     this.log("getSignedXmlWithEnvelope", arguments);
@@ -188,40 +188,43 @@ export class DSigXadesAdapter extends DSigAdapter {
     );
   }
   getSignedXmlWithEnvelopeGZipBase64(callback) {
-    this.stub("getSignedXmlWithEnvelopeGZipBase64", arguments);
+    this.unsupported("getSignedXmlWithEnvelopeGZipBase64", callback);
   }
   getSigningTime(callback) {
-    this.stub("getSigningTime", arguments);
+    this.unsupported("getSigningTime", callback);
   }
   getSigningCertificate(callback) {
-    this.stub("getSigningCertificate", arguments);
+    this.unsupported("getSigningCertificate", callback);
   }
   loadConfiguration(configsZipBase64, callback) {
-    this.stub("loadConfiguration", arguments);
+    this.unsupported("loadConfiguration", callback);
   }
   getSignedXmlWithEnvelopeAndTimeStamp(callback) {
-    this.stub("getSignedXmlWithEnvelopeAndTimeStamp", arguments);
+    this.unsupported("getSignedXmlWithEnvelopeAndTimeStamp", callback);
   }
   getSignedXmlWithEnvelopeAndTimeStampBase64(callback) {
-    this.stub("getSignedXmlWithEnvelopeAndTimeStampBase64", arguments);
+    this.unsupported("getSignedXmlWithEnvelopeAndTimeStampBase64", callback);
   }
   getSignedXmlWithEnvelopeAndTimeStampGZipBase64(callback) {
-    this.stub("getSignedXmlWithEnvelopeAndTimeStampGZipBase64", arguments);
+    this.unsupported(
+      "getSignedXmlWithEnvelopeAndTimeStampGZipBase64",
+      callback
+    );
   }
   getSignatureTimeStampTokenBase64(callback) {
-    this.stub("getSignatureTimeStampTokenBase64", arguments);
+    this.unsupported("getSignatureTimeStampTokenBase64", callback);
   }
   getSignatureTimeStampCert(callback) {
-    this.stub("getSignatureTimeStampCert", arguments);
+    this.unsupported("getSignatureTimeStampCert", callback);
   }
   getSignatureTimeStampTime(callback) {
-    this.stub("getSignatureTimeStampTime", arguments);
+    this.unsupported("getSignatureTimeStampTime", callback);
   }
   getTSAIdentification(callback) {
-    this.stub("getTSAIdentification", arguments);
+    this.unsupported("getTSAIdentification", callback);
   }
   getSignatureTimeStampRequestBase64(reqPolicy, digestAlgUri, callback) {
-    this.stub("getSignatureTimeStampRequestBase64", arguments);
+    this.unsupported("getSignatureTimeStampRequestBase64", callback);
   }
   getSignatureTimeStampRequest2Base64(
     reqPolicy,
@@ -231,9 +234,9 @@ export class DSigXadesAdapter extends DSigAdapter {
     extensions,
     callback
   ) {
-    this.stub("getSignatureTimeStampRequest2Base64", arguments);
+    this.unsupported("getSignatureTimeStampRequest2Base64", callback);
   }
   createXAdESZepT(tsResponseB64, tsCertB64, callback) {
-    this.stub("createXAdESZepT", arguments);
+    this.unsupported("createXAdESZepT", callback);
   }
 }
