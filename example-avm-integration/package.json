@@ -10,6 +10,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "autogram-sdk": "file:../autogram-sdk"
+    "autogram-sdk": "file:../autogram-sdk",
+    "firebase": "^12.16.0"
   }
 }

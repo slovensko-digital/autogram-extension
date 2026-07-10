@@ -19,11 +19,12 @@ import {
   setText,
   showSignedPreview,
 } from "./ui";
+import { requestFirebaseRegistrationToken } from "./firebase-push";
 
 type SigningParameters = NonNullable<AVMDocumentToSign["parameters"]>;
 type SignatureLevel = NonNullable<SigningParameters["level"]>;
 type SignatureContainer = NonNullable<SigningParameters["container"]>;
-type DevicePlatform = "android" | "ios";
+type DevicePlatform = "android" | "ios" | "web";
 type DeviceRequest = {
   guid: string;
   key: string;
@@ -180,9 +181,31 @@ async function loadOrRegisterDevice() {
     logDevice("Generated a push encryption key for the simulated device.");
   }
 
-  if (!deviceRegistrationId) {
-    deviceRegistrationId = `browser-${globalThis.crypto.randomUUID()}`;
+  const wantsFirebaseRegistrationId = currentDevicePlatform() === "web";
+  const hasFakeRegistrationId = deviceRegistrationId?.startsWith("browser-");
+  const previousRegistrationId = deviceRegistrationId;
+  if (
+    !deviceRegistrationId ||
+    (wantsFirebaseRegistrationId && hasFakeRegistrationId) ||
+    (!wantsFirebaseRegistrationId && !hasFakeRegistrationId)
+  ) {
+    if (wantsFirebaseRegistrationId) {
+      setDeviceStatus("Requesting Firebase Cloud Messaging token...");
+      deviceRegistrationId = await requestFirebaseRegistrationToken();
+      logDevice("Obtained a Firebase Cloud Messaging registration token.");
+    } else {
+      deviceRegistrationId = `browser-${globalThis.crypto.randomUUID()}`;
+      logDevice("Generated a simulated registration ID.");
+    }
     await set(deviceKeys.registrationId, deviceRegistrationId);
+
+    if (deviceGuid && previousRegistrationId !== deviceRegistrationId) {
+      logDevice(
+        "Registration ID changed but the device is already registered on the " +
+          "AVM server. Reset the saved device below to re-register it with " +
+          "the new registration ID."
+      );
+    }
   }
 
   if (!deviceGuid) {
@@ -881,17 +904,39 @@ async function ensurePushWorker() {
     return pushWorkerRegistration;
   }
 
-  const registration = await navigator.serviceWorker.register("./push-sw.js");
-  pushWorkerRegistration = await navigator.serviceWorker.ready;
+  // Scoped away from "/" so it doesn't collide with firebase-messaging-sw.js,
+  // which needs the root scope for its real push subscription.
+  const registration = await navigator.serviceWorker.register("./push-sw.js", {
+    scope: "./legacy-push-demo/",
+  });
+  await waitForActiveServiceWorker(registration);
+  pushWorkerRegistration = registration;
   setPushStatus(
     `Browser push inbox registered. Notification permission: ${Notification.permission}.`
   );
 
-  if (registration.active && !pushWorkerRegistration.active) {
-    pushWorkerRegistration = registration;
+  return pushWorkerRegistration;
+}
+
+async function waitForActiveServiceWorker(
+  registration: ServiceWorkerRegistration
+) {
+  if (registration.active) {
+    return;
   }
 
-  return pushWorkerRegistration;
+  const worker = registration.installing || registration.waiting;
+  if (!worker) {
+    return;
+  }
+
+  await new Promise<void>((resolve) => {
+    worker.addEventListener("statechange", () => {
+      if (worker.state === "activated") {
+        resolve();
+      }
+    });
+  });
 }
 
 function supportsPushInbox() {

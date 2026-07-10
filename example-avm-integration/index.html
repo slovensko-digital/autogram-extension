@@ -812,6 +812,7 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
               <select $="devicePlatform">
                 <option value="android">android</option>
                 <option value="ios">ios</option>
+                <option value="web">web (Firebase push)</option>
               </select>
             </label>
           </div>
@@ -857,10 +858,13 @@ Sign it with Autogram v mobile and the signed output will appear below.</textare
           <div>
             <strong>Browser push inbox</strong>
             <p class="mini-note">
-              Optional Push API receiver for standard browser push payloads.
-              This is separate from AVM native mobile push, but lets the demo
-              collect push-delivered AVM URLs and activate them into the
-              request loader below.
+              Push API receiver for standard browser push payloads. When the
+              simulated platform above is set to "web (Firebase push)", this
+              registers a real Firebase Cloud Messaging registration token as
+              the device's <span class="mono">registrationId</span>, so the
+              AVM server can deliver real push notifications here. It also
+              lets the demo collect push-delivered AVM URLs and activate them
+              into the request loader below.
             </p>
           </div>
 
