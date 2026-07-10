@@ -4,6 +4,7 @@
 import { DSigXadesBpAdapter } from "./dsig-xades-bp-adapter";
 import { DSigXadesAdapter } from "./dsig-xades-adapter";
 import { DBridgeAutogramImpl } from "../autogram/autogram-implementation";
+import { ImplementationInterface } from "./implementation";
 import { createLogger } from "../../log";
 import {
   defaultOptionsStorage,
@@ -87,7 +88,15 @@ export async function constructDitecX(
   autogramOptions: ExtensionOptions = defaultOptionsStorage.options
 ) {
   const implementation = await DBridgeAutogramImpl.init(autogramOptions);
+  return buildDitecX(implementation);
+}
 
+/**
+ * Builds the `window.ditec` replacement for a given implementation.
+ * Separated from {@link constructDitecX} so tests (portal contract replay)
+ * can supply a fake {@link ImplementationInterface} without module mocks.
+ */
+export function buildDitecX(implementation: ImplementationInterface): DitecX {
   /**
    * Object with same interface as `window.ditec` object used by dSigner
    */

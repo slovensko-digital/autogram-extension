@@ -1,0 +1,9 @@
+# <sha256>  <url>  <local fixture (or "-" if not vendored)>
+997d7da3f2dd9b8eb32c728fd1f37be57a0c9bd8ced1362a0fda4acdf6fa4f48  https://schranka.slovensko.sk/Content/jscript/DSignerMulti.js?v=20250601  DSignerMulti-20250601.js
+3ddcb31899135944dd98a8d6f5822c08e00a5e70eadb71eb1806e1d76edafb31  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/config.js  -
+88a91273c2aaf83c0137f45ee173daf4fa1e3a939a64bc8abeb6287572cef280  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dCommon.min.js  -
+7a39908472eee6b8fe17df8f33ed43c5df5b222a673cd000850b1a66f1d00866  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dGina.min.js  -
+ebd7d88150ede5de9d1c0526446ea5d427dc59a0cffb761fb9e5be958feb0336  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXades.min.js  -
+4c3b20a55193c028cdbefa233ef46db1d864bdcf83cf064a4b0ca0ddce610869  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXadesBp.min.js  -
+2bdd6e0823946749afac2d1647408281c8bfb3b3408eebb67d9262cc111e6a44  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dSigXadesExtender.min.js  -
+b020f346017bdcda726ee3eda04a1b3cc23d9fd06cef8ffa27bdb7991141a60a  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dViewer.min.js  -

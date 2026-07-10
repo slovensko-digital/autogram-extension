@@ -2,6 +2,10 @@ dist
 web-ext-artifacts/*
 node_modules
 
+# downloaded on demand (npm run fetch:portal-fixtures), not vendored for
+# licensing reasons — see tests/fixtures/portals/README.md
+tests/fixtures/portals/*.js
+
 ### https://raw.github.com/github/gitignore/2a4de265d37eca626309d8e115218d18985b5435/Global/VisualStudioCode.gitignore
 
 .vscode/*

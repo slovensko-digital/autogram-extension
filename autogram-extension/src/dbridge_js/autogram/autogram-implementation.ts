@@ -14,6 +14,7 @@ import {
   WebChannelCaller,
 } from "./channel/web";
 import { InputObject } from "../ditecx/types";
+import { DSIGNER_VERSION_JSON } from "../ditecx/dsigner-version";
 import { createLogger } from "../../log";
 import { ExtensionOptions } from "../../options/default";
 
@@ -215,12 +216,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   }
 
   public getVersion(): string {
-    // Compatibility gate, not decoration: schranka.slovensko.sk
-    // (DSignerMulti.js checkExistsAddXmlObject2) parses this JSON and
-    // requires XmlBpPlugin >= 2.0.0.13, otherwise it shows the
-    // "install a newer signer" (OLD_DSIGNER) error and never calls
-    // addXmlObject2. Keep the plugin list and versions parseable.
-    return '{"name":"D.Signer/XAdES BP Java","version":"2.0.0.23","plugins":[{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.xmlplugin.XmlBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.txtplugin.TxtBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pngplugin.PngBpPlugin","version":"2.0.0.23"},{"name":"sk.ditec.zep.dsigner.xades.bp.plugins.pdfplugin.PdfBpPlugin","version":"2.0.0.23"}]}';
+    return DSIGNER_VERSION_JSON;
   }
 
   // Private methods

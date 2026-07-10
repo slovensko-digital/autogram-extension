@@ -5,6 +5,19 @@
 import { DSigAdapter } from "./dsig-base-adapter";
 
 export class DSigXadesBpAdapter extends DSigAdapter {
+  /* BP-specific constants from the live dSigXadesBp.min.js. Portals pass
+   * these back as addXmlObject arguments (schranka.slovensko.sk sends
+   * XML_MEDIA_DESTINATION_TYPE_DESC_* as xslMediaDestinationTypeDescription
+   * and XML_XDC_NAMESPACE_URI_V1_1 as xdcNamespaceURI); without them the
+   * portal would send `undefined`. */
+  XML_MEDIA_DESTINATION_TYPE_DESC_TXT = "TXT";
+  XML_MEDIA_DESTINATION_TYPE_DESC_HTML = "HTML";
+  XML_MEDIA_DESTINATION_TYPE_DESC_XHTML = "XHTML";
+  XML_XDC_NAMESPACE_URI_V1_0 =
+    "http://data.gov.sk/def/container/xmldatacontainer+xml/1.0";
+  XML_XDC_NAMESPACE_URI_V1_1 =
+    "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+
   addXmlObject(
     objectId,
     objectDescription,

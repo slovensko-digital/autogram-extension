@@ -37,6 +37,8 @@
 
     "lint": "eslint src manifest scripts",
     "test": "npx jest",
+    "test:portal-drift": "./scripts/check-portal-drift.sh",
+    "fetch:portal-fixtures": "./scripts/fetch-portal-fixtures.sh",
     "release": "./scripts/release.sh",
     "clean": "rm -rf dist web-ext-artifacts",
 

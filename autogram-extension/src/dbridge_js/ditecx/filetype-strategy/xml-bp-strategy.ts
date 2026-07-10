@@ -32,10 +32,16 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get identifier() {
-    if (this.obj.xdcIdentifier.includes("/"))
-      return this.obj.xdcIdentifier;
-
-    return this.obj.xdcIdentifier + "/" + this.obj.xdcVersion;
+    // Canonical form identifier includes the version as the last path
+    // segment. Mirrors the PFS bundle's own derivation (Podanie
+    // initializedCallback): append xdcVersion unless the identifier
+    // already ends with it. A bare `includes("/")` check is wrong here —
+    // it matches every URI, so a versionless URI would stay versionless.
+    const identifier = this.obj.xdcIdentifier;
+    if (identifier.split("/").pop() === this.obj.xdcVersion) {
+      return identifier;
+    }
+    return identifier + "/" + this.obj.xdcVersion;
   }
   get schemaIdentifier() {
     return this.obj.xsdReferenceURI;
