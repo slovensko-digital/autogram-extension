@@ -3,13 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Autogram SDK</title>
+    <title>Autogram SDK – IIFE CombinedClient demo</title>
   </head>
   <body>
-    <h1>Welcome to Autogram SDK</h1>
-    <p>This is a basic HTML template.</p>
-    <!-- <script src="dist/demo.mjs" type="module"></script> -->
-    <script src="dist/index-all.iife.js"></script>
+    <h1>IIFE demo — CombinedClient</h1>
+    <p>
+      Loads <code>dist/index-all.iife.js</code> (all dependencies bundled) via
+      a classic <code>&lt;script&gt;</code> tag and uses the
+      <code>AutogramSDK</code> global.
+    </p>
+    <script src="../dist/index-all.iife.js"></script>
     <script>
       function showSignedObject(signedObject, name) {
         console.log("Signed object:", signedObject);

@@ -1,3 +1,10 @@
+/**
+ * @module demo
+ * Self-running demo entry: renders a file input and signs the chosen file
+ * with `createAutogramClient` (XAdES in an ASiC-E container), then offers
+ * the result for download. Loaded by the pages in `demos/` — not part of
+ * the public API.
+ */
 import { createAutogramClient } from "./with-ui";
 
 async function main() {

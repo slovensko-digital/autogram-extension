@@ -1,0 +1,48 @@
+@startuml
+skinparam ClassFontStyle bold
+skinparam ClassBackgroundColor ffffff
+skinparam ClassBorderColor 5a0000
+skinparam RoundCorner 0
+skinparam ClassBorderThickness 2
+hide empty fields
+hide empty methods
+skinparam Shadowing true
+skinparam BackgroundColor transparent
+class "AutogramRoot" {
+    +<b>abortController</b> : null | AbortController
+    +<b>choiceResult</b> : null | { promise: Promise<SigningMethod>; reject: (reason?: unknown) => void; resolve: (value: SigningMethod) => void }
+    +<b>desktopSigningState</b> : DesktopSigningState
+    +<b>errorMessage</b> : null | string
+    +<b>hideTimeout</b> : null | Timeout
+    +<b>mobilePairingUrl</b> : null | string
+    +<b>mobileSigningUrl</b> : null | string
+    +<b>onRetryMobileNotification</b> : null | () => Promise<void>
+    +<b>pairingEnabled</b> : boolean
+    +<b>screen</b> : Screens
+    {static} +<b>styles</b> : CSSResult
+    +addFonts() : void
+    +connectedCallback() : void
+    +desktopSigning(abortController: AbortController) : void
+    +disconnectedCallback() : void
+    +hide() : void
+    +maybeRestoreRestorePoint() : Promise<boolean>
+    +openMobileOnMobile(url: string, abortController: AbortController) : void
+    +render() : TemplateResult<1>
+    +reset() : void
+    +show() : void
+    +showError(message: string) : void
+    +showQRCode(url: string, pairingUrl: string, abortController: AbortController, pairingEnabled: boolean) : void
+    +signingCancelled() : void
+    +startSigning() : Promise<SigningMethod>
+    +updateDesktopSigningState(state: DesktopSigningState) : void
+    +_closeChoiceScreen(event: EventClose) : void
+    +_closeNow(_event: Event) : void
+    +_closeSigningScreen(event: EventClose) : void
+    +_handleChoice(event: EventChoice) : void
+    +_handleRestorePointChoice(event: EventRestorePointResult) : void
+    +_handleRetryMobileNotification(_event: EventRetryMobileNotification) : Promise<void>
+}
+class "LitElement"
+hide "LitElement" circle
+"LitElement" <|-- "AutogramRoot"
+@enduml

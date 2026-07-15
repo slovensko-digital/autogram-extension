@@ -47,7 +47,7 @@
     "generate-avm-api-types": "npx openapi-typescript https://autogram.slovensko.digital/openapi.yaml --output src/avm-api/lib/avm-api.generated.ts && npx jscodeshift -t src/avm-api/lib/avm-api.codemod.ts src/avm-api/lib/avm-api.generated.ts --extension=ts && npx prettier --write src/avm-api/lib/avm-api.generated.ts",
     "generate-docs": "npx typedoc",
     "serve-docs": "npx http-server -c-1 -p 8080 -a 127.0.0.1 ./docs",
-    "demo": "npx http-server -c-1 -p 8080 -a 127.0.0.1 ."
+    "demo": "npx http-server -c-1 -p 8080 -a 127.0.0.1 . -o /demos/"
   },
   "repository": {
     "type": "git",
@@ -74,7 +74,7 @@
     "tsdown": "^0.21.6",
     "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "4.4.1",
-    "typedoc-umlclass": "^0.10.1"
+    "typedoc-umlclass": "^0.10.2"
   },
   "dependencies": {
     "@bwip-js/generic": "^4.5.1",

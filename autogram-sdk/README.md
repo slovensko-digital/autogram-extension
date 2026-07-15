@@ -10,6 +10,31 @@ UI is implemented using lit-element and lit-html, so it's lightweight and easy t
 npm install autogram-sdk
 ```
 
+Some dependencies (`zod`, `js-base64`, `idb-keyval`, …) are declared as peer dependencies; npm 7+ installs them automatically. The self-contained builds in [Distribution formats](#distribution-formats) have everything inlined and need no install at all.
+
+## Entry points
+
+The package exposes four entry points. Pick the highest-level one that fits — most applications only need `autogram-sdk/with-ui`.
+
+| Import                     | What it contains                                                                                                                                                                       | Where it can run                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `autogram-sdk/with-ui`     | `CombinedClient` / `createAutogramClient` — the full signing flow with the built-in dialog UI for choosing between desktop and mobile signing. `autogram-sdk/ui` is an alias.            | Browser page only — importing it registers custom elements as a side effect.                            |
+| `autogram-sdk`             | The headless core: `DesktopClient`, `MobileClient`, error classes (`AutogramError`, …), shared types, and the RPC helpers (`defineRpcService`, …) used to bridge contexts.               | Anywhere — pages, service workers, extension background scripts. No UI, no side effects.                |
+| `autogram-sdk/autogram-api` | Low-level HTTP client (`apiClient`) for the Autogram desktop app's local server.                                                                                                        | Anywhere.                                                                                                |
+| `autogram-sdk/avm-api`     | Low-level client for the Autogram v mobile (AVM) server API, including device pairing (`AutogramVMobileIntegration`) and the QR-pairing simulation helper (`AutogramVMobileSimulation`). | Anywhere.                                                                                                |
+
+The layering: `with-ui` builds on `DesktopClient`/`MobileClient` from the core, which in turn build on `autogram-api`/`avm-api`. Drop down a level when you need your own UI (see the `DesktopClient` demo) or your own transport (see [channels](#advanced-usage--channels)).
+
+## Distribution formats
+
+Every entry point is built in three flavors:
+
+| Files                                | Format                              | Dependencies                       | Intended consumer                                                                     |
+| ------------------------------------ | ----------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `dist/*.mjs`, `dist/*.js` + `.d.ts`  | ESM + CJS (the npm `exports` map)   | External (`dependencies` / `peerDependencies`) | Projects with a bundler (Vite, webpack, …) — gives tree-shaking and dependency deduping. |
+| `dist/bundled/*.mjs`                 | ESM, self-contained                 | Inlined                            | `<script type="module">` straight from a static server or CDN, no bundler needed.       |
+| `dist/*.iife.js`                     | IIFE, self-contained (`AutogramSDK` global) | Inlined                            | Classic `<script>` tag; `index-all.iife.js` is the usual choice (core + UI).            |
+
 ## Usage (module import)
 
 ```typescript
@@ -31,11 +56,17 @@ const { content, mimeType, signatures } = await client.sign(
 // content is Base64; signatures is [{ signedBy, issuedBy }, ...]
 ```
 
-## Usage on web (script tag)
+## Usage without a bundler
+
+Serve the file yourself or point at a CDN that mirrors npm (e.g. `https://cdn.jsdelivr.net/npm/autogram-sdk/dist/…`).
+
+### Script tag (IIFE, `AutogramSDK` global)
 
 ```html
 <script src="dist/index-all.iife.js"></script>
-<script>
+<script type="module">
+  // type="module" only for top-level await; the AutogramSDK global works
+  // from any script, see demos/iife-combined.html for a classic-script setup
   const client = await AutogramSDK.createAutogramClient();
 
   const { content, mimeType, signatures } = await client.sign(
@@ -49,6 +80,19 @@ const { content, mimeType, signatures } = await client.sign(
       container: "ASiC_E",
     }
   );
+</script>
+```
+
+### ES module (self-contained)
+
+Same API as the npm build, but with dependencies inlined so the browser can load it directly:
+
+```html
+<script type="module">
+  import { createAutogramClient } from "./dist/bundled/index-all.mjs";
+
+  const client = await createAutogramClient();
+  // …same sign() call as above
 </script>
 ```
 
@@ -138,4 +182,11 @@ Sometimes the link breaks and you need to do whole process again.
 npm run demo
 ```
 
-This will start a demo server on port 8080. You can access it at http://localhost:8080. Demo has 2 html documents demo1.html and demo2.html. `demo1.html` is file input where you can try any file, lib is used as typescript import in demo.ts. `demo2.html` automatically starts signing process with example file, lib is used as javascript global (script tag). Build the lib before running the demo.
+Build the lib first (`npm run build`), then `npm run demo` starts a static server on port 8080 and opens http://localhost:8080/demos/ with one demo page per build flavor:
+
+| Demo                 | Build flavor                                                     | How it loads the SDK                                              |
+| -------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `esm-bundled.html`   | `dist/bundled/*.mjs` — ESM, dependencies inlined                 | `<script type="module">`, works from any static server            |
+| `esm-external.html`  | `dist/*.mjs` — ESM, dependencies external (the npm package build) | `<script type="module">` + import map resolving bare imports to esm.sh (needs network) |
+| `iife-combined.html` | `dist/index-all.iife.js` — IIFE, dependencies inlined            | Classic `<script>` tag, `AutogramSDK` global; signs a PDF via `CombinedClient` |
+| `iife-desktop.html`  | `dist/index-all.iife.js` — IIFE, dependencies inlined            | Classic `<script>` tag; headless `DesktopClient` with custom progress UI |
