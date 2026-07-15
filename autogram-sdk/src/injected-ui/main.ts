@@ -83,6 +83,9 @@ export class AutogramRoot extends LitElement {
   declare mobilePairingUrl: string | null;
 
   @property({ attribute: false })
+  declare pairingEnabled: boolean;
+
+  @property({ attribute: false })
   declare desktopSigningState: DesktopSigningState;
 
   abortController: AbortController | null = null;
@@ -191,6 +194,7 @@ export class AutogramRoot extends LitElement {
                     ._handleRetryMobileNotification}
                   .url=${this.mobileSigningUrl ?? ""}
                   .pairingUrl=${this.mobilePairingUrl}
+                  .pairingEnabled=${this.pairingEnabled}
                 ></autogram-sign-mobile-screen>`
               : this.screen === Screens.signingCancelled
                 ? html`<autogram-signing-cancelled-screen
@@ -279,12 +283,14 @@ export class AutogramRoot extends LitElement {
   showQRCode(
     url: string,
     pairingUrl: string,
-    abortController: AbortController
+    abortController: AbortController,
+    pairingEnabled: boolean
   ) {
     this.screen = Screens.signMobile;
     this.mobileSigningUrl = url;
     this.mobilePairingUrl = pairingUrl;
     this.abortController = abortController;
+    this.pairingEnabled = pairingEnabled;
   }
 
   openMobileOnMobile(url: string, abortController: AbortController) {

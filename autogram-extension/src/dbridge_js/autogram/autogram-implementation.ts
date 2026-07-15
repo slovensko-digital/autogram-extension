@@ -96,11 +96,13 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   ): Promise<DBridgeAutogramImpl> {
     const webChannelCaller = new WebChannelCaller();
     webChannelCaller.init();
+    log.debug("Autogram options in init", extensionOptions);
     return new DBridgeAutogramImpl(
       await createAutogramClient({
         mobileChannel: new AvmChannelWeb(webChannelCaller),
         desktopChannel: new AutogramDesktopChannel(webChannelCaller),
         onResetSignRequest: () => {},
+        pairingEnabled: extensionOptions.notifyPairedDevices,
       }),
       extensionOptions
     );
