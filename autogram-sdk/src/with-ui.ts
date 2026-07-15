@@ -37,12 +37,14 @@ const log = createLogger("ag-sdk.CombinedClient");
 
 interface CombinedClientOptions extends AvmRegistrationInfo {
   enableNotifications?: boolean;
+  pairingEnabled?: boolean;
 }
 
 const DEFAULT_OPTIONS: CombinedClientOptions = {
   enableNotifications: true,
   platform: "unknown",
   displayName: "",
+  pairingEnabled: false,
 };
 
 /**
@@ -68,6 +70,8 @@ export interface AutogramClientOptions {
   platform?: string;
   /** Display name reported when registering the AVM integration. */
   displayName?: string;
+  /** Whether pairing is enabled for mobile notifications. Default `true`. */
+  pairingEnabled?: boolean;
 }
 
 /** Options of the unified {@link CombinedClient.sign} form. */
@@ -93,6 +97,7 @@ export async function createAutogramClient(
       enableNotifications: options.enableNotifications ?? true,
       platform: options.platform ?? "unknown",
       displayName: options.displayName ?? "",
+      pairingEnabled: options.pairingEnabled ?? false,
     }
   );
 }
@@ -135,6 +140,7 @@ export class CombinedClient {
 
     this.clientMobileIntegration.init();
     this.ui.onRetryMobileNotification = this.retryMobileNotification.bind(this);
+    this.ui.pairingEnabled = options.pairingEnabled ?? false;
 
     this.resetSignRequest();
 
@@ -333,7 +339,7 @@ export class CombinedClient {
         break;
       case "mobile":
         if (state.state === "qr-ready") {
-          this.ui.showQRCode(state.signingUrl, state.pairingUrl, abortController);
+          this.ui.showQRCode(state.signingUrl, state.pairingUrl, abortController, this.ui.pairingEnabled);
         }
         // "preparing" has no dedicated screen today
         break;

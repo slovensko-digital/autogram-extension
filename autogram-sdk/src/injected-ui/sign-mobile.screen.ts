@@ -24,12 +24,16 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
   declare url: string;
 
   @property({ attribute: false })
+  declare pairingEnabled: boolean;
+
+  @property({ attribute: false })
   declare pairingUrl: string | null;
 
   constructor() {
     super();
     this.step = Steps.showQRCode;
     this.pairingUrl = null;
+    this.pairingEnabled = false;
   }
 
   render() {
@@ -80,9 +84,11 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
               </li>
             </ol>
             <p>
-              <a href="" @click="${this.openPairing}">
-                Chcete dostávať upozornenia do mobilu? Spárujte si tento počítač.
-              </a>
+              ${this.pairingEnabled
+                ? html`<a href="" @click="${this.openPairing}">
+                    Chcete dostávať upozornenia do mobilu? Spárujte si tento počítač.
+                  </a>`
+                : html``}
             </p>
           </div>
           <div class="col">
