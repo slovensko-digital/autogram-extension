@@ -70,4 +70,4 @@ See the individual package READMEs for package-specific documentation:
 
 ## License
 
-EUPL-1.2 — see the [LICENSE](./LICENSE) file for details.
+EUPL-1.2 — see the LICENSE file in each package ([autogram-sdk](./autogram-sdk/LICENSE), [autogram-extension](./autogram-extension/LICENSE)) for details.
