@@ -26,6 +26,7 @@ import type { DesktopSignOptions } from "./desktop-client";
 import { SigningFlow, SigningState } from "./flow";
 import { createLogger } from "./log";
 import { AutogramError } from "./errors";
+import { waitForDocumentBody } from "./utils";
 import packageJson from "../package.json";
 import { AvmRegistrationInfo } from "./avm-api/lib/apiClient";
 
@@ -164,6 +165,12 @@ export class CombinedClient {
   ): Promise<CombinedClient> {
     log.debug(`init version ${packageJson.version}`);
     async function createUI(): Promise<AutogramRoot> {
+      // The client can be constructed at document_start (the extension's
+      // inject script), before the parser has created <body>. Crashing
+      // here used to leave the whole client init rejected — on portals
+      // that meant `window.ditec` was never replaced and signing fell
+      // back to D.Launcher (autogram-extension issue #101).
+      await waitForDocumentBody();
       const root: AutogramRoot = document.createElement(
         "autogram-root"
       ) as unknown as AutogramRoot;
