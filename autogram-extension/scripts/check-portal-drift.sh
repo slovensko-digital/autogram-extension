@@ -13,7 +13,22 @@ STATUS=0
 while read -r expected url fixture; do
   case "$expected" in ""|\#*) continue ;; esac
 
-  actual=$(curl --fail --silent --show-error --location "$url" | shasum -a 256 | cut -d' ' -f1)
+  case "$url" in
+    justice-upload:*)
+      # No static URL: the driver is extracted from an upload POST response
+      # and normalized to a stable checksum by the node script.
+      tmp=$(mktemp)
+      if node scripts/fetch-justice-driver.mjs "$tmp"; then
+        actual=$(shasum -a 256 "$tmp" | cut -d' ' -f1)
+      else
+        actual=""
+      fi
+      rm -f "$tmp"
+      ;;
+    *)
+      actual=$(curl --fail --silent --show-error --location "$url" | shasum -a 256 | cut -d' ' -f1)
+      ;;
+  esac
   if [ -z "$actual" ]; then
     echo "ERROR: failed to download $url" >&2
     STATUS=2

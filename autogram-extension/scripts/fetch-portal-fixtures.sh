@@ -19,11 +19,24 @@ while read -r expected url fixture; do
   [ "$fixture" = "-" ] && continue
 
   target="$FIXTURE_DIR/$fixture"
-  if ! curl --fail --silent --show-error --location -o "$target" "$url"; then
-    echo "ERROR: failed to download $url" >&2
-    STATUS=2
-    continue
-  fi
+  case "$url" in
+    justice-upload:*)
+      # No static URL: the driver is extracted from an upload POST response
+      # and normalized to a stable checksum by the node script.
+      if ! node scripts/fetch-justice-driver.mjs "$target"; then
+        echo "ERROR: failed to fetch $url" >&2
+        STATUS=2
+        continue
+      fi
+      ;;
+    *)
+      if ! curl --fail --silent --show-error --location -o "$target" "$url"; then
+        echo "ERROR: failed to download $url" >&2
+        STATUS=2
+        continue
+      fi
+      ;;
+  esac
 
   actual=$(shasum -a 256 "$target" | cut -d' ' -f1)
   if [ "$actual" != "$expected" ]; then

@@ -22,6 +22,13 @@ a pointer to this file.
 | Fixture | Source | Written against |
 | --- | --- | --- |
 | `DSignerMulti-20250601.js` | <https://schranka.slovensko.sk/Content/jscript/DSignerMulti.js?v=20250601> | fetched 2026-07-10 |
+| `justice-sign-pdf-20260716.js` | inline script of <https://obcan.justice.sk/podpisovanie-dokumentov> after a PDF upload | fetched 2026-07-16 |
+
+The justice.sk driver has no static URL: the portal renders it inline into
+the response of the document-upload POST, with fresh session UUIDs each
+time. `scripts/fetch-justice-driver.mjs` replays the upload with a canned
+`sample.pdf`, extracts the script and pins the UUIDs so the checksum is
+stable; the manifest marks it with the `justice-upload:` pseudo-scheme.
 
 The manifest also tracks the D.Bridge library scripts (not downloaded as
 fixtures) purely for drift detection.
