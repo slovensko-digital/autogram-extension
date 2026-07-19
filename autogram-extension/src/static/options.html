@@ -51,6 +51,17 @@
         box-shadow: 0 2px 0 #0b0c0c;
       }
 
+      button.secondary {
+        color: #003078;
+        background: #ffffff;
+        border: 2px solid #003078;
+        box-shadow: none;
+      }
+      button.secondary:hover {
+        color: #ffffff;
+        background: #003078;
+      }
+
       ul {
         padding-left: 20px;
         list-style-type: disc;
@@ -116,8 +127,8 @@
       .checkbox__checkmark::before {
         content: "";
         position: absolute;
-        top: 11px;
-        left: 9px;
+        top: 15px;
+        left: 12px;
         width: 18px;
         height: 7px;
         -webkit-transform: rotate(-45deg);
@@ -157,6 +168,121 @@
         margin: 40px auto;
         padding: 0 20px;
         max-width: 600px;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .pairing-qr {
+        margin-top: 24px;
+        padding: 16px;
+        border: 1px solid #b1b4b6;
+        background: #f8f8f8;
+      }
+
+      .pairing-qr h2 {
+        margin: 0 0 12px;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      .pairing-qr p {
+        margin: 0 0 14px;
+      }
+
+      .pairing-qr textarea {
+        width: 100%;
+        min-height: 70px;
+        margin-top: 14px;
+        margin-bottom: 14px;
+        font-family: monospace;
+        font-size: 14px;
+        resize: vertical;
+      }
+
+      #pairingQrImage {
+        margin-top: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        background: #fff;
+        border: 1px solid #d8dde0;
+        min-width: 230px;
+        min-height: 230px;
+      }
+
+      #pairingQrImage svg {
+        display: block;
+        width: 214px;
+        height: 214px;
+        background: #ffffff;
+      }
+
+      #pairingQrImage[hidden] {
+        display: none;
+      }
+
+      #pairingQrStatus {
+        margin-top: 12px;
+        min-height: 22px;
+      }
+
+      .paired-devices {
+        margin-top: 24px;
+        padding: 16px;
+        border: 1px solid #b1b4b6;
+        background: #f8f8f8;
+      }
+
+      .paired-devices h2 {
+        margin: 0 0 12px;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      .device-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 8px;
+        font-size: 16px;
+        color: #0b0c0c;
+      }
+
+      .device-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #d8dde0;
+      }
+
+      .device-item:last-child {
+        border-bottom: none;
+      }
+
+      .device-name {
+        flex: 1;
+        font-weight: 600;
+      }
+
+      .device-platform {
+        font-size: 13px;
+        color: #505a5f;
+        text-transform: capitalize;
+        padding: 2px 8px;
+        border: 1px solid #d8dde0;
+        border-radius: 3px;
+        background: #fff;
+      }
+
+      #pairedDevicesStatus {
+        min-height: 22px;
+        color: #505a5f;
+        font-size: 16px;
       }
 
       .header {
@@ -211,11 +337,54 @@
               >⚠️ (beta) Zapnúť obnovenie podpisovania po reloade stránky.</span
             >
           </label>
+
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              id="notifyPairedDevices"
+              class="checkbox__input"
+            />
+            <span class="checkbox__checkmark" aria-hidden="true"></span>
+            <span class="checkbox__label"
+              >⚠️ (beta) Odoslať notifikáciu párovaným zariadením pri podpisovaní.</span
+            >
+          </label>
         </fieldset>
 
         <div id="status" role="status"></div>
         <button type="button" id="save">Uložiť</button>
       </form>
+
+      <section class="paired-devices" id="paired-devices" aria-labelledby="pairedDevicesHeading">
+        <h2 id="pairedDevicesHeading">Párované zariadenia</h2>
+        <ul id="pairedDevicesList" class="device-list"></ul>
+        <div id="pairedDevicesStatus" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="pairing-qr" id="pairing-qr" aria-labelledby="pairingQrHeading">
+        <h2 id="pairingQrHeading">Autogram v Mobile párovanie</h2>
+        <p>
+          Párovací QR kód sa načíta automaticky. Naskenujte ho v aplikácii
+          Autogram v Mobile a zapnite notifikácie podpisovania pre toto
+          rozšírenie.
+        </p>
+        <div id="pairingQrImage" aria-live="polite"></div>
+        <textarea
+          id="pairingQrUrl"
+          readonly
+          aria-label="Párovacia URL"
+          placeholder="Po vygenerovaní sa zobrazí párovacia URL"
+        ></textarea>
+        <div class="button-row">
+          <button type="button" id="copyPairingUrl" class="secondary">
+            Kopírovať URL
+          </button>
+          <button type="button" id="openPairingUrl" class="secondary">
+            Otvoriť URL
+          </button>
+        </div>
+        <div id="pairingQrStatus" role="status" aria-live="polite"></div>
+      </section>
 
       <!-- <ul>
         <li>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autogram SDK – ESM (externalized deps)</title>
+    <!--
+      dist/*.mjs keeps dependencies as bare import specifiers ("lit", "jose", …)
+      so that consumers with a bundler get deduping and tree-shaking. A browser
+      can't resolve bare specifiers on its own, so this demo maps them to
+      esm.sh via an import map (requires network access). With a bundler
+      (Vite, webpack, …) none of this is needed — just `npm install autogram-sdk`.
+    -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@bwip-js/generic": "https://esm.sh/@bwip-js/generic@4",
+          "cross-fetch": "https://esm.sh/cross-fetch@4",
+          "idb-keyval": "https://esm.sh/idb-keyval@6",
+          "jose": "https://esm.sh/jose@5",
+          "js-base64": "https://esm.sh/js-base64@3",
+          "lit": "https://esm.sh/lit@3",
+          "lit/decorators.js": "https://esm.sh/lit@3/decorators.js",
+          "lit/directives/unsafe-svg.js": "https://esm.sh/lit@3/directives/unsafe-svg.js",
+          "lit/html.js": "https://esm.sh/lit@3/html.js",
+          "loglevel": "https://esm.sh/loglevel@1",
+          "zod": "https://esm.sh/zod@3"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>ESM demo — externalized dependencies</h1>
+    <p>
+      Loads <code>dist/demo.mjs</code> (the npm package build, dependencies
+      external) and resolves its bare imports from esm.sh through an import
+      map.
+    </p>
+    <script src="../dist/demo.mjs" type="module"></script>
+  </body>
+</html>

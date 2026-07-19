@@ -8,7 +8,12 @@ import "./sign-mobile-on-mobile.screen";
 import "./signing-cancelled.screen";
 import "./restore-point-choice.screen";
 import "./error.screen";
-import { EventChoice, EventClose, EventRestorePointResult } from "./events";
+import {
+  EventChoice,
+  EventClose,
+  EventRestorePointResult,
+  EventRetryMobileNotification,
+} from "./events";
 import { SigningMethod } from "./types";
 import { createLogger } from "../log";
 import { UserCancelledSigningException } from "../errors";
@@ -74,6 +79,12 @@ export class AutogramRoot extends LitElement {
   @property()
   declare mobileSigningUrl: string | null;
 
+  @property()
+  declare mobilePairingUrl: string | null;
+
+  @property({ attribute: false })
+  declare pairingEnabled: boolean;
+
   @property({ attribute: false })
   declare desktopSigningState: DesktopSigningState;
 
@@ -82,6 +93,8 @@ export class AutogramRoot extends LitElement {
   errorMessage: string | null = null;
 
   hideTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  onRetryMobileNotification: (() => Promise<void>) | null = null;
 
   /**
    * Some host pages (e.g. konto.bratislava.sk) manage focus traps by setting the
@@ -103,6 +116,7 @@ export class AutogramRoot extends LitElement {
     super();
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.mobilePairingUrl = null;
     this.desktopSigningState = { type: "checkingApp" };
   }
 
@@ -146,6 +160,19 @@ export class AutogramRoot extends LitElement {
     }
   }
 
+  async _handleRetryMobileNotification(_event: EventRetryMobileNotification) {
+    log.debug("_handleRetryMobileNotification");
+    if (!this.onRetryMobileNotification) {
+      return;
+    }
+
+    try {
+      await this.onRetryMobileNotification();
+    } catch (error) {
+      log.warn("Retrying mobile notification failed", error);
+    }
+  }
+
   render() {
     log.debug("render");
     return html`
@@ -163,7 +190,11 @@ export class AutogramRoot extends LitElement {
             : this.screen === Screens.signMobile
               ? html`<autogram-sign-mobile-screen
                   @autogram-close=${this._closeSigningScreen}
-                  url=${this.mobileSigningUrl}
+                  @autogram-retry-mobile-notification=${this
+                    ._handleRetryMobileNotification}
+                  .url=${this.mobileSigningUrl ?? ""}
+                  .pairingUrl=${this.mobilePairingUrl}
+                  .pairingEnabled=${this.pairingEnabled}
                 ></autogram-sign-mobile-screen>`
               : this.screen === Screens.signingCancelled
                 ? html`<autogram-signing-cancelled-screen
@@ -172,7 +203,7 @@ export class AutogramRoot extends LitElement {
                 : this.screen === Screens.signMobileOnMobile
                   ? html`<autogram-signing-mobile-on-mobile-screen
                       @autogram-close=${this._closeSigningScreen}
-                      url=${this.mobileSigningUrl}
+                      .url=${this.mobileSigningUrl ?? ""}
                     ></autogram-signing-mobile-on-mobile-screen>`
                   : this.screen === Screens.useRestorePoint
                     ? html`<autogram-restore-point-choice-screen
@@ -249,10 +280,17 @@ export class AutogramRoot extends LitElement {
     }, 10000);
   }
 
-  showQRCode(url: string, abortController: AbortController) {
+  showQRCode(
+    url: string,
+    pairingUrl: string,
+    abortController: AbortController,
+    pairingEnabled: boolean
+  ) {
     this.screen = Screens.signMobile;
     this.mobileSigningUrl = url;
+    this.mobilePairingUrl = pairingUrl;
     this.abortController = abortController;
+    this.pairingEnabled = pairingEnabled;
   }
 
   openMobileOnMobile(url: string, abortController: AbortController) {
@@ -316,6 +354,7 @@ export class AutogramRoot extends LitElement {
     }
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.mobilePairingUrl = null;
     this.desktopSigningState = { type: "checkingApp" };
     if (this.abortController) {
       this.abortController.abort();
@@ -357,10 +396,10 @@ function promiseWithResolvers<T>() {
 }
 function promiseWithResolversPolyfill<T>() {
   let resolve: (value: T) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     },
     reject: (reason?: unknown) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     };
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;

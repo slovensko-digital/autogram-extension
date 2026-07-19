@@ -4,8 +4,8 @@
     "outDir": "./dist/",
     "moduleResolution": "bundler",
     // "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true, // because of webpack config
-    "esModuleInterop": true, // because of webpack config
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "sourceMap": true,
     "strictNullChecks": true,
     "module": "ESNext",
@@ -21,11 +21,9 @@
       "autogram-sdk/*": ["../autogram-sdk/src/*"]
     }
   },
-  "include": ["src/**/*", "webpack/**/*"],
+  "include": ["src/**/*", "manifest/**/*", "scripts/**/*"],
   "exclude": ["spec"],
   "ts-node": {
-    "compilerOptions": {
       "esm": true
-    }
   }
 }

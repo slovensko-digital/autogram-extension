@@ -4,6 +4,7 @@ import { customElement, property } from "lit/decorators.js";
 import { closeSvg } from "./svg";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
+import { EventRetryMobileNotification } from "./events";
 
 import { toSVG as bwipToSvg } from "@bwip-js/generic";
 import { createLogger } from "../log";
@@ -12,7 +13,7 @@ const log = createLogger("ag-sdk:AutogramSignMobileScreen");
 
 enum Steps {
   showQRCode,
-  notifyMobile,
+  showPairing,
 }
 @customElement("autogram-sign-mobile-screen")
 export class AutogramSignMobileScreen extends AutogramBaseScreen {
@@ -22,17 +23,25 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
   @property()
   declare url: string;
 
+  @property({ attribute: false })
+  declare pairingEnabled: boolean;
+
+  @property({ attribute: false })
+  declare pairingUrl: string | null;
+
   constructor() {
-     super();
-     this.step = Steps.showQRCode;
+    super();
+    this.step = Steps.showQRCode;
+    this.pairingUrl = null;
+    this.pairingEnabled = false;
   }
 
   render() {
     log.debug(this.url);
     return this.step === Steps.showQRCode
       ? this.renderQR()
-      : this.step === Steps.notifyMobile
-      ? this.renderNotifyMobile()
+      : this.step === Steps.showPairing
+      ? this.renderPairing()
       : html``;
   }
 
@@ -74,6 +83,13 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
                 Pokračujte v práci s podpísaným dokumentom na tomto počítači.
               </li>
             </ol>
+            <p>
+              ${this.pairingEnabled
+                ? html`<a href="" @click="${this.openPairing}">
+                    Chcete dostávať upozornenia do mobilu? Spárujte si tento počítač.
+                  </a>`
+                : html``}
+            </p>
           </div>
           <div class="col">
             <a href="${this.url}" target="_blank" rel="noopener">
@@ -87,23 +103,70 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
     `;
   }
 
-  renderNotifyMobile() {
+  renderPairing() {
+    const qrCode = this.pairingUrl
+      ? bwipToSvg({
+          bcid: "qrcode",
+          text: this.pairingUrl,
+          scale: 6,
+          width: 100,
+          height: 100,
+        })
+      : null;
+
     return html`
       <div class="heading">
-        <h1>Poslali sme vám upozornenie do mobilu</h1>
+        <h1>Spárujte si tento počítač</h1>
         <button class="close" @click="${this.close}">
           ${unsafeSVG(closeSvg)}
         </button>
       </div>
       <div class="main">
-        <div class="col">
-          <p>
-            Skontrolujte si upozornenie vo vašom telefóne. Ak vám nepošle môžete
-            si ho nechať preposlať znovu ale si overte, či máte spárovaný tento
-            počítač s vašim telefónom.
-          </p>
+        <div class="cols">
+          <div class="col">
+            <p>
+              Ak chcete dostávať upozornenia na podpisovanie priamo do mobilu,
+              naskenujte tento QR kód v aplikácii Autogram v mobile a spárujte
+              si tento počítač s telefónom.
+            </p>
+            <ol>
+              <li>V mobile otvorte Autogram v mobile.</li>
+              <li>Naskenujte párovací QR kód.</li>
+              <li>Po spárovaní sa vráťte späť a upozornenie pošleme znovu.</li>
+            </ol>
+            <div class="button-wrapper">
+              <button class="button" @click="${this.returnToSigningQr}">
+                Späť na podpisovanie
+              </button>
+            </div>
+          </div>
+          <div class="col">
+            ${this.pairingUrl
+              ? html`
+                  <a href="${this.pairingUrl}" target="_blank" rel="noopener">
+                    <figure
+                      role="img"
+                      aria-label="Párovací QR kód"
+                      style="width: 250px; height: 250px;"
+                    >
+                      ${qrCode ? unsafeSVG(qrCode) : html``}
+                    </figure>
+                  </a>
+                `
+              : html`<p>Párovací QR kód sa nepodarilo pripraviť.</p>`}
+          </div>
         </div>
       </div>
     `;
+  }
+
+  openPairing(event: Event) {
+    event.preventDefault();
+    this.step = Steps.showPairing;
+  }
+
+  returnToSigningQr() {
+    this.step = Steps.showQRCode;
+    this.dispatchEvent(new EventRetryMobileNotification());
   }
 }

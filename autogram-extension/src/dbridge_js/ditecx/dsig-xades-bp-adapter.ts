@@ -5,6 +5,19 @@
 import { DSigAdapter } from "./dsig-base-adapter";
 
 export class DSigXadesBpAdapter extends DSigAdapter {
+  /* BP-specific constants from the live dSigXadesBp.min.js. Portals pass
+   * these back as addXmlObject arguments (schranka.slovensko.sk sends
+   * XML_MEDIA_DESTINATION_TYPE_DESC_* as xslMediaDestinationTypeDescription
+   * and XML_XDC_NAMESPACE_URI_V1_1 as xdcNamespaceURI); without them the
+   * portal would send `undefined`. */
+  XML_MEDIA_DESTINATION_TYPE_DESC_TXT = "TXT";
+  XML_MEDIA_DESTINATION_TYPE_DESC_HTML = "HTML";
+  XML_MEDIA_DESTINATION_TYPE_DESC_XHTML = "XHTML";
+  XML_XDC_NAMESPACE_URI_V1_0 =
+    "http://data.gov.sk/def/container/xmldatacontainer+xml/1.0";
+  XML_XDC_NAMESPACE_URI_V1_1 =
+    "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+
   addXmlObject(
     objectId,
     objectDescription,
@@ -24,7 +37,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ): void {
     this.log("addXmlObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpXml",
         objectId,
@@ -50,23 +63,23 @@ export class DSigXadesBpAdapter extends DSigAdapter {
   addXmlObject2(
     objectId,
     objectDescription,
-    namespaceUri,
-    sourceXml,
-    sourceXsd,
-    sourceXsl,
+    objectFormatIdentifier,
+    xdcXDCB64,
+    xdcUsedXSD,
+    xdcUsedXSLT,
     callback
   ) {
     this.log("addXmlObject2", arguments);
 
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBp2Xml",
         objectId,
         objectDescription,
-        namespaceUri,
-        sourceXml,
-        sourceXsd,
-        sourceXsl,
+        objectFormatIdentifier,
+        xdcXDCB64,
+        xdcUsedXSD,
+        xdcUsedXSLT,
       },
       callback
     );
@@ -74,7 +87,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
 
   getSignatureWithASiCEnvelopeBase64(callback) {
     this.log("getSignatureWithASiCEnvelopeBase64", arguments);
-    this.__implementation.getSignature(
+    this.getSignature(
       {
         container: "ASiC_E",
         packaging: "ENVELOPING",
@@ -82,15 +95,6 @@ export class DSigXadesBpAdapter extends DSigAdapter {
       },
       callback
     );
-  }
-
-  deploy(options, callback) {
-    this.log("deploy", arguments);
-    callback.onSuccess();
-  }
-
-  getConvertedPDFA(callback) {
-    this.stub("getConvertedPDFA", arguments);
   }
 
   addTxtObject(
@@ -101,7 +105,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ) {
     this.log("addTxtObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpTxt",
         objectId,
@@ -120,7 +124,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ) {
     this.log("addPngObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpPng",
         objectId,
@@ -143,7 +147,7 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     callback
   ) {
     this.stub("addPdfObject", arguments);
-    this.__implementation.addObject(
+    this.addObject(
       {
         type: "XadesBpPdf",
         objectId,
@@ -165,5 +169,86 @@ export class DSigXadesBpAdapter extends DSigAdapter {
   ) {
     this.stub("setWindowSize", arguments);
     callback.onSuccess();
+  }
+
+  /* Revocation checking and mobile-signing policy are Autogram's own
+   * concern; acknowledge the portal's configuration and continue. */
+  setRevocationChecking(ocspCheck, crlCheck, ocspCertIdHashAlgorithm, callback) {
+    this.log("setRevocationChecking", arguments);
+    callback?.onSuccess?.();
+  }
+  disableMobileSigning(callback) {
+    this.log("disableMobileSigning", arguments);
+    callback?.onSuccess?.();
+  }
+
+  /* Rest of the live dSigXadesBpJs surface (v1.5.4.0). Not provided by
+   * Autogram — fail via onError instead of a TypeError or a hang. */
+  getSigningTime(callback) {
+    this.unsupported("getSigningTime", callback);
+  }
+  getSigningCertificate(callback) {
+    this.unsupported("getSigningCertificate", callback);
+  }
+  loadConfiguration(configsZipBase64, callback) {
+    this.unsupported("loadConfiguration", callback);
+  }
+  getSignatureAndTimeStampWithASiCEnvelopeBase64(callback) {
+    this.unsupported(
+      "getSignatureAndTimeStampWithASiCEnvelopeBase64",
+      callback
+    );
+  }
+  getSignatureTimeStampTokenBase64(callback) {
+    this.unsupported("getSignatureTimeStampTokenBase64", callback);
+  }
+  getSignatureTimeStampCert(callback) {
+    this.unsupported("getSignatureTimeStampCert", callback);
+  }
+  getSignatureTimeStampTime(callback) {
+    this.unsupported("getSignatureTimeStampTime", callback);
+  }
+  getTSAIdentification(callback) {
+    this.unsupported("getTSAIdentification", callback);
+  }
+  getSignatureTimeStampRequestBase64(reqPolicy, digestAlgUri, callback) {
+    this.unsupported("getSignatureTimeStampRequestBase64", callback);
+  }
+  getSignatureTimeStampRequest2Base64(
+    reqPolicy,
+    digestAlgUri,
+    nonce,
+    certReq,
+    extensions,
+    callback
+  ) {
+    this.unsupported("getSignatureTimeStampRequest2Base64", callback);
+  }
+  createXAdESZepBpT(tsResponseB64, tsCertB64, callback) {
+    this.unsupported("createXAdESZepBpT", callback);
+  }
+  getIndividualDataObjectsTimeStampRequestBase64(
+    reqPolicy,
+    digestAlgUri,
+    nonce,
+    certReq,
+    extensions,
+    objectIds,
+    callback
+  ) {
+    this.unsupported(
+      "getIndividualDataObjectsTimeStampRequestBase64",
+      callback
+    );
+  }
+  submitIndividualDataObjectsTimeStampResponse(
+    tsResponseB64,
+    tsCertB64,
+    callback
+  ) {
+    this.unsupported(
+      "submitIndividualDataObjectsTimeStampResponse",
+      callback
+    );
   }
 }

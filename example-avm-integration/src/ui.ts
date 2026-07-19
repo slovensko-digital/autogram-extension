@@ -61,7 +61,10 @@ export function showSignedPreview(viz: { mimeType: string; content: string }) {
     return container;
   }
 
-  if (viz.mimeType === "application/pdf;base64") {
+  if (
+    viz.mimeType === "application/pdf;base64" ||
+    viz.mimeType === "application/pdf"
+  ) {
     const iframe = document.createElement("iframe");
     iframe.src = `data:application/pdf;base64,${viz.content}`;
     iframe.style.width = "100%";

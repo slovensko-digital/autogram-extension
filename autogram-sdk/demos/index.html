@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autogram SDK – demos</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        max-width: 640px;
+        margin: 40px auto;
+        padding: 0 20px;
+        color: #111;
+      }
+      li {
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Autogram SDK demos</h1>
+    <p>One demo per build flavor in <code>dist/</code>:</p>
+    <ul>
+      <li>
+        <a href="esm-bundled.html">ESM, bundled deps</a> —
+        <code>dist/bundled/*.mjs</code>, self-contained modules for static
+        hosting without a bundler.
+      </li>
+      <li>
+        <a href="esm-external.html">ESM, externalized deps</a> —
+        <code>dist/*.mjs</code>, the npm package build; bare imports resolved
+        here via an import map to esm.sh (needs network).
+      </li>
+      <li>
+        <a href="iife-combined.html">IIFE, CombinedClient</a> —
+        <code>dist/index-all.iife.js</code> via classic
+        <code>&lt;script&gt;</code> tag, <code>AutogramSDK</code> global.
+      </li>
+      <li>
+        <a href="iife-desktop.html">IIFE, DesktopClient (custom UI)</a> —
+        headless desktop signing with custom progress UI.
+      </li>
+    </ul>
+  </body>
+</html>

@@ -48,3 +48,25 @@ export function waitForWindowBlur(timeoutMs: number): Promise<boolean> {
     window.addEventListener("blur", handler, { once: true });
   });
 }
+
+/**
+ * Resolves once `document.body` exists. Scripts injected at
+ * document_start run while the parser is still in <head>; anything that
+ * needs to append to the body must wait for the parser to create it
+ * (observed via MutationObserver — fires as early as possible, well
+ * before DOMContentLoaded).
+ */
+export function waitForDocumentBody(): Promise<void> {
+  if (document.body) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    const observer = new MutationObserver(() => {
+      if (document.body) {
+        observer.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(document.documentElement, { childList: true });
+  });
+}

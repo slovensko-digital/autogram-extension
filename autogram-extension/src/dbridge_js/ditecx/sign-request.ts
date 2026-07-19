@@ -1,4 +1,4 @@
-import { DesktopSignatureParameters } from "autogram-sdk";
+import { DesktopSignatureParameters, DocumentToSign } from "autogram-sdk";
 import {
   ObjectStrategy,
 } from "./filetype-strategy/base-strategy";
@@ -10,7 +10,7 @@ import {
   XadesXmlStrategy,
   XadesBp2XmlStrategy,
 } from "./filetype-strategy";
-import { InputObject } from "./types";
+import { createDitecError, DitecErrorCodes, InputObject } from "./types";
 
 export const SigningStatus = {
   new: "new",
@@ -33,7 +33,17 @@ export class SignRequest {
 
   public addObject(obj: InputObject): void {
     if (this.object && this.signingStatus !== SigningStatus.signed) {
-      console.error("ERROR: overwriting unsigned object");
+      // Portals (e.g. schranka.slovensko.sk signing a message with
+      // attachments) chain several add*Object calls into one signature.
+      // We can only sign a single document per request; silently
+      // overwriting would sign just the last one, so fail loudly —
+      // the adapter edge routes this to the portal's onError.
+      throw createDitecError(
+        DitecErrorCodes.ERROR_GENERAL,
+        "Rozšírenie Autogram zatiaľ nepodporuje podpísanie viacerých " +
+          "dokumentov naraz. Podpíšte dokumenty jednotlivo, alebo použite " +
+          "aplikáciu D.Signer."
+      );
     }
     this.object = obj;
     this.objectInfo = this.getObjectInfo();
@@ -135,6 +145,26 @@ export class SignRequest {
 
   get payloadMimeType() {
     return this.objectInfo.payloadMimeType;
+  }
+
+  /**
+   * The document in the SDK's unified {@link DocumentToSign} shape: the
+   * strategy's content/filename plus the MIME type and encoding split out
+   * of the legacy `payloadMimeType` (`";base64"` suffix → `encoding`).
+   */
+  get documentToSign(): DocumentToSign {
+    const payloadMimeType = this.objectInfo.payloadMimeType;
+    const base64Suffix = ";base64";
+    const isBase64 = payloadMimeType.endsWith(base64Suffix);
+    const mimeType = isBase64
+      ? payloadMimeType.slice(0, -base64Suffix.length)
+      : payloadMimeType;
+    return {
+      content: this.objectInfo.document.content,
+      filename: this.objectInfo.document.filename,
+      mimeType,
+      encoding: isBase64 ? "base64" : "utf-8",
+    };
   }
 }
 
