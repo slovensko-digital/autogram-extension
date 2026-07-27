@@ -63,7 +63,7 @@
     "@types/jscodeshift": "^0.11.11",
     "@types/webextension-polyfill": "^0.8.2",
     "@types/webpack": "^4.41.40",
-    "@types/webpack-dev-server": "^3.11.3",
+    "@types/webpack-dev-server": "^4.7.1",
     "@types/webpack-manifest-plugin": "^3.0.4",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
@@ -85,7 +85,7 @@
     "web-ext": "^7.4.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.15.2",
+    "webpack-dev-server": "^6.0.0",
     "webpack-manifest-plugin": "^5.0.0"
   },
   "dependencies": {
