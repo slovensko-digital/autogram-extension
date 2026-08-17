@@ -1,0 +1,1 @@
+- `src/injected-ui/fonts/source-sans-3.css.ts` - Source Sans 3 by Paul D. Hunt, licensed under the SIL Open Font License 1.1, vendored from Google Fonts
