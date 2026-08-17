@@ -153,7 +153,21 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
   /**
    * Signs the current request and returns the signed content. Any failure
    * rejects the promise; the adapter edge maps it to the portal's
-   * `onError` (see {@link DSigAdapter.resolve}).
+   * `onError` (see {@link DSigAdapter.resolve}). On rejection the sign
+   * request is reset so the next `addObject()` call is not blocked by the
+   * failed attempt's leftover state.
+   *
+   * @throws `AutogramError` propagated from `CombinedClient.sign()`,
+   * carrying one of these error codes:
+   * - `user-cancelled` — the user actively cancelled the signing flow
+   * - `aborted` — the operation was aborted programmatically (dialog
+   *   closed, `AbortSignal`, page close)
+   * - `timeout` — the signing operation did not finish in time
+   * - `app-not-installed` — the Autogram desktop app could not be launched
+   * - `connection-failed` — a network request to a signing backend failed
+   * - `protocol-error` — an unexpected response shape or bridge failure
+   * - `server-error` — a signing backend reported an error
+   * - `unknown` — anything that cannot be classified more precisely
    */
   public async getSignature(
     parameters: Partial<DesktopSignatureParameters>,
@@ -189,10 +203,19 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
       }
     }
 
-    const result = await this.client.sign(
-      this.signRequest.documentToSign,
-      this.signRequest.signatureParameters(parameters)
-    );
+    let result: SignedDocumentResult;
+    try {
+      result = await this.client.sign(
+        this.signRequest.documentToSign,
+        this.signRequest.signatureParameters(parameters)
+      );
+    } catch (e) {
+      // A failed/cancelled/aborted attempt must not leave the sign
+      // request stuck mid-flight, otherwise the next addObject() call
+      // trips the "multiple documents" guard (SignRequest.addObject).
+      this.resetSignRequest();
+      throw e;
+    }
     this.signedResult = result;
     this.signRequest.signingStatus = SigningStatus.signed;
     return decodeBase64 ? Base64.decode(result.content) : result.content;

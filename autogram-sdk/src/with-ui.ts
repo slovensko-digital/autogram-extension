@@ -238,6 +238,18 @@ export class CombinedClient {
    *
    * @param document document to sign, with its own `mimeType`/`encoding`
    * @param parameters how to sign the document
+   * @throws `AutogramError` — always carries a machine-readable `code`;
+   * classify with `AutogramError.is()` rather than `instanceof`. Codes
+   * that can surface here:
+   * - `user-cancelled` — the user actively cancelled the signing flow
+   * - `aborted` — the operation was aborted programmatically (dialog
+   *   closed, `AbortSignal`, page close)
+   * - `timeout` — the signing operation did not finish in time
+   * - `app-not-installed` — the Autogram desktop app could not be launched
+   * - `connection-failed` — a network request to a signing backend failed
+   * - `protocol-error` — an unexpected response shape or bridge failure
+   * - `server-error` — a signing backend reported an error
+   * - `unknown` — anything that cannot be classified more precisely
    */
   public async sign(
     document: DocumentToSign,
@@ -251,6 +263,8 @@ export class CombinedClient {
    * @param signatureParameters how to sign the document
    * @param payloadMimeType mime type of the input document
    * @param decodeBase64 if false the content will be (stay) base64 encoded, if true we will decode it
+   * @throws `AutogramError` — see the unified `sign()` overload for the
+   * full list of error codes this can carry.
    * @deprecated Prefer the unified form: `sign(document, parameters?, options?)`
    * with the MIME type on the document.
    */
