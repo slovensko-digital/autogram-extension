@@ -50,7 +50,15 @@ class Site {
   constructor(
     public url: string,
     public injectionStrategy: InjectionStrategy,
-    public conflictResolution: ConflictResolutionStrategy
+    public conflictResolution: ConflictResolutionStrategy,
+    /**
+     * Also install the native-Autogram network interceptor (see
+     * `native-autogram-intercept.ts`) on this site, alongside the usual
+     * `window.ditec` replacement. For portals that ship their own direct
+     * client to the local Autogram desktop app (e.g. nove.slovensko.sk's
+     * message composer), independent of `window.ditec`.
+     */
+    public interceptNativeAutogram: boolean = false
   ) {}
 
   matchRuleExpl(str: string, rule: string) {
@@ -89,9 +97,12 @@ class SupportedSites {
   addSite(
     url: string,
     injection: InjectionStrategy,
-    conflictResolution: ConflictResolutionStrategy
+    conflictResolution: ConflictResolutionStrategy,
+    interceptNativeAutogram: boolean = false
   ) {
-    this.sites.push(new Site(url, injection, conflictResolution));
+    this.sites.push(
+      new Site(url, injection, conflictResolution, interceptNativeAutogram)
+    );
   }
 
   get enabledUrls() {
@@ -104,9 +115,11 @@ export const supportedSites = new SupportedSites();
 
 const basicUrls = [
   "https://www.slovensko.sk/*",
+  "https://nove.slovensko.sk/*",
   "https://prihlasenie.slovensko.sk/*",
   "https://schranka.slovensko.sk/*",
   "https://schranka.upvsfixnew.gov.sk/*",
+  "https://schranka3.slovensko.sk/*",
   "https://pfseform.financnasprava.sk/*",
   "https://www.financnasprava.sk/*",
   "https://cep.financnasprava.sk/*",
@@ -114,7 +127,6 @@ const basicUrls = [
   "https://eformulare.socpoist.sk/*",
   "https://sluzby.orsr.sk/*",
 ];
-
 
 for (const url of basicUrls) {
   supportedSites.addSite(
@@ -128,6 +140,16 @@ supportedSites.addSite(
   "https://obcan.justice.sk/*",
   DIRECT_INJECTION,
   CONFLICT_RESOLUTION_IMMUTABLE_PROXY
+);
+
+// The message composer also ships its own direct client to the local
+// Autogram desktop app (see native-autogram-intercept.ts) — independent of
+// window.ditec, hence its own addSite() call with the extra flag.
+supportedSites.addSite(
+  "https://message-constructor-web.slovensko.sk/*",
+  ON_DOCUMENT_LOAD_INJECTION,
+  CONFLICT_RESOLUTION_REPLACE_ORIGINAL,
+  true
 );
 
 [
@@ -157,14 +179,14 @@ const includeDebugUrlsFromEnv =
 
 const debugUrls =
   !isProductionBuild || includeDebugUrlsFromDefine || includeDebugUrlsFromEnv
-  ? [
-      "http://localhost:3000/*",
-      "http://localhost:49675/*",
-      "http://localhost/*",
-      "http://127.0.0.1/*",
-      "http://127.0.0.1:49675/*",
-    ]
-  : [];
+    ? [
+        "http://localhost:3000/*",
+        "http://localhost:49675/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "http://127.0.0.1:49675/*",
+      ]
+    : [];
 
 for (const url of debugUrls) {
   supportedSites.addSite(

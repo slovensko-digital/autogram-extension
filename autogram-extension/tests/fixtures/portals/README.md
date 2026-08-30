@@ -23,6 +23,7 @@ a pointer to this file.
 | --- | --- | --- |
 | `DSignerMulti-20250601.js` | <https://schranka.slovensko.sk/Content/jscript/DSignerMulti.js?v=20250601> | fetched 2026-07-10 |
 | `justice-sign-pdf-20260716.js` | inline script of <https://obcan.justice.sk/podpisovanie-dokumentov> after a PDF upload | fetched 2026-07-16 |
+| `DSignerMulti-nove-20260830.js` | <https://message-constructor-web.slovensko.sk/dSigner/scripts/DSignerMulti.js> (the "nove.slovensko.sk" message composer) | fetched 2026-08-30 |
 
 The justice.sk driver has no static URL: the portal renders it inline into
 the response of the document-upload POST, with fresh session UUIDs each

@@ -3,6 +3,11 @@
 # inline into a document-upload POST response and is fetched (and normalized
 # to a stable checksum) by scripts/fetch-justice-driver.mjs.
 997d7da3f2dd9b8eb32c728fd1f37be57a0c9bd8ced1362a0fda4acdf6fa4f48  https://schranka.slovensko.sk/Content/jscript/DSignerMulti.js?v=20250601  DSignerMulti-20250601.js
+9aafe27df0c274faab30a726bbd044f5fc0f2453272205e4b68f67473eaf8779  https://message-constructor-web.slovensko.sk/dSigner/scripts/DSignerMulti.js  DSignerMulti-nove-20260830.js
+3b1c89d53a4d3d5c9a62c5064ced9a56e463404ee79a39984bf2c310ad1b7861  https://message-constructor-web.slovensko.sk/dSigner/scripts/zep/config.js  -
+d637fc7704b96ec26562b48ebab8212964f2dc1e63c454f60d5ddb1ec4f478aa  https://message-constructor-web.slovensko.sk/dSigner/scripts/zep/dCommon.min.js  -
+edb88f63b3ef8dc406ac25fed378b61c04b4ee32d86b239be2ee6fadf26d5752  https://message-constructor-web.slovensko.sk/dSigner/scripts/zep/dSigXades.min.js  -
+7768877227d9ef0a5787ec1706d6ac765330a7c3dee4ed0861d84e755900886f  https://message-constructor-web.slovensko.sk/dSigner/scripts/zep/dSigXadesBp.min.js  -
 7df0927e62578dddec64cfe8ac1fde968cb223858e70f7664d721eeda75c7ac3  justice-upload:https://obcan.justice.sk/podpisovanie-dokumentov  justice-sign-pdf-20260716.js
 3ddcb31899135944dd98a8d6f5822c08e00a5e70eadb71eb1806e1d76edafb31  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/config.js  -
 88a91273c2aaf83c0137f45ee173daf4fa1e3a939a64bc8abeb6287572cef280  https://www.slovensko.sk/static/zep/dbridge_js/v1.0/dCommon.min.js  -

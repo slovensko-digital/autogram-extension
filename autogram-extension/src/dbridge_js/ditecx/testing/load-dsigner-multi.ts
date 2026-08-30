@@ -7,6 +7,11 @@ const FIXTURE_PATH = path.resolve(
   "../../../../tests/fixtures/portals/DSignerMulti-20250601.js"
 );
 
+const NOVE_FIXTURE_PATH = path.resolve(
+  __dirname,
+  "../../../../tests/fixtures/portals/DSignerMulti-nove-20260830.js"
+);
+
 /**
  * The fixture is downloaded on demand (`npm run fetch:portal-fixtures`),
  * not vendored — it belongs to the portal operator. Tests that replay it
@@ -15,6 +20,13 @@ const FIXTURE_PATH = path.resolve(
 export function hasDSignerMultiFixture(): boolean {
   return fs.existsSync(FIXTURE_PATH);
 }
+
+/** Same as {@link hasDSignerMultiFixture}, for the nove.slovensko.sk build. */
+export function hasDSignerMultiNoveFixture(): boolean {
+  return fs.existsSync(NOVE_FIXTURE_PATH);
+}
+
+export { NOVE_FIXTURE_PATH };
 
 export const FETCH_FIXTURES_HINT =
   "portal fixture missing — run `npm run fetch:portal-fixtures` to download " +
@@ -49,7 +61,11 @@ interface DSignerMultiExports {
     errorCodes?: unknown
   ) => { onSuccess: (value?: unknown) => void; onError: (e: unknown) => void };
   DSignerErrorMessages: {
-    getErrorMessage(errorCodes: unknown, code: unknown, message: string): string;
+    getErrorMessage(
+      errorCodes: unknown,
+      code: unknown,
+      message: string
+    ): string;
   };
 }
 
@@ -61,12 +77,11 @@ interface DSignerMultiExports {
  * plugin gate — runs verbatim.
  */
 export function loadDSignerMulti(
-  ditec: DitecX
+  ditec: DitecX,
+  fixturePath: string = FIXTURE_PATH
 ): DSignerMultiExports & { shell: PortalShell } {
   // strip the UTF-8 BOM the portal serves the file with
-  const code = fs
-    .readFileSync(FIXTURE_PATH, "utf-8")
-    .replace(/^\uFEFF/, "");
+  const code = fs.readFileSync(fixturePath, "utf-8").replace(/^\uFEFF/, "");
 
   const shell: PortalShell = { errors: [], modals: [], alerts: [] };
 

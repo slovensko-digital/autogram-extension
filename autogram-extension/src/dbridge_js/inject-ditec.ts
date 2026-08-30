@@ -8,6 +8,7 @@ import {
 import { createLogger } from "../log";
 import { captureException } from "../sentry";
 import { ExtensionOptions } from "../options/default";
+import { installNativeAutogramIntercept } from "./autogram/native-autogram-intercept";
 
 const log = createLogger("ag-ext.inject-ditec");
 
@@ -49,6 +50,15 @@ export function inject(
     );
   }
   conflictResolver.inject(windowAny, extensionOptions);
+
+  if (site.interceptNativeAutogram) {
+    installNativeAutogramIntercept(
+      windowAny as unknown as Parameters<
+        typeof installNativeAutogramIntercept
+      >[0],
+      extensionOptions
+    );
+  }
 
   log.debug("End inject", windowAny.ditec);
 }
