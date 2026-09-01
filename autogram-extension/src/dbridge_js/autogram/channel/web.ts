@@ -2,27 +2,25 @@ import {
   AutogramVMobileIntegrationInterfaceStateful,
   AVMDocumentToSign,
   AVMSignedDocument,
-  randomUUID,
-  UserCancelledSigningException,
-} from "autogram-sdk";
-
-import {
   AutogramDesktopIntegrationInterface,
   DesktopAutogramDocument,
   DesktopSignatureParameters,
   DesktopSignResponseBody,
   DesktopServerInfo,
+  DesktopBatchStartResponseBody,
+  DesktopBatchEndResponseBody,
+  SignedObject,
+  createRpcClient,
+  RpcCallerFrame,
+  RpcClient,
+  RpcClientTransport,
+  RpcResponseFrame,
+  ZRpcResponseFrame,
 } from "autogram-sdk";
+import { avmService, autogramService } from "./services";
 import {
-  ChannelMessage,
   EVENT_MESSAGE_RESPONSE_CS_TO_INJ,
   EVENT_SEND_MESSAGE_INJ_TO_CS,
-  ZChannelResponse,
-  ZGetLaunchUrlResponse,
-  ZGetQrCodeUrlResponse,
-  ZSignResponse,
-  ZWaitForSignatureResponse,
-  ZWaitForStatusResponse,
 } from "./common";
 import { createLogger } from "../../../log";
 
@@ -34,69 +32,57 @@ const log = createLogger("ag-ext.channel.web");
 export class AutogramDesktopChannel
   implements AutogramDesktopIntegrationInterface
 {
-  constructor(private channel: WebChannelCaller) {}
+  private rpc: RpcClient<typeof autogramService.methods>;
 
-  async getLaunchURL(command?: "listen"): Promise<string> {
-    const obj = await this.channel.sendMessage({
-      method: "getLaunchURL",
-      args: { command },
-      app: "autogram",
-    });
-    const response = ZGetLaunchUrlResponse.parse(obj);
-    return response;
+  constructor(channel: WebChannelCaller) {
+    this.rpc = createRpcClient(autogramService, channel);
   }
-  async info(): Promise<DesktopServerInfo> {
-    const obj = await withTimeout(
-      10_000,
-      this.channel.sendMessage({
-        method: "info",
-        args: {},
-        app: "autogram",
-      })
-    ).catch(
-      mapTimeoutToSdkException(
-        "Časový limit načítania informácií o serveri vypršal"
-      )
-    );
-    const response = ZWaitForStatusResponse.parse(obj);
-    return response;
+
+  getLaunchURL(command?: "listen"): Promise<string> {
+    return this.rpc.getLaunchURL({ command });
   }
-  async waitForStatus(
+  info(): Promise<DesktopServerInfo> {
+    return this.rpc.info(null);
+  }
+  waitForStatus(
     status: DesktopServerInfo["status"],
     timeout?: number,
-    delay?: number
-    // abortController?: AbortController
+    delay?: number,
+    abortController?: AbortController
   ): Promise<DesktopServerInfo> {
-    let promise = this.channel.sendMessage({
-      method: "waitForStatus",
-      args: { status, timeout, delay },
-      app: "autogram",
-    });
-    if (timeout !== undefined) {
-      promise = withTimeout((timeout + 1) * 1000, promise).catch(
-        mapTimeoutToSdkException(
-          `Časový limit čakania na stav '${status}' vypršal`
-        )
-      );
-    }
-    const obj = await promise;
-    const response = ZWaitForStatusResponse.parse(obj);
-    return response;
+    return this.rpc.waitForStatus(
+      { status, timeout, delay },
+      { signal: abortController?.signal }
+    );
   }
-
   async sign(
     document: DesktopAutogramDocument,
     signatureParameters?: DesktopSignatureParameters,
-    payloadMimeType?: string
+    payloadMimeType?: string,
+    batchId?: string,
+    abortController?: AbortController
   ): Promise<DesktopSignResponseBody> {
-    const obj = await this.channel.sendMessage({
-      method: "sign",
-      args: { document, signatureParameters, payloadMimeType },
-      app: "autogram",
-    });
-    const response = ZSignResponse.parse(obj);
-    log.debug("sign response", obj, response);
+    const response = await this.rpc.sign(
+      { document, signatureParameters, payloadMimeType, batchId },
+      { signal: abortController?.signal }
+    );
+    log.debug("sign response", response);
     return response;
+  }
+  startBatch(
+    totalNumberOfDocuments: number,
+    abortController?: AbortController
+  ): Promise<DesktopBatchStartResponseBody> {
+    return this.rpc.startBatch(
+      { totalNumberOfDocuments },
+      { signal: abortController?.signal }
+    );
+  }
+  endBatch(
+    batchId: string,
+    abortController?: AbortController
+  ): Promise<DesktopBatchEndResponseBody> {
+    return this.rpc.endBatch({ batchId }, { signal: abortController?.signal });
   }
 }
 
@@ -106,255 +92,87 @@ export class AutogramDesktopChannel
 export class AvmChannelWeb
   implements AutogramVMobileIntegrationInterfaceStateful
 {
-  constructor(private channel: WebChannelCaller) {}
+  private rpc: RpcClient<typeof avmService.methods>;
+
+  constructor(channel: WebChannelCaller) {
+    this.rpc = createRpcClient(avmService, channel);
+  }
 
   async init() {}
 
+  /* registration info is provided by the background worker itself */
   async loadOrRegister(): Promise<void> {
-    await withTimeout(
-      10_000,
-      this.channel.sendMessage({
-        method: "loadOrRegister",
-        args: null,
-        app: "avm",
-      })
-    ).catch(
-      mapTimeoutToSdkException("Časový limit registrácie rozšírenia vypršal")
-    );
+    await this.rpc.loadOrRegister(null);
   }
-
-  async getQrCodeUrl(): Promise<string> {
-    const obj = await withTimeout(
-      10_000,
-      this.channel.sendMessage({
-        method: "getQrCodeUrl",
-        args: null,
-        app: "avm",
-      })
-    ).catch(
-      mapTimeoutToSdkException("Časový limit vytvorenia QR kódu vypršal")
-    );
-    const response = ZGetQrCodeUrlResponse.parse(obj);
-    return response;
+  getQrCodeUrl(): Promise<string> {
+    return this.rpc.getQrCodeUrl(null);
+  }
+  getPairingQrCodeUrl(): Promise<string> {
+    return this.rpc.getPairingQrCodeUrl(null);
   }
   async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
-    await withTimeout(
-      10_000,
-      this.channel.sendMessage({
-        method: "addDocument",
-        args: { documentToSign },
-        app: "avm",
-      })
-    ).catch(
-      mapTimeoutToSdkException("Časový limit pridania dokumentu vypršal")
-    );
+    await this.rpc.addDocument({ documentToSign });
   }
-  async waitForSignature(
+  async sendNotification(): Promise<void> {
+    await this.rpc.sendNotification(null);
+  }
+  waitForSignature(
     abortController?: AbortController
   ): Promise<AVMSignedDocument> {
-    /* transform abortController signal to message because abort handler can't cross execution contexts */
-    const abortHandler = () => {
-      this.channel.sendMessage({
-        method: "abortWaitForSignature",
-        args: {},
-        app: "avm",
-      });
-    };
-
-    abortController?.signal.addEventListener("abort", abortHandler);
-
-    try {
-      const obj = await this.channel.sendMessage({
-        method: "waitForSignature",
-        args: {},
-        app: "avm",
-      });
-      log.debug("waitForSignature", obj);
-      const response = ZWaitForSignatureResponse.parse(obj);
-      return response;
-    } finally {
-      abortController?.signal.removeEventListener("abort", abortHandler);
-    }
+    return this.rpc.waitForSignature(null, {
+      signal: abortController?.signal,
+    });
   }
   async reset(): Promise<void> {
-    await withTimeout(
-      10_000,
-      this.channel.sendMessage({
-        method: "reset",
-        args: null,
-        app: "avm",
-      })
-    ).catch(mapTimeoutToSdkException("Časový limit na reset vypršal"));
+    await this.rpc.reset(null);
   }
-
-  async useRestorePoint(restorePoint: string) {
+  useRestorePoint(restorePoint: string): Promise<SignedObject | null> {
     log.debug("useRestorePoint", restorePoint);
-    const obj = await withTimeout(
-      2_000,
-      this.channel.sendMessage({
-        method: "useRestorePoint",
-        args: { restorePoint },
-        app: "avm",
-      })
-    ).catch(
-      mapTimeoutToSdkException(
-        "Časový limit na zapamätané podpisovanie vypršal"
-      )
-    );
-    const response = ZSignResponse.nullable().parse(obj);
-    return response;
+    return this.rpc.useRestorePoint({ restorePoint });
   }
 }
 
 /**
- * Class used on side of web page/injected script
- *
- * it is used to send messages between web page and content script
+ * Injected-script side of the bridge: an {@link RpcClientTransport} that
+ * moves RPC frames over CustomEvents.
  *
  * injected script --(EVENT_SEND_MESSAGE_INJ_TO_CS)--> content script
  * injected script <--(EVENT_MESSAGE_RESPONSE_CS_TO_INJ)-- content script
  */
-export class WebChannelCaller {
-  private responsePromises = new Map<string, PromiseWithResolvers<unknown>>();
+export class WebChannelCaller implements RpcClientTransport {
+  private responseListeners: Array<(frame: RpcResponseFrame) => void> = [];
+
+  private responseEventHandler = (evt: CustomEvent) => {
+    log.debug("web message response ⬅️", evt.detail);
+    const frame = ZRpcResponseFrame.parse(evt.detail);
+    this.responseListeners.forEach((callback) => callback(frame));
+  };
 
   public init() {
     window.addEventListener(
       EVENT_MESSAGE_RESPONSE_CS_TO_INJ,
-      this.responseEventHandler.bind(this)
+      this.responseEventHandler
     );
   }
 
   public destroy() {
     window.removeEventListener(
       EVENT_MESSAGE_RESPONSE_CS_TO_INJ,
-      this.responseEventHandler.bind(this)
+      this.responseEventHandler
     );
   }
 
-  /**
-   * Event handler for response messages, to recieve response messages from background script
-   *
-   * saves response promise  to responsePromises map
-   */
-  private responseEventHandler(evt: CustomEvent) {
-    log.debug("responseEventHandler", this);
-    log.debug("web message response ⬅️", evt.detail);
-
-    const data = ZChannelResponse.parse(evt.detail);
-
-    const promiseWithResolvers = this.responsePromises.get(data.id);
-    log.debug("web message responsePromise", data.id, promiseWithResolvers);
-    if (!promiseWithResolvers) {
-      throw new Error("Promise not found");
-    }
-
-    if (data.error) {
-      // This is becuase if we try to move the error over serialized interface (postMessage) we lose the type
-      // TODO: instead of doing this, we should probably have either Result type that will be serializable?
-      if (data.error?.error?.name === "UserCancelledSigningException") {
-        promiseWithResolvers.reject(new UserCancelledSigningException());
-      } else {
-        promiseWithResolvers.reject(data.error);
-      }
-    } else {
-      promiseWithResolvers.resolve(data.result);
-    }
-    this.responsePromises.delete(data.id);
-    log.debug("web message responsePromise delete", data.id);
+  public send(frame: RpcCallerFrame): void {
+    log.debug("Sending frame ➡️", frame);
+    const evt = new CustomEvent(EVENT_SEND_MESSAGE_INJ_TO_CS, {
+      detail: frame,
+      bubbles: true,
+      composed: true,
+    });
+    window.dispatchEvent(evt);
   }
 
-  /**
-   * Send message to background script
-   *
-   * injected script --(CustomEvent)--> content script --(chrome.runtime.Port)--> background script
-   */
-  public async sendMessage(data: Omit<ChannelMessage, "id">): Promise<unknown> {
-    const id = randomUUID();
-    const detail = { ...data, id };
-    log.debug("Sending message ➡️", detail);
-    try {
-      const evt = new CustomEvent(EVENT_SEND_MESSAGE_INJ_TO_CS, {
-        detail,
-        bubbles: true,
-        composed: true,
-      });
-      window.dispatchEvent(evt);
-    } catch (e) {
-      log.debug("WebChannelCaller.sendMessage error");
-      log.error(e);
-      throw e;
-    }
-
-    const withResolvers: PromiseWithResolvers<unknown> = Promise.withResolvers
-      ? Promise.withResolvers<unknown>()
-      : promiseWithResolversPolyfill<unknown>();
-
-    this.responsePromises.set(id, withResolvers);
-    return withResolvers.promise;
+  public onResponse(callback: (frame: RpcResponseFrame) => void): void {
+    this.responseListeners.push(callback);
   }
-}
-
-async function withTimeout<T>(timeoutMs: number, promise: Promise<T>) {
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(new AutogramTimeoutError("Timeout waiting for response"));
-    }, timeoutMs);
-  });
-
-  return Promise.race([promise, timeoutPromise]);
-}
-
-function promiseWithResolversPolyfill<T>() {
-  let resolve: (value: T) => void = () => {
-      console.log("too soon");
-    },
-    reject: (reason?: unknown) => void = () => {
-      console.log("too soon");
-    };
-  const promise = new Promise<T>((_resolve, _reject) => {
-    resolve = _resolve;
-    reject = _reject;
-  });
-
-  return { promise, resolve, reject };
-}
-
-class AutogramTimeoutError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AutogramTimeoutError";
-  }
-}
-
-class AutogramSdkException extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AutogramSdkException";
-  }
-}
-
-function mapTimeoutToSdkException<T>(contextMessage: string) {
-  return (error: unknown): T => {
-    log.debug(
-      "mapTimeoutToSdkException",
-      error,
-      contextMessage,
-      error instanceof AutogramTimeoutError,
-      error instanceof Error,
-      typeof error,
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error as any)?.name === "AutogramTimeoutError"
-    );
-    log.debug(error);
-    // Check by name instead of instanceof because errors lose their type when serialized
-    if (
-      error instanceof AutogramTimeoutError ||
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (error as any)?.name === "AutogramTimeoutError"
-    ) {
-      throw new AutogramSdkException(contextMessage);
-    }
-    throw error;
-  };
 }

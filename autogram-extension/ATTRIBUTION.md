@@ -1,1 +1,3 @@
 - `noun_Sign_2695843` - Sign by Phonlaphat Thongsriphong from the Noun Project
+- `src/static/fonts/source-sans-3-*.woff2` - Source Sans 3 by Paul D. Hunt, licensed under the SIL Open Font License 1.1, vendored from Google Fonts
+- `src/static/fonts/source-sans-pro-*.woff2` - Source Sans Pro by Paul D. Hunt, licensed under the SIL Open Font License 1.1, vendored from Google Fonts

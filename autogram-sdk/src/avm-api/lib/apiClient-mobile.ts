@@ -1,7 +1,20 @@
 import { components, paths } from "./avm-api.generated";
 import fetch from "cross-fetch";
 import z from "zod";
+import { SignJWT } from "jose";
 import { createLogger } from "../../log";
+
+export async function createDeviceJwt(
+  guid: string,
+  keyPair: CryptoKeyPair
+): Promise<string> {
+  return new SignJWT({})
+    .setProtectedHeader({ alg: "ES256" })
+    .setJti(globalThis.crypto.randomUUID())
+    .setSubject(guid)
+    .setExpirationTime("15min")
+    .sign(keyPair.privateKey);
+}
 
 /**
  * ???
@@ -72,12 +85,67 @@ export class AutogramVMobileClientApiClient {
 
   // App (mobile) API
 
+  _postDevice = "/devices" as const;
+  async postDevice(
+    data: NonNullable<
+      paths[typeof this._postDevice]["post"]["requestBody"]
+    >["content"]["application/json"]
+  ) {
+    const response = await fetch(this.baseUrl + this._postDevice, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    return this.readJsonOrThrow(response, PostDeviceResponse);
+  }
+
+  _getDeviceIntegrations = "/device-integrations" as const;
+  async getDeviceIntegrations(bearerToken: string) {
+    const response = await fetch(this.baseUrl + this._getDeviceIntegrations, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + bearerToken,
+      },
+    });
+
+    return this.readJsonOrThrow(response, GetDeviceIntegrationsResponse);
+  }
+
+  _postDeviceIntegrations = "/device-integrations" as const;
+  async postDeviceIntegrations(
+    data: NonNullable<
+      paths[typeof this._postDeviceIntegrations]["post"]["requestBody"]
+    >["content"]["application/json"],
+    bearerToken: string
+  ) {
+    const response = await fetch(this.baseUrl + this._postDeviceIntegrations, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + bearerToken,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(await this.readErrorText(response));
+    }
+  }
+
   _getDocumentVisualization = "/documents/{guid}/visualization" as const;
-  getDocumentVisualization(
+  /** Called by mobile app after scanning QR code to display document to user for preview. */
+  async getDocumentVisualization(
     params: paths[typeof this._getDocumentVisualization]["get"]["parameters"]["path"],
     documentEncryptionKey: string
   ) {
-    return fetch(
+    const response = await fetch(
       this.baseUrl +
         this._getDocumentVisualization.replace("{guid}", params.guid),
       {
@@ -88,17 +156,18 @@ export class AutogramVMobileClientApiClient {
           "X-Encryption-Key": documentEncryptionKey,
         },
       }
-    )
-      .then((res) => res.json())
-      .then(GetDocumentVisualizationResponse.parse);
+    );
+
+    return this.readJsonOrThrow(response, GetDocumentVisualizationResponse);
   }
 
   _getDocumentSignatureParameters = "/documents/{guid}/parameters" as const;
-  getDocumentSignatureParameters(
+  /** Called by mobile app to retrieve signing configuration (level, timestamp, etc.) for the document. */
+  async getDocumentSignatureParameters(
     params: paths[typeof this._getDocumentSignatureParameters]["get"]["parameters"]["path"],
     documentEncryptionKey: string
   ) {
-    return fetch(
+    const response = await fetch(
       this.baseUrl +
         this._getDocumentSignatureParameters.replace("{guid}", params.guid),
       {
@@ -109,18 +178,24 @@ export class AutogramVMobileClientApiClient {
           "X-Encryption-Key": documentEncryptionKey,
         },
       }
-    ).then((res) => res.json() as components["schemas"]["SigningParameters"]);
+    );
+
+    return this.readJsonOrThrow(
+      response,
+      GetDocumentSignatureParametersResponse
+    );
   }
 
   _postDocumentDataToSign = "/documents/{guid}/datatosign" as const;
-  postDocumentDataToSign(
+  /** Called by mobile app to send signing certificate and get the data that needs to be signed (DataToSign). Pre-condition: User selected certificate. */
+  async postDocumentDataToSign(
     params: paths[typeof this._postDocumentDataToSign]["post"]["parameters"]["path"],
     data: NonNullable<
       paths[typeof this._postDocumentDataToSign]["post"]["requestBody"]
     >["content"]["application/json"],
     documentEncryptionKey: string
   ) {
-    return fetch(
+    const response = await fetch(
       this.baseUrl +
         this._postDocumentDataToSign.replace("{guid}", params.guid),
       {
@@ -132,20 +207,21 @@ export class AutogramVMobileClientApiClient {
         },
         body: JSON.stringify(data),
       }
-    )
-      .then((res) => res.json())
-      .then(PostDocumentDataToSignResponse.parse);
+    );
+
+    return this.readJsonOrThrow(response, PostDocumentDataToSignResponse);
   }
 
   _postDocumentSign = "/documents/{guid}/sign" as const;
-  postDocumentSign(
+  /** Called by mobile app as final step: send locally-signed data. Server combines with document and completes signing. Pre-condition: User signed the DataToSign. */
+  async postDocumentSign(
     params: paths[typeof this._postDocumentSign]["post"]["parameters"]["path"],
     data: NonNullable<
       paths[typeof this._postDocumentSign]["post"]["requestBody"]
     >["content"]["application/json"],
     documentEncryptionKey: string
   ) {
-    return fetch(
+    const response = await fetch(
       this.baseUrl + this._postDocumentSign.replace("{guid}", params.guid),
       {
         method: "POST",
@@ -156,17 +232,84 @@ export class AutogramVMobileClientApiClient {
         },
         body: JSON.stringify(data),
       }
-    )
-      .then((res) => res.json())
-      .then(PostDocumentSignResponse.parse);
+    );
+
+    return this.readJsonOrThrow(response, PostDocumentSignResponse);
+  }
+
+  private async readJsonOrThrow<S extends z.ZodTypeAny>(
+    response: Response,
+    schema: S
+  ): Promise<z.output<S>> {
+    if (!response.ok) {
+      throw new Error(await this.readErrorText(response));
+    }
+
+    return schema.parse(await response.json());
+  }
+
+  private async readErrorText(response: Response) {
+    let raw = "";
+    try {
+      raw = await response.text();
+    } catch {
+      return `API Error: ${response.status} ${response.statusText}`;
+    }
+
+    if (!raw) {
+      return `API Error: ${response.status} ${response.statusText}`;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as { message?: string; code?: string };
+      if (parsed.code && parsed.message) {
+        return `${parsed.code}: ${parsed.message}`;
+      }
+      if (parsed.message) {
+        return parsed.message;
+      }
+    } catch {
+      return raw;
+    }
+
+    return raw;
   }
 }
+
+const PostDeviceResponse = z.object({
+  guid: z.string().optional(),
+});
+
+const GetDeviceIntegrationsResponse = z.array(
+  z
+    .union([
+      z.object({
+        integrationId: z.string(), // TODO add fallback to integration_id
+        platform: z.string(),
+        displayName: z.string(), // TODO add fallback to display_name
+      }),
+      z.object({
+        integration_id: z.string(),
+        platform: z.string(),
+        display_name: z.string(),
+      }),
+    ])
+    .transform((item) => ({
+      integrationId:
+        "integrationId" in item ? item.integrationId : item.integration_id,
+      platform: item.platform,
+      displayName: "displayName" in item ? item.displayName : item.display_name,
+    }))
+);
 
 const GetDocumentVisualizationResponse = z.object({
   mimeType: z.string(),
   filename: z.string().optional(),
   content: z.string(),
 });
+
+const GetDocumentSignatureParametersResponse =
+  z.custom<components["schemas"]["SigningParameters"]>();
 
 const PostDocumentDataToSignResponse = z.object({
   dataToSign: z.string(),
@@ -181,3 +324,15 @@ const PostDocumentSignResponse = z.object({
   signedBy: z.string(),
   issuedBy: z.string(),
 });
+
+export type DeviceRegistrationResponse = z.infer<typeof PostDeviceResponse>;
+export type DeviceIntegrationsResponse = z.infer<
+  typeof GetDeviceIntegrationsResponse
+>;
+export type DocumentVisualizationResponse = z.infer<
+  typeof GetDocumentVisualizationResponse
+>;
+export type DocumentDataToSignResponse = z.infer<
+  typeof PostDocumentDataToSignResponse
+>;
+export type DocumentSignResponse = z.infer<typeof PostDocumentSignResponse>;

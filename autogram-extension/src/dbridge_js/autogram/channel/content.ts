@@ -1,10 +1,12 @@
+import {
+  RpcCallerFrame,
+  ZRpcCallerFrame,
+  ZRpcResponseFrame,
+} from "autogram-sdk";
 import { createLogger } from "../../../log";
 import {
-  ChannelMessage,
   EVENT_MESSAGE_RESPONSE_CS_TO_INJ,
   EVENT_SEND_MESSAGE_INJ_TO_CS,
-  ZChannelMessage,
-  ZChannelResponse,
 } from "./common";
 
 const log = createLogger("ag-ext.channel.content");
@@ -19,6 +21,7 @@ const RETRY_LIMIT = 5;
  * content script  <--(chrome.runtime.Port)--> background script
  * content script --(EVENT_MESSAGE_RESPONSE_CS_TO_INJ)--> injected script
  *
+ * Pure passthrough: frames are validated and forwarded, never interpreted.
  */
 export class ContentChannelPassthrough {
   portToBackground: chrome.runtime.Port | null; // We use chrome.runtime here because `import browser from "webextension-polyfill"` is not working in web (page) script
@@ -89,13 +92,13 @@ export class ContentChannelPassthrough {
     );
   }
 
-  postMessageToBackground(message: ChannelMessage, retryNumber = 0) {
-    log.debug("content post message ➡️", message, retryNumber);
+  postMessageToBackground(frame: RpcCallerFrame, retryNumber = 0) {
+    log.debug("content post message ➡️", frame, retryNumber);
     try {
       if (!this.portToBackground) {
         throw new Error("Port to background is not initialized");
       }
-      this.portToBackground.postMessage(message);
+      this.portToBackground.postMessage(frame);
     } catch (e) {
       if (
         e instanceof Error &&
@@ -108,7 +111,7 @@ export class ContentChannelPassthrough {
 
         log.debug("Port disconnected, reinit", e);
         this.initPortToBackground(this.reinitNumber + 1);
-        this.postMessageToBackground(message, retryNumber + 1);
+        this.postMessageToBackground(frame, retryNumber + 1);
       } else {
         log.error("Error sending message", e);
       }
@@ -118,9 +121,9 @@ export class ContentChannelPassthrough {
   hello() {
     this.postMessageToBackground({
       id: "hello",
+      service: "avm",
       method: "hello",
-      args: null,
-      app: "avm",
+      payload: null,
     });
   }
 
@@ -133,9 +136,9 @@ export class ContentChannelPassthrough {
     window.addEventListener(
       EVENT_SEND_MESSAGE_INJ_TO_CS,
       (evt: CustomEvent) => {
-        const data = ZChannelMessage.parse(evt.detail);
-        log.debug("➡️ recieved EVENT_SEND_MESSAGE_INJ_TO_CS", data);
-        this.postMessageToBackground(data);
+        const frame = ZRpcCallerFrame.parse(evt.detail);
+        log.debug("➡️ recieved EVENT_SEND_MESSAGE_INJ_TO_CS", frame);
+        this.postMessageToBackground(frame);
       }
     );
 
@@ -151,18 +154,18 @@ export class ContentChannelPassthrough {
     // Store the message listener so we can re-attach it when port is reinitialized
     this.messageListener = (message) => {
       log.debug("content message ⬅️", message);
-      const data = ZChannelResponse.parse(message);
-      if (data.id === "log") {
-        log.debug("content log from background", data.result);
+      const frame = ZRpcResponseFrame.parse(message);
+      if (frame.id === "log") {
+        log.debug("content log from background", frame.payload);
         return;
       }
-      log.debug("content response", data);
+      log.debug("content response", frame);
 
-      let detail = data;
+      let detail: unknown = frame;
       if (typeof cloneInto != "undefined") {
-        detail = cloneInto(data, window, {
+        detail = cloneInto(frame, window, {
           cloneFunctions: true,
-        }) as ChannelMessage;
+        });
       }
 
       const evt = new CustomEvent(EVENT_MESSAGE_RESPONSE_CS_TO_INJ, {

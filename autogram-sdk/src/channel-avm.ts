@@ -1,134 +1,112 @@
 import { get, set } from "idb-keyval";
-import {
-  AVMIntegrationDocument,
-  AVMDocumentToSign,
-  AVMSignedDocument,
-} from ".";
+import { AVMDocumentToSign, AVMSignedDocument } from ".";
 import {
   AutogramVMobileIntegrationInterfaceStateful,
   AutogramVMobileIntegration,
+  AvmRegistrationInfo,
 } from "./avm-api/lib/apiClient";
+import { MobileClient, RestorePointStore, SignatureRequest } from "./mobile";
 import { createLogger } from "./log";
-import { SignedObject } from "./with-ui";
+import { SignedObject } from "./types";
 
 const log = createLogger("ag-sdk:AvmSimpleChannel");
 
+const WAIT_FOR_SIGNATURE_TIMEOUT_MS = 1000 * 60 * 60 * 2; // 2 hours
+
+/**
+ * Default direct implementation of {@link AutogramVMobileIntegrationInterfaceStateful}
+ * that communicates with the Autogram v Mobile (AVM) cloud service.
+ *
+ * Thin stateful adapter over {@link MobileClient}: it tracks "the current
+ * signature request" between the interface's step-wise calls
+ * (`addDocument` → `getQrCodeUrl` → `waitForSignature` → `reset`).
+ *
+ * {@link useRestorePoint} provides cross-page-reload continuity via
+ * {@link RestorePointStore}: the request token is persisted in IndexedDB so
+ * an in-progress signing session can be recovered after navigation.
+ *
+ * This class is the default channel used by `CombinedClient`. The
+ * browser extension replaces it with `AvmChannelWeb`, which routes
+ * calls through the content-script ↔ injected-script message bridge
+ * instead of talking to the AVM API directly.
+ */
 export class AvmSimpleChannel
   implements AutogramVMobileIntegrationInterfaceStateful
 {
-  private apiClient = new AutogramVMobileIntegration({
-    get,
-    set,
-  });
+  private client = new MobileClient(
+    new AutogramVMobileIntegration({ get, set })
+  );
+  private restorePoints = new RestorePointStore(
+    { get, set },
+    this.client,
+    "restorePoint:"
+  );
 
-  private documentRef: AVMIntegrationDocument | null;
-  private abortController: AbortController | null;
+  private request: SignatureRequest | null = null;
+  private abortController: AbortController | null = null;
 
   init(): Promise<void> {
     return Promise.resolve();
   }
-  async loadOrRegister(): Promise<void> {
-    await this.apiClient.loadOrRegister();
+  async loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void> {
+    await this.client.register(regInfo);
   }
   async getQrCodeUrl(): Promise<string> {
-    if (!this.documentRef) {
-      throw new Error("Document not found");
-    }
-    return this.apiClient.getQrCodeUrl(this.documentRef);
+    return this.currentRequest().qrCodeUrl();
+  }
+  async getPairingQrCodeUrl(): Promise<string> {
+    return this.client.pairingQrCodeUrl();
   }
   async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
-    this.documentRef = await this.apiClient.addDocument(
-      documentToSign as unknown as AVMDocumentToSign
-    );
+    this.request = await this.client.requestSignature(documentToSign);
+  }
+  async sendNotification(): Promise<void> {
+    await this.currentRequest().notifyDevices();
   }
   async waitForSignature(): Promise<AVMSignedDocument> {
-    const documentRef = this.documentRef;
-    if (!documentRef) {
-      throw new Error("Document not found");
-    }
+    const request = this.currentRequest();
     // TODO abort when tab is closed
     this.abortController = new AbortController();
 
-    const timeout = setTimeout(
-      () => {
-        if (this.abortController) this.abortController.abort("Timeout");
-      },
-      1000 * 60 * 60 * 2 // 2 hours
-    );
-    this.abortController.signal.addEventListener("abort", () => {
+    const timeout = setTimeout(() => {
+      this.abortController?.abort("Timeout");
+    }, WAIT_FOR_SIGNATURE_TIMEOUT_MS);
+
+    try {
+      const res = await request.waitForSignature({
+        signal: this.abortController.signal,
+      });
+      log.debug("res", res);
+      return res;
+    } finally {
       clearTimeout(timeout);
-    });
-    const res = await this.apiClient.waitForSignature(
-      documentRef,
-      this.abortController
-    );
-    clearTimeout(timeout);
-    log.debug("res", res);
-    return res;
+    }
   }
 
   async abortWaitForSignature(): Promise<void> {
-    if (this.abortController) this.abortController.abort("Aborted");
+    this.abortController?.abort("Aborted");
   }
   async reset(): Promise<void> {
-    this.documentRef = null;
+    this.request = null;
     this.abortController = null;
   }
 
   async useRestorePoint(restorePoint: string): Promise<SignedObject | null> {
-    const restoreKey = `restorePoint:${restorePoint}`;
-
-    // Try to load the saved document reference
-    const savedDocumentRef = await get<AVMIntegrationDocument>(restoreKey);
-
-    if (!savedDocumentRef) {
-      // No restore point found, save current state if we have a document
-      if (this.documentRef) {
-        await set(restoreKey, this.documentRef);
-        log.info("Created new restore point", restorePoint);
-      }
+    const result = await this.restorePoints.use(
+      restorePoint,
+      this.request?.token ?? null
+    );
+    if (result.outcome === "none") {
       return null;
     }
+    this.request = this.client.resumeRequest(result.token);
+    return result.outcome === "signed" ? result.signedObject : null;
+  }
 
-    // Restore point found, check if document is already signed
-    try {
-      if (!savedDocumentRef.guid || !savedDocumentRef.encryptionKey) {
-        log.debug("Invalid saved document reference", savedDocumentRef);
-        return null;
-      }
-
-      // Check document status without polling
-      const documentResult = await this.apiClient.checkDocumentStatus(
-        savedDocumentRef
-      );
-
-      if (documentResult.status === "signed") {
-        // Document is signed, restore state and return true
-        this.documentRef = savedDocumentRef;
-        log.info("Restore point used - document already signed", restorePoint);
-        // Clean up restore point
-        await set(restoreKey, undefined);
-        return {
-          content: documentResult.document.content,
-          issuedBy:
-            documentResult.document.signers
-              ?.map((s) => s.issuedBy || "")
-              .join(", ") || "",
-          signedBy:
-            documentResult.document.signers
-              ?.map((s) => s.signedBy || "")
-              .join(", ") || "",
-        };
-      } else {
-        // TODO: does this make sense?
-        // Document not signed yet, restore state for continued signing
-        this.documentRef = savedDocumentRef;
-        log.info("Restore point used - document pending", restorePoint);
-        return null;
-      }
-    } catch (error) {
-      log.error("Error checking restore point", error);
-      return null;
+  private currentRequest(): SignatureRequest {
+    if (!this.request) {
+      throw new Error("Document not found");
     }
+    return this.request;
   }
 }

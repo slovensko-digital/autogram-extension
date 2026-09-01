@@ -217,7 +217,7 @@ Mobile types undergo post-processing via JSCodeshift transformation (`avm-api.co
 
 ### Testing
 
-- Demo files (`demo1.html`, `demo2.html`) for manual testing
+- Demo pages in `demos/` (one per build flavor, see README) for manual testing
 - Test infrastructure in place (Jest configuration)
 - Unit tests for API clients (`.test.ts`, `.spec.ts_` files)
 

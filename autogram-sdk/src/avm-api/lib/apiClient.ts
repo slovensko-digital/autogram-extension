@@ -4,7 +4,7 @@ import z from "zod";
 import { paths } from "./avm-api.generated";
 import { Base64 } from "js-base64";
 import { createLogger } from "../../log";
-import { SignedObject } from "../../with-ui";
+import { SignedObject } from "../../types";
 
 const log = createLogger("ag-sdk:AvmIntegration");
 
@@ -14,13 +14,17 @@ export interface AvmIntegrationDocument {
   lastModified: string | null;
 }
 
+
+export interface AvmRegistrationInfo {
+    platform: string;
+    displayName?: string;
+  }
+
 // TODO what does this do? Is this just integration client? Why does it have different API than the channel part?
 /**
  * Stateful integration with Autogram v mobile
  */
-export class AutogramVMobileIntegration
-  implements AutogramVMobileIntegrationPrivateInterface
-{
+export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPrivateInterface {
   private apiClient: AutogramVMobileIntegrationApiClient;
 
   /**
@@ -48,9 +52,14 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Load the key pair and integration GUID from the database, or register a new integration if not found.
+   * Initialize integration: must be called once at startup before any document operations.
+   * Loads the key pair and integration GUID from the local database, or registers a new integration if not found.
+   * Pre-condition: None. Post-condition: `getIntegrationGuid()` will return non-null.
    */
-  public async loadOrRegister() {
+  public async loadOrRegister({
+    platform = "integration",
+    displayName = "Integration"
+  }: AvmRegistrationInfo) {
     this.loadSubtleCrypto();
     // load
     this.keyPair = await this.getKeyPairFromDb();
@@ -59,7 +68,7 @@ export class AutogramVMobileIntegration
     log.debug(this.keyPair);
 
     if (!this.keyPair || !this.integrationGuid) {
-      await this.register();
+      await this.register({ platform, displayName });
     }
 
     log.debug("keys init", {
@@ -69,11 +78,11 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Generates a QR code URL for sharing a document signing
-   *
-   * @param doc document
-   * @param enableIntegration whether to add integration data to the URL - when this code is used AVM will try to register this instance with the mobile app for sending notifications
-   * @returns URL string
+   * Generate document-specific QR code for mobile signing.
+   * Share this URL with user (as QR code) after uploading document.
+   * Pre-condition: `addDocument()` must be called first. Post-condition: Mobile app can scan and sign.
+   * @param doc Document reference returned from `addDocument()`, containing document GUID and encryption key.
+   * @param enableIntegration Set to true to enable push notifications from the device to this integration.
    */
   public async getQrCodeUrl(
     doc: AvmIntegrationDocument,
@@ -103,9 +112,43 @@ export class AutogramVMobileIntegration
   }
 
   /**
+   * Override AVM server base URL used for API calls.
+   */
+  public setBaseUrl(baseUrl: string) {
+    this.apiClient.baseUrl = baseUrl;
+  }
+
+  /**
+   * Current AVM server base URL used for API calls.
+   */
+  public getBaseUrl() {
+    return this.apiClient.baseUrl;
+  }
+
+  /**
+   * Returns integration GUID when integration is loaded/registered.
+   */
+  public getIntegrationGuid() {
+    return this.integrationGuid;
+  }
+
+  /**
+   * Generate QR code for setting up push notifications: optional setup step.
+   * Use when you want mobile app to send notifications to this integration about new signatures.
+   * Pre-condition: `loadOrRegister()` completed.
+   */
+  public async getPairingQrCodeUrl() {
+    const integrationJwt = await this.getIntegrationBearerToken(true);
+    return this.apiClient.qrCodeRegisterIntegrationUrl(integrationJwt);
+  }
+
+  /**
    * Register a new integration with the Autogram v mobile server.
    */
-  private async register() {
+  private async register({
+    platform = "integration",
+    displayName = "Integration",
+  }: AvmRegistrationInfo) {
     if (this.keyPair && this.integrationGuid) {
       throw new Error("Already registered.");
     }
@@ -114,11 +157,11 @@ export class AutogramVMobileIntegration
 
     const publicKey = await this.getPublicKeyStr();
 
-    log.info("Registering integration", publicKey);
+    log.info("Registering integration", { displayName, platform, publicKey});
 
     const res = await this.apiClient.registerIntegration({
-      platform: "extension",
-      displayName: "Autogram Extension",
+      platform,
+      displayName,
       publicKey:
         "-----BEGIN PUBLIC KEY-----\n" +
         publicKey +
@@ -132,10 +175,10 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Send a document to serverr to be signed later.
-   *
-   * @param document to add
-   * @returns documentRef for further operations
+   * Upload document to server for signing: first step of signing process (after integration initialization).
+   * Generates encryption key and sends document to server. Must be called before `getQrCodeUrl()` and `waitForSignature()`.
+   * Pre-condition: `loadOrRegister()` completed. Post-condition: Document is encrypted on server, ready to sign.
+   * @returns Document reference needed for subsequent signing operations.
    */
   public async addDocument(
     document: DocumentToSign
@@ -148,6 +191,7 @@ export class AutogramVMobileIntegration
       await this.getIntegrationBearerToken(),
       encryptionKey
     );
+
     return {
       guid: res.guid,
       encryptionKey: encryptionKey,
@@ -156,11 +200,45 @@ export class AutogramVMobileIntegration
   }
 
   /**
-   * Checks the status of a document on the server.
-   * Uses GET /documents/{guid} endpoint.
-   *
-   * @param documentRef which document to check
-   * @returns status of the document from the server
+   * List all mobile devices currently paired with this integration.
+   * Pre-condition: `loadOrRegister()` completed.
+   */
+  public async getDevices() {
+    return this.apiClient.getIntegrationDevices(
+      await this.getIntegrationBearerToken()
+    );
+  }
+
+  /**
+   * Send a push notification to all paired devices to prompt them to sign the document.
+   * Call after `addDocument()` when you want paired mobile devices to be notified.
+   * Pre-condition: `addDocument()` completed. Errors are logged but do not propagate.
+   */
+  public async sendNotification(
+    documentRef: AvmIntegrationDocument
+  ): Promise<void> {
+    if (!documentRef.guid || !documentRef.encryptionKey) {
+      log.warn("Cannot send notification: document guid or key missing");
+      return;
+    }
+    try {
+      await this.apiClient.signRequest(
+        {
+          documentGuid: documentRef.guid,
+          documentEncryptionKey: documentRef.encryptionKey,
+        },
+        await this.getIntegrationBearerToken()
+      );
+    } catch (error) {
+      // Do not fail signing flow if push notification cannot be delivered.
+      log.warn("Failed to send sign-request push notification", error);
+    }
+  }
+
+  /**
+   * Check the status of a document on the server.
+   * Use only if push notifications aren't working or supported.
+   * Pre-condition: `addDocument()` called. Returns immediately with current status.
    */
   public async checkDocumentStatus(
     documentRef: AvmIntegrationDocument
@@ -177,6 +255,11 @@ export class AutogramVMobileIntegration
     );
   }
 
+  /**
+   * Wait for user to complete signing on mobile device: final step of signing process.
+   * Blocks until document is signed or abort signal is triggered. Call after `getQrCodeUrl()`.
+   * Pre-condition: `addDocument()` and user scanned QR code. Returns signed document when ready.
+   */
   public async waitForSignature(
     documentRef: AvmIntegrationDocument,
     abortController: AbortController
@@ -189,14 +272,6 @@ export class AutogramVMobileIntegration
       log.debug(documentRef);
       throw new Error("Document guid, key or last-modified missing");
     }
-
-    this.apiClient.signRequest(
-      {
-        documentGuid: documentRef.guid,
-        documentEncryptionKey: documentRef.encryptionKey,
-      },
-      await this.getIntegrationBearerToken()
-    );
 
     while (!abortController.signal.aborted) {
       const documentResult = await this.apiClient.getDocument(
@@ -273,7 +348,10 @@ export class AutogramVMobileIntegration
         name: "ECDSA",
         namedCurve: "P-256",
       },
-      true,
+      // non-extractable: the private key can still be persisted to IndexedDB
+      // via structured clone and used for signing, but page scripts cannot
+      // export the raw key material; the public key is always exportable
+      false,
       ["sign", "verify"]
     );
     log.debug("Key pair generated", keyPair);
@@ -331,7 +409,7 @@ export class AutogramVMobileIntegration
 }
 
 export interface AutogramVMobileIntegrationPrivateInterface {
-  loadOrRegister(): Promise<void>;
+  loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   getQrCodeUrl(doc: AvmIntegrationDocument): Promise<string>;
   addDocument(documentToSign: DocumentToSign): Promise<AvmIntegrationDocument>;
   checkDocumentStatus(doc: AvmIntegrationDocument): Promise<GetDocumentResult>;
@@ -352,7 +430,7 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
   /**
    * Load existing or register new integration with the Autogram v mobile server
    */
-  loadOrRegister(): Promise<void>;
+  loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   /**
    * Get QR code URL for the document to be signed
    *
@@ -360,10 +438,20 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
    */
   getQrCodeUrl(): Promise<string>;
   /**
+   * Get QR code URL for pairing this integration with a mobile device.
+   *
+   * @returns URL string
+   */
+  getPairingQrCodeUrl(): Promise<string>;
+  /**
    * Add a document to be signed (currently only one document is supported)
    * @param documentToSign Document to be signed
    */
   addDocument(documentToSign: DocumentToSign): Promise<void>;
+  /**
+   * Send a push notification for the current document to paired devices.
+   */
+  sendNotification(): Promise<void>;
   /**
    * Waits for the document to be signed, resolving when the document is signed.
    *
@@ -464,10 +552,15 @@ export class AutogramVMobileIntegrationApiClient {
   }
 
   _getIntegrationDevices = "/integration-devices" as const;
-  getIntegrationDevices() {
+  getIntegrationDevices(bearerToken: string) {
     return fetch(this.baseUrl + this._getIntegrationDevices, {
       method: "GET",
-    }).then((res) => GetIntegrationDevicesResponseBody.parse(res.json()));
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((json) => GetIntegrationDevicesResponseBody.parse(json));
   }
 
   _documents = "/documents" as const;
@@ -558,20 +651,24 @@ export class AutogramVMobileIntegrationApiClient {
   }
 
   _signRequest = "/sign-request" as const;
-  signRequest(
+  async signRequest(
     data: NonNullable<
       paths[typeof this._signRequest]["post"]["requestBody"]
     >["content"]["application/json"],
     bearerToken: string
   ) {
-    return fetch(this.baseUrl + this._signRequest, {
+    const res = await fetch(this.baseUrl + this._signRequest, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${bearerToken}`,
       },
       body: JSON.stringify(data),
-    }).then((res) => res.json());
+    });
+
+    if (!res.ok) {
+      throw new Error(`API Error: ${res.status} ${res.statusText}`);
+    }
   }
 
   _getQrCodeUrl = "/qr-code" as const;

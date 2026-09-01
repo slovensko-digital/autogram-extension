@@ -8,12 +8,18 @@ import "./sign-mobile-on-mobile.screen";
 import "./signing-cancelled.screen";
 import "./restore-point-choice.screen";
 import "./error.screen";
-import { EventChoice, EventClose, EventRestorePointResult } from "./events";
+import {
+  EventChoice,
+  EventClose,
+  EventRestorePointResult,
+  EventRetryMobileNotification,
+} from "./events";
 import { SigningMethod } from "./types";
 import { createLogger } from "../log";
 import { UserCancelledSigningException } from "../errors";
 import { isMobileDevice } from "../utils";
 import type { DesktopSigningState } from "../autogram-api/index";
+import sourceSans3FontCss from "./fonts/source-sans-3.css";
 
 const log = createLogger("ag-sdk:root");
 
@@ -74,6 +80,12 @@ export class AutogramRoot extends LitElement {
   @property()
   declare mobileSigningUrl: string | null;
 
+  @property()
+  declare mobilePairingUrl: string | null;
+
+  @property({ attribute: false })
+  declare pairingEnabled: boolean;
+
   @property({ attribute: false })
   declare desktopSigningState: DesktopSigningState;
 
@@ -82,6 +94,8 @@ export class AutogramRoot extends LitElement {
   errorMessage: string | null = null;
 
   hideTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  onRetryMobileNotification: (() => Promise<void>) | null = null;
 
   /**
    * Some host pages (e.g. konto.bratislava.sk) manage focus traps by setting the
@@ -103,6 +117,7 @@ export class AutogramRoot extends LitElement {
     super();
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.mobilePairingUrl = null;
     this.desktopSigningState = { type: "checkingApp" };
   }
 
@@ -146,6 +161,19 @@ export class AutogramRoot extends LitElement {
     }
   }
 
+  async _handleRetryMobileNotification(_event: EventRetryMobileNotification) {
+    log.debug("_handleRetryMobileNotification");
+    if (!this.onRetryMobileNotification) {
+      return;
+    }
+
+    try {
+      await this.onRetryMobileNotification();
+    } catch (error) {
+      log.warn("Retrying mobile notification failed", error);
+    }
+  }
+
   render() {
     log.debug("render");
     return html`
@@ -163,7 +191,11 @@ export class AutogramRoot extends LitElement {
             : this.screen === Screens.signMobile
               ? html`<autogram-sign-mobile-screen
                   @autogram-close=${this._closeSigningScreen}
-                  url=${this.mobileSigningUrl}
+                  @autogram-retry-mobile-notification=${this
+                    ._handleRetryMobileNotification}
+                  .url=${this.mobileSigningUrl ?? ""}
+                  .pairingUrl=${this.mobilePairingUrl}
+                  .pairingEnabled=${this.pairingEnabled}
                 ></autogram-sign-mobile-screen>`
               : this.screen === Screens.signingCancelled
                 ? html`<autogram-signing-cancelled-screen
@@ -172,7 +204,7 @@ export class AutogramRoot extends LitElement {
                 : this.screen === Screens.signMobileOnMobile
                   ? html`<autogram-signing-mobile-on-mobile-screen
                       @autogram-close=${this._closeSigningScreen}
-                      url=${this.mobileSigningUrl}
+                      .url=${this.mobileSigningUrl ?? ""}
                     ></autogram-signing-mobile-on-mobile-screen>`
                   : this.screen === Screens.useRestorePoint
                     ? html`<autogram-restore-point-choice-screen
@@ -249,10 +281,17 @@ export class AutogramRoot extends LitElement {
     }, 10000);
   }
 
-  showQRCode(url: string, abortController: AbortController) {
+  showQRCode(
+    url: string,
+    pairingUrl: string,
+    abortController: AbortController,
+    pairingEnabled: boolean
+  ) {
     this.screen = Screens.signMobile;
     this.mobileSigningUrl = url;
+    this.mobilePairingUrl = pairingUrl;
     this.abortController = abortController;
+    this.pairingEnabled = pairingEnabled;
   }
 
   openMobileOnMobile(url: string, abortController: AbortController) {
@@ -316,6 +355,7 @@ export class AutogramRoot extends LitElement {
     }
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.mobilePairingUrl = null;
     this.desktopSigningState = { type: "checkingApp" };
     if (this.abortController) {
       this.abortController.abort();
@@ -323,30 +363,20 @@ export class AutogramRoot extends LitElement {
     this.abortController = null;
   }
 
+  private static readonly fontStyleId = "autogram-root-fonts";
+
   addFonts() {
-    // TODO - replace with local version?
-    /*
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    */
-    const link = document.createElement("link");
-    link.rel = "preconnect";
-    link.href = "https://fonts.googleapis.com";
+    // Fonts are vendored (embedded as base64 in the bundle) rather than
+    // loaded from Google Fonts, since this component is injected into
+    // arbitrary host pages that may block third-party font requests.
+    if (document.getElementById(AutogramRoot.fontStyleId)) {
+      return;
+    }
 
-    const link2 = document.createElement("link");
-    link2.rel = "preconnect";
-    link2.href = "https://fonts.gstatic.com";
-    link2.crossOrigin = "anonymous";
-
-    const link3 = document.createElement("link");
-    link3.rel = "stylesheet";
-    link3.href =
-      "https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap";
-
-    document.head.appendChild(link);
-    document.head.appendChild(link2);
-    document.head.appendChild(link3);
+    const style = document.createElement("style");
+    style.id = AutogramRoot.fontStyleId;
+    style.textContent = sourceSans3FontCss;
+    document.head.appendChild(style);
   }
 }
 
@@ -357,10 +387,10 @@ function promiseWithResolvers<T>() {
 }
 function promiseWithResolversPolyfill<T>() {
   let resolve: (value: T) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     },
     reject: (reason?: unknown) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     };
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;

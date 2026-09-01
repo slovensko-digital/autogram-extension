@@ -1,0 +1,34 @@
+@startuml
+skinparam ClassFontStyle bold
+skinparam ClassBackgroundColor ffffff
+skinparam ClassBorderColor 5a0000
+skinparam RoundCorner 0
+skinparam ClassBorderThickness 2
+hide empty fields
+hide empty methods
+skinparam Shadowing true
+skinparam BackgroundColor transparent
+class "AutogramError" {
+    +<b>code</b> : AutogramErrorCode
+    {static} +fromJSON(data: unknown) : AutogramError
+    {static} +is(e: unknown, code: AutogramErrorCode) : e is AutogramError
+    +toJSON() : SerializedAutogramError
+}
+class "Error"
+hide "Error" circle
+"Error" <|-- "AutogramError"
+class "UserCancelledSigningException" {
+    +<b>code</b> : AutogramErrorCode
+    {static} +fromJSON(data: unknown) : AutogramError
+    {static} +is(e: unknown, code: AutogramErrorCode) : e is AutogramError
+    +toJSON() : SerializedAutogramError
+}
+"AutogramError" <|-- "UserCancelledSigningException"
+class "AutogramSdkException" {
+    +<b>code</b> : AutogramErrorCode
+    {static} +fromJSON(data: unknown) : AutogramError
+    {static} +is(e: unknown, code: AutogramErrorCode) : e is AutogramError
+    +toJSON() : SerializedAutogramError
+}
+"AutogramError" <|-- "AutogramSdkException"
+@enduml
