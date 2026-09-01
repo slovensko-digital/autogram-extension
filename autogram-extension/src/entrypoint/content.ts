@@ -2,6 +2,7 @@ import { getOptions } from "../options/content";
 import browser from "webextension-polyfill";
 import packageJson from "../../package.json";
 import { ContentChannelPassthrough } from "../dbridge_js/autogram/channel/content";
+import { preselectAutogramSigner } from "../dbridge_js/autogram/preselect-signer";
 import {
   supportedSites,
   ON_DOCUMENT_LOAD_INJECTION,
@@ -62,6 +63,7 @@ getOptions()
 
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
+      maybePreselectAutogramSigner(document);
       insertInjectScript(document, extensionOptions);
 
       // TODO: probably this should be conditional, based on the website
@@ -78,6 +80,24 @@ getOptions()
     // throw new Error("example");
   }, captureException)
   .catch(captureException);
+
+/**
+ * On portals that ship their own client to the local Autogram desktop app
+ * (nove.slovensko.sk's message composer), make Autogram the preselected
+ * signing method — the extension serves that API, so the portal's own
+ * "Autogram" option is the one that works without D.Launcher.
+ */
+function maybePreselectAutogramSigner(doc: Document) {
+  const site = supportedSites.matchUrl(doc.location.href);
+  if (!site.interceptNativeAutogram) {
+    return;
+  }
+  const targetWindow = doc.defaultView;
+  if (!targetWindow) {
+    return;
+  }
+  preselectAutogramSigner(targetWindow);
+}
 
 function insertInjectScript(doc: Document, extensionOptions: ExtensionOptions) {
   const site = supportedSites.matchUrl(doc.location.href);
