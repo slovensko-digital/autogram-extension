@@ -125,6 +125,7 @@ const basicUrls = [
   "https://cep.financnasprava.sk/*",
   "https://www.cep.financnasprava.sk/*",
   "https://eformulare.socpoist.sk/*",
+  "https://eform.esluzbykosice.sk/*",
   "https://sluzby.orsr.sk/*",
 ];
 
