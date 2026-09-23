@@ -15,6 +15,7 @@ import { AutogramDesktopSimpleChannel } from "./channel-desktop";
 import {
   AutogramAppNotInstalledException,
   AutogramAppVersionTooLowException,
+  AutogramSdkException,
   UserCancelledSigningException,
 } from "./errors";
 import { createLogger } from "./log";
@@ -23,6 +24,7 @@ import {
   normalizeSignArgs,
   signRequestToLegacy,
   supportsSignV1,
+  unsupportedLegacyParameters,
   versionSatisfies,
   type SignRequest,
 } from "./sign-request";
@@ -88,13 +90,26 @@ export class DesktopClient {
     const onStateChange = options?.onStateChange ?? options?.onDesktopStateChange;
     const abortController = options?.abortController;
 
+    if (options?.batchId && request.documents.length > 1) {
+      throw new AutogramSdkException(
+        "batchId cannot be used when signing multiple documents into a single container"
+      );
+    }
+
     const info = await this.launch(abortController, onStateChange);
     const useV1 = supportsSignV1(info.version);
 
-    if (!useV1 && request.documents.length > 1) {
-      const detectedVersion = info.version ?? "unknown";
-      onStateChange?.({ type: "appVersionTooLow", requiredVersion: SIGN_V1_MIN_APP_VERSION, detectedVersion });
-      throw new AutogramAppVersionTooLowException(SIGN_V1_MIN_APP_VERSION, detectedVersion);
+    if (!useV1) {
+      const unsupported = [
+        ...(request.documents.length > 1 ? ["signing multiple documents into a single container"] : []),
+        ...unsupportedLegacyParameters(request.parameters),
+      ];
+      if (unsupported.length > 0) {
+        const detectedVersion = info.version ?? "unknown";
+        log.error(`Autogram ${detectedVersion} does not support: ${unsupported.join(", ")}`);
+        onStateChange?.({ type: "appVersionTooLow", requiredVersion: SIGN_V1_MIN_APP_VERSION, detectedVersion });
+        throw new AutogramAppVersionTooLowException(SIGN_V1_MIN_APP_VERSION, detectedVersion);
+      }
     }
 
     onStateChange?.({ type: "waitingForSignature" });

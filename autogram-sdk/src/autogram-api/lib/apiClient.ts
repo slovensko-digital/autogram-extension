@@ -3,7 +3,32 @@ import fetch from "cross-fetch";
 import { getRandomBytes, toHex, toUint32 } from "./crypto/random";
 
 import { components } from "./autogram-api.generated";
-import { UserCancelledSigningException } from "../../errors";
+import {
+  AutogramSdkException,
+  UserCancelledSigningException,
+} from "../../errors";
+
+/**
+ * Autogram reports a cancelled single signature with `204` and a cancelled batch
+ * with `502` + a `BATCH_CANCELED` body. Both mean the user cancelled.
+ */
+async function parseSigningResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) {
+    throw new UserCancelledSigningException();
+  }
+  if (response.status === 502) {
+    const body = (await response.json().catch(() => undefined)) as
+      | { code?: string; message?: string }
+      | undefined;
+    if (body?.code === "BATCH_CANCELED") {
+      throw new UserCancelledSigningException();
+    }
+    throw new AutogramSdkException(
+      body?.message || "Autogram request failed with status 502"
+    );
+  }
+  return response.json() as Promise<T>;
+}
 
 /**
  * Octosign White Label API client for the app running in the server mode.
@@ -136,12 +161,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<BatchStartResponseBody>
+      );
     },
 
     endBatch(
@@ -159,7 +181,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => response.json());
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<BatchEndResponseBody>
+      );
     },
 
     /**
@@ -292,12 +316,7 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(parseSigningResponse<SignResponseBody>);
     },
 
     /**
@@ -324,12 +343,7 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(parseSigningResponse<SignResponseBody>);
     },
   };
 }

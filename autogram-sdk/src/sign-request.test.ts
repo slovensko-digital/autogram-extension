@@ -13,6 +13,7 @@ import {
   parseLegacyLevel,
   signRequestToLegacy,
   supportsSignV1,
+  unsupportedLegacyParameters,
   versionSatisfies,
 } from "./sign-request";
 
@@ -167,7 +168,7 @@ describe("signRequestToLegacy", () => {
     }
   });
 
-  it("drops v1-only fields and normalizes nulls", () => {
+  it("drops v1-only presentation hints and normalizes nulls", () => {
     const legacy = signRequestToLegacy({
       documents: [
         {
@@ -179,8 +180,8 @@ describe("signRequestToLegacy", () => {
       parameters: {
         form: "PAdES",
         container: null,
-        checkPDFEmbeddedAttachments: true,
-        requireQualifiedCertificate: true,
+        checkPDFEmbeddedAttachments: false,
+        requireQualifiedCertificate: false,
       },
     });
     assert.deepEqual(legacy, {
@@ -188,6 +189,18 @@ describe("signRequestToLegacy", () => {
       parameters: { level: "PAdES_BASELINE_B" },
       payloadMimeType: "application/pdf;base64",
     });
+  });
+
+  it("refuses to silently skip opt-in safety checks", () => {
+    for (const parameters of [
+      { requireQualifiedCertificate: true },
+      { checkPDFEmbeddedAttachments: true },
+    ]) {
+      assert.throws(
+        () => signRequestToLegacy({ documents: [{ content: "x", mimeType: "text/plain" }], parameters }),
+        AutogramSdkException
+      );
+    }
   });
 
   it("rejects anything but exactly one document", () => {
@@ -270,5 +283,23 @@ describe("versionSatisfies / supportsSignV1", () => {
     assert.equal(supportsSignV1("2.8.0"), true);
     assert.equal(supportsSignV1("2.7.6"), false);
     assert.equal(supportsSignV1(undefined), false);
+  });
+});
+
+describe("unsupportedLegacyParameters", () => {
+  it("reports only the checks that are actually enabled", () => {
+    assert.deepEqual(unsupportedLegacyParameters(undefined), []);
+    assert.deepEqual(unsupportedLegacyParameters({ form: "XAdES" }), []);
+    assert.deepEqual(
+      unsupportedLegacyParameters({ requireQualifiedCertificate: false, checkPDFEmbeddedAttachments: false }),
+      []
+    );
+    assert.deepEqual(unsupportedLegacyParameters({ requireQualifiedCertificate: true }), [
+      "requireQualifiedCertificate",
+    ]);
+    assert.deepEqual(
+      unsupportedLegacyParameters({ requireQualifiedCertificate: true, checkPDFEmbeddedAttachments: true }),
+      ["requireQualifiedCertificate", "checkPDFEmbeddedAttachments"]
+    );
   });
 });

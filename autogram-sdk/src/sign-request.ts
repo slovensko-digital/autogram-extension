@@ -153,10 +153,13 @@ export function signRequestToLegacy(request: SignRequest): LegacySignRequest {
   const params = request.parameters ?? {};
   const xdc = document.xdcParameters ?? {};
 
-  if (params.checkPDFEmbeddedAttachments !== undefined)
-    log.warn("checkPDFEmbeddedAttachments is not supported by Autogram < 2.8.0, ignored");
-  if (params.requireQualifiedCertificate !== undefined)
-    log.warn("requireQualifiedCertificate is not supported by Autogram < 2.8.0, ignored");
+  const unsupported = unsupportedLegacyParameters(request.parameters);
+  if (unsupported.length > 0) {
+    // These are opt-in safety checks – silently signing without them would be worse than failing.
+    throw new AutogramSdkException(
+      `Signature parameters ${unsupported.join(", ")} require Autogram ${SIGN_V1_MIN_APP_VERSION} or newer and are not supported by Autogram v mobile`
+    );
+  }
   if (
     xdc.schemaMimeType !== undefined &&
     isBase64MimeType(xdc.schemaMimeType) !== isBase64MimeType(document.mimeType)
@@ -178,6 +181,19 @@ export function signRequestToLegacy(request: SignRequest): LegacySignRequest {
     parameters,
     payloadMimeType: document.mimeType,
   };
+}
+
+/**
+ * Signature parameters that only `/api/v1/sign` (Autogram >= 2.8.0) can fulfil. Only enabled
+ * checks are reported – passing them as `false` matches the legacy behaviour anyway.
+ */
+export function unsupportedLegacyParameters(
+  parameters: SignV1SignatureParameters | undefined
+): string[] {
+  const unsupported: string[] = [];
+  if (parameters?.requireQualifiedCertificate) unsupported.push("requireQualifiedCertificate");
+  if (parameters?.checkPDFEmbeddedAttachments) unsupported.push("checkPDFEmbeddedAttachments");
+  return unsupported;
 }
 
 /** Legacy documents have no `mimeType`; v1 documents require it. */
