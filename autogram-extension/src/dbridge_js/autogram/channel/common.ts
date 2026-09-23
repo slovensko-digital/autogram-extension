@@ -38,8 +38,19 @@ export const ZWaitForStatusResponse = z.object({
 
 export const ZSignResponse = z.object({
   content: z.string(),
+  // not returned by Autogram < 2.8.0
+  mimeType: z.string().optional(),
+  filename: z.string().optional(),
   signedBy: z.string().default(""),
   issuedBy: z.string().default(""),
+});
+
+export const ZBatchStartResponse = z.object({
+  batchId: z.string().optional(),
+});
+
+export const ZBatchEndResponse = z.object({
+  status: z.enum(["FINISHED", "NOT_FINISHED"]).optional(),
 });
 
 declare global {

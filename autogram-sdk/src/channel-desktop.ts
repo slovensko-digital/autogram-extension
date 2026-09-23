@@ -7,6 +7,7 @@ import {
   ServerInfo,
   SignatureParameters,
   SignResponseBody,
+  SignV1RequestBody,
 } from "./autogram-api/lib/apiClient";
 import { isSafari } from "./utils";
 
@@ -81,5 +82,11 @@ export class AutogramDesktopSimpleChannel
       batchId ?? null,
       abortController ?? null
     );
+  }
+  signV1(
+    body: SignV1RequestBody,
+    abortController?: AbortController
+  ): Promise<SignResponseBody> {
+    return this.apiClient.signV1(body, abortController ?? null);
   }
 }

@@ -20,3 +20,21 @@ export class AutogramAppNotInstalledException extends AutogramSdkException {
     this.name = "AutogramAppNotInstalledException";
   }
 }
+
+export class AutogramAppVersionTooLowException extends AutogramSdkException {
+  constructor(requiredVersion: string, detectedVersion: string) {
+    super(
+      `Autogram version ${requiredVersion} or higher is required. Detected version: ${detectedVersion}`
+    );
+    this.name = "AutogramAppVersionTooLowException";
+  }
+}
+
+export class MultiDocumentSigningOnMobileException extends AutogramSdkException {
+  constructor() {
+    super(
+      "Podpisovanie viacerých dokumentov naraz je možné len v aplikácii Autogram na počítači. Otvorte túto stránku na počítači a skúste to znova."
+    );
+    this.name = "MultiDocumentSigningOnMobileException";
+  }
+}

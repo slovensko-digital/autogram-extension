@@ -1,0 +1,13 @@
+// Typechecks the unit tests run by `npm test`. They are excluded from tsconfig.json
+// (so they stay out of the build), which would otherwise leave them unchecked.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "src/*.test.ts", "package.json"],
+  "exclude": ["spec", "dist", "**/*.codemod.ts", "src/avm-api/**/*.test.ts"]
+}

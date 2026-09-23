@@ -13,7 +13,7 @@ npm install autogram-sdk
 ## Usage (module import)
 
 ```typescript
-import { CombinedClient } from ".";
+import { CombinedClient } from "autogram-sdk/with-ui";
 
 const client = await CombinedClient.init();
 
@@ -21,15 +21,42 @@ const { content, issuedBy, signedBy } = await client.sign(
   {
     content: "hello world",
     filename: "hello.txt",
+    mimeType: "text/plain",
   },
   {
-    level: "XAdES_BASELINE_B",
+    form: "XAdES",
+    profile: "BASELINE_B",
     container: "ASiC_E",
   },
-  "text/plain",
-  true
+  { decodeBase64: true }
 );
 ```
+
+### Signing multiple documents into one ASiC-E
+
+Pass an array of documents to sign them together with a single signature
+("spoločná autorizácia dokumentov"). This requires Autogram desktop app 2.8.0 or newer.
+
+```typescript
+const { content } = await client.sign(
+  [
+    { content: "<xml/>", filename: "form.xml", mimeType: "application/xml" },
+    { content: pdfBase64, filename: "attachment.pdf", mimeType: "application/pdf;base64" },
+  ],
+  { form: "XAdES", container: "ASiC_E" }
+);
+```
+
+### Compatibility with older Autogram versions
+
+The SDK detects the running Autogram version. Version 2.8.0 and newer is used through
+`POST /api/v1/sign`; older versions fall back to the legacy `POST /sign` endpoint, which
+supports one document only – signing multiple documents with an older Autogram throws
+`AutogramAppVersionTooLowException` (and shows an update prompt in the built-in UI).
+
+The legacy call shape `client.sign(document, parameters, payloadMimeType, decodeBase64)`
+with `level: "XAdES_BASELINE_B"` and XDC parameters inside `parameters` is still accepted
+and converted internally, but is deprecated.
 
 ## Usage on web (script tag)
 
@@ -42,13 +69,14 @@ const { content, issuedBy, signedBy } = await client.sign(
     {
       content: "hello world",
       filename: "hello.txt",
+      mimeType: "text/plain",
     },
     {
-      level: "XAdES_BASELINE_B",
+      form: "XAdES",
+      profile: "BASELINE_B",
       container: "ASiC_E",
     },
-    "text/plain",
-    true
+    { decodeBase64: true }
   );
 </script>
 ```
