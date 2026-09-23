@@ -18,13 +18,14 @@ async function main() {
       {
         content: await file.text(),
         filename: file.name,
+        mimeType: file.type,
       },
       {
-        level: "XAdES_BASELINE_B",
+        form: "XAdES",
+        profile: "BASELINE_B",
         container: "ASiC_E",
       },
-      file.type,
-      true
+      { decodeBase64: true }
     );
 
     console.log(signedObject);

@@ -1,8 +1,5 @@
-import {
-  DesktopSignatureParameters,
-  DesktopSignResponseBody,
-} from "autogram-sdk";
-import { CombinedClient } from "autogram-sdk/with-ui";
+import { DesktopSignatureParameters } from "autogram-sdk";
+import { CombinedClient, type SignedObject } from "autogram-sdk/with-ui";
 import { TODO } from "../../util";
 import { SigningStatus, SignRequest } from "../ditecx/sign-request";
 
@@ -76,7 +73,7 @@ async function createRestorePointHash(
 export class DBridgeAutogramImpl implements ImplementationInterface {
   private signRequest: SignRequest;
   private language = "sk";
-  private signedObject: DesktopSignResponseBody;
+  private signedObject: SignedObject;
 
   private client: CombinedClient;
 

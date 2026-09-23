@@ -9,8 +9,11 @@ import {
 import {
   AutogramDesktopIntegrationInterface,
   DesktopAutogramDocument,
+  DesktopBatchEndResponseBody,
+  DesktopBatchStartResponseBody,
   DesktopSignatureParameters,
   DesktopSignResponseBody,
+  DesktopSignV1RequestBody,
   DesktopServerInfo,
 } from "autogram-sdk";
 import {
@@ -20,6 +23,8 @@ import {
   ZChannelResponse,
   ZGetLaunchUrlResponse,
   ZGetQrCodeUrlResponse,
+  ZBatchEndResponse,
+  ZBatchStartResponse,
   ZSignResponse,
   ZWaitForSignatureResponse,
   ZWaitForStatusResponse,
@@ -94,9 +99,48 @@ export class AutogramDesktopChannel
       args: { document, signatureParameters, payloadMimeType },
       app: "autogram",
     });
-    const response = ZSignResponse.parse(obj);
+    // mimeType is only returned by Autogram >= 2.8.0
+    const response = ZSignResponse.parse(obj) as DesktopSignResponseBody;
     log.debug("sign response", obj, response);
     return response;
+  }
+
+  async signV1(
+    body: DesktopSignV1RequestBody
+    // abortController?: AbortController
+  ): Promise<DesktopSignResponseBody> {
+    const obj = await this.channel.sendMessage({
+      method: "signV1",
+      args: { body },
+      app: "autogram",
+    });
+    const response = ZSignResponse.parse(obj) as DesktopSignResponseBody;
+    log.debug("signV1 response", obj, response);
+    return response;
+  }
+
+  async startBatch(
+    totalNumberOfDocuments: number
+    // abortController?: AbortController
+  ): Promise<DesktopBatchStartResponseBody> {
+    const obj = await this.channel.sendMessage({
+      method: "startBatch",
+      args: { totalNumberOfDocuments },
+      app: "autogram",
+    });
+    return ZBatchStartResponse.parse(obj);
+  }
+
+  async endBatch(
+    batchId: string
+    // abortController?: AbortController
+  ): Promise<DesktopBatchEndResponseBody> {
+    const obj = await this.channel.sendMessage({
+      method: "endBatch",
+      args: { batchId },
+      app: "autogram",
+    });
+    return ZBatchEndResponse.parse(obj);
   }
 }
 

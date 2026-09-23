@@ -300,17 +300,19 @@ export function apiClient(options?: ApiClientConfiguration) {
       });
     },
 
+    /**
+     * Signs one or more documents via `POST /api/v1/sign` (Autogram >= 2.8.0).
+     * Multiple documents are signed together into a single ASiC_E container.
+     */
     signV1(
-      documents: VersionedAutogramDocument[],
-      parameters: VersionedSignatureParameters = {},
-      batchId: string | null = null,
+      body: SignV1RequestBody,
       abortController: AbortController | null = null
     ): Promise<SignResponseBody> {
       const url = new URL("api/v1/sign", serverUrl);
 
-      const body: VersionedSignRequestBody = {
-        documents: documents,
-        parameters: parameters,
+      const { batchId, ...rest } = body;
+      const requestBody: SignV1RequestBody = {
+        ...rest,
         ...(batchId ? { batchId } : {}),
       };
 
@@ -318,7 +320,7 @@ export function apiClient(options?: ApiClientConfiguration) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestBody),
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
@@ -429,41 +431,24 @@ export type ServerInfo = components["schemas"]["Info"];
 /**
  * Document exchanged during the signing.
  */
-export type AutogramDocument = components["schemas"]["Document"];
+export type AutogramDocument = components["schemas"]["LegacyDocument"];
 
 /**
  * Parameters used to create a signature.
  */
-export type SignatureParameters = components["schemas"]["SignatureParameters"];
-type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
+export type SignatureParameters = components["schemas"]["LegacySignatureParameters"];
+type AutogramSignRequestBody = components["schemas"]["LegacyDocumentSignRequestBody"];
 export type SignResponseBody = components["schemas"]["SignResponseBody"];
-export type VisibleSignatureImage = {
-  filename?: string;
-  content: string;
-  mimeType: string;
-};
-
-export type VisibleSignature = {
-  fieldId: string;
-  text?: string;
-  image?: VisibleSignatureImage;
-};
-
-export type VersionedAutogramDocument = {
-  filename?: string;
-  content: string;
-  mimeType: string;
-  xdcParameters?: Record<string, unknown>;
-  visibleSignature?: VisibleSignature;
-};
-
-export type VersionedSignatureParameters = Record<string, unknown>;
-
-export type VersionedSignRequestBody = {
-  batchId?: string;
-  documents: VersionedAutogramDocument[];
-  parameters?: VersionedSignatureParameters;
-};
+/*
+ * Types for `POST /api/v1/sign` (Autogram >= 2.8.0). Unlike the legacy `/sign` endpoint,
+ * XDC/eForm parameters are attached to each document instead of the shared signature parameters,
+ * and multiple documents may be signed together into a single ASiC_E container.
+ */
+export type SignV1Document = components["schemas"]["Document"];
+export type SignV1XDCParameters = components["schemas"]["XDCParameters"];
+export type SignV1SignatureParameters = components["schemas"]["SignatureParameters"];
+export type SignV1PresentationParameters = components["schemas"]["PresentationParameters"];
+export type SignV1RequestBody = components["schemas"]["DocumentsSignRequestBody"];
 
 /**
  * Represents the current state of the desktop signing process.

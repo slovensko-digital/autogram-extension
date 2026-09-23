@@ -29,3 +29,12 @@ export class AutogramAppVersionTooLowException extends AutogramSdkException {
     this.name = "AutogramAppVersionTooLowException";
   }
 }
+
+export class MultiDocumentSigningOnMobileException extends AutogramSdkException {
+  constructor() {
+    super(
+      "Podpisovanie viacerých dokumentov naraz je možné len v aplikácii Autogram na počítači. Otvorte túto stránku na počítači a skúste to znova."
+    );
+    this.name = "MultiDocumentSigningOnMobileException";
+  }
+}

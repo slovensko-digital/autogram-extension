@@ -1,12 +1,13 @@
-import { version } from "js-base64";
 import type {
   AutogramDesktopIntegrationInterface,
   AutogramDocument,
   BatchEndResponseBody,
+  ServerInfo,
   SignResponseBody,
   SignatureParameters,
-  VersionedAutogramDocument,
-  VersionedSignatureParameters,
+  SignV1Document,
+  SignV1PresentationParameters,
+  SignV1SignatureParameters,
   DesktopSigningState,
   DesktopSigningStateConsumer,
 } from "./autogram-api/index";
@@ -17,6 +18,14 @@ import {
   UserCancelledSigningException,
 } from "./errors";
 import { createLogger } from "./log";
+import {
+  SIGN_V1_MIN_APP_VERSION,
+  normalizeSignArgs,
+  signRequestToLegacy,
+  supportsSignV1,
+  versionSatisfies,
+  type SignRequest,
+} from "./sign-request";
 import { waitForWindowBlur } from "./utils";
 
 const log = createLogger("ag-sdk.DesktopClient");
@@ -29,6 +38,8 @@ export type DesktopSignOptions = {
   onDesktopStateChange?: DesktopSigningStateConsumer;
   abortController?: AbortController;
   batchId?: string;
+  /** How Autogram presents the documents before signing (Autogram >= 2.8.0; mapped to `visualizationWidth` for older versions). */
+  presentation?: SignV1PresentationParameters;
 };
 
 export class DesktopClient {
@@ -36,74 +47,93 @@ export class DesktopClient {
     private clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel()
   ) {}
 
-  async sign(
+  /**
+   * Signs one or more documents. Multiple documents are signed together into a single ASiC_E
+   * container ("spoločná autorizácia dokumentov").
+   *
+   * Autogram >= 2.8.0 is used via `POST /api/v1/sign`. Older versions fall back to the legacy
+   * `POST /sign` endpoint, which supports one document only – signing multiple documents with an
+   * older Autogram emits the `appVersionTooLow` state and throws {@link AutogramAppVersionTooLowException}.
+   */
+  sign(
+    documents: SignV1Document | SignV1Document[],
+    parameters?: SignV1SignatureParameters,
+    options?: DesktopSignOptions
+  ): Promise<SignResponseBody>;
+  /**
+   * @deprecated Legacy call shape of the `/sign` endpoint (`payloadMimeType` and XDC parameters
+   * outside the document). Converted to the v1 shape internally; prefer the `documents` overload.
+   * The overload is detected at runtime by the absence of `mimeType` on the document.
+   */
+  sign(
     document: AutogramDocument,
     signatureParameters?: SignatureParameters,
     payloadMimeType?: string,
     options?: DesktopSignOptions
+  ): Promise<SignResponseBody>;
+  async sign(
+    first: SignV1Document | SignV1Document[] | AutogramDocument,
+    second?: SignV1SignatureParameters | SignatureParameters,
+    third?: string | DesktopSignOptions,
+    fourth?: DesktopSignOptions
   ): Promise<SignResponseBody> {
-    const onStateChange =
-      options?.onStateChange ?? options?.onDesktopStateChange;
-    const abortController = options?.abortController;
-
-    await this.launch(abortController, onStateChange);
-    onStateChange?.({ type: "waitingForSignature" });
-
-    return this.clientDesktopIntegration
-      .sign(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        options?.batchId,
-        abortController ?? undefined
-      )
-      .catch((error) => {
-        if (error instanceof UserCancelledSigningException) {
-          log.info("User cancelled signing");
-          onStateChange?.({ type: "signingCancelled" });
-        } else {
-          log.error("sign failed", error);
-          onStateChange?.({
-            type: "error",
-            message: (error as Error)?.message ?? String(error),
-          });
-        }
-        throw error;
-      });
+    const { request, options } = normalizeSignArgs(first, second, third, fourth);
+    return this.signRequest(request, options);
   }
 
-  // signV1 exists in Autogram versions > 2.8.0 and is not supported by older versions. sign() should be used for maximum compatibility - single document signing. If Autgoram od an older version is running, signV1 will throw an error which should be handled by the caller (e.g. by falling back to sign() or showing a message to the user). signV1 is intended to be used with newer Autogram versions and supports multiple document signing and additional parameters.
-  async signV1(
-    documents: VersionedAutogramDocument[],
-    parameters: VersionedSignatureParameters,
+  private async signRequest(
+    request: SignRequest,
     options?: DesktopSignOptions
   ): Promise<SignResponseBody> {
     const onStateChange = options?.onStateChange ?? options?.onDesktopStateChange;
     const abortController = options?.abortController;
 
-    await this.launch(abortController, onStateChange, { minimumAppVersion: "2.8.0" });
-    onStateChange?.({ type: "waitingForSignature" });
+    const info = await this.launch(abortController, onStateChange);
+    const useV1 = supportsSignV1(info.version);
 
-    return this.clientDesktopIntegration
-      .signV1(
-        documents,
-        parameters,
+    if (!useV1 && request.documents.length > 1) {
+      const detectedVersion = info.version ?? "unknown";
+      onStateChange?.({ type: "appVersionTooLow", requiredVersion: SIGN_V1_MIN_APP_VERSION, detectedVersion });
+      throw new AutogramAppVersionTooLowException(SIGN_V1_MIN_APP_VERSION, detectedVersion);
+    }
+
+    onStateChange?.({ type: "waitingForSignature" });
+    log.info(
+      `Signing ${request.documents.length} document(s) via ${useV1 ? "/api/v1/sign" : "/sign"} (Autogram ${info.version ?? "unknown"})`
+    );
+
+    let result: Promise<SignResponseBody>;
+    if (useV1) {
+      result = this.clientDesktopIntegration.signV1(
+        { ...request, ...(options?.batchId ? { batchId: options.batchId } : {}) },
+        abortController ?? undefined
+      );
+    } else {
+      const legacy = signRequestToLegacy(request);
+      result = this.clientDesktopIntegration.sign(
+        legacy.document,
+        legacy.parameters,
+        legacy.payloadMimeType,
         options?.batchId,
         abortController ?? undefined
-      )
-      .catch((error) => {
-        if (error instanceof UserCancelledSigningException) {
-          log.info("User cancelled signing");
-          onStateChange?.({ type: "signingCancelled" });
-        } else {
-          log.error("sign failed", error);
-          onStateChange?.({
-            type: "error",
-            message: (error as Error)?.message ?? String(error),
-          });
-        }
-        throw error;
+      );
+    }
+
+    return result.catch((error) => this.reportSignError(error, onStateChange));
+  }
+
+  private reportSignError(error: unknown, onStateChange?: DesktopSigningStateConsumer): never {
+    if (error instanceof UserCancelledSigningException) {
+      log.info("User cancelled signing");
+      onStateChange?.({ type: "signingCancelled" });
+    } else {
+      log.error("sign failed", error);
+      onStateChange?.({
+        type: "error",
+        message: (error as Error)?.message ?? String(error),
       });
+    }
+    throw error;
   }
 
   async startBatch(
@@ -151,11 +181,16 @@ export class DesktopClient {
     );
   }
 
+  /**
+   * Makes sure Autogram is running (launching it if needed) and returns its info.
+   * With `minimumAppVersion` an older Autogram emits `appVersionTooLow` and throws
+   * {@link AutogramAppVersionTooLowException}.
+   */
   async launch(
     abortController?: AbortController,
     onStateChange?: DesktopSigningStateConsumer,
     options?: { minimumAppVersion?: string }
-  ): Promise<void> {
+  ): Promise<ServerInfo> {
     onStateChange?.({ type: "checkingApp" });
 
     try {
@@ -164,27 +199,13 @@ export class DesktopClient {
         throw new Error("Wait for server");
       }
       log.info(`Autogram ${info.version} is ready`);
-
-      if (options?.minimumAppVersion && info.version) {
-        log.info(`Minimum app version required: ${options.minimumAppVersion}, detected version: ${info.version}`);
-        if (info.version === "dev")
-          return; // skip version check for dev builds, as they may not follow semver format
-
-        if (!DesktopClient.versionSatisfies(info.version, options.minimumAppVersion)) {
-          onStateChange?.({ type: "appVersionTooLow", requiredVersion: options.minimumAppVersion, detectedVersion: info.version });
-          throw new AutogramAppVersionTooLowException(options.minimumAppVersion, info.version);
-        }
-      } else {
-        log.info("No minimum app version specified, skipping version check")
-      }
-
-      return;
+      this.assertMinimumAppVersion(info, options?.minimumAppVersion, onStateChange);
+      return info;
     } catch (error) {
-      log.error("Desktop readiness check failed", error);
-
       if (error instanceof AutogramAppVersionTooLowException) {
         throw error;
       }
+      log.error("Desktop readiness check failed", error);
     }
 
     onStateChange?.({ type: "launchingApp" });
@@ -205,8 +226,9 @@ export class DesktopClient {
       }
     });
 
+    let info: ServerInfo;
     try {
-      const info = await this.clientDesktopIntegration.waitForStatus(
+      info = await this.clientDesktopIntegration.waitForStatus(
         "READY",
         APP_LAUNCH_READY_TIMEOUT_SECONDS,
         APP_LAUNCH_READY_POLL_DELAY_SECONDS,
@@ -214,19 +236,6 @@ export class DesktopClient {
       );
       launchFinished = true;
       log.info(`Autogram ${info.version} is ready`);
-
-      if (options?.minimumAppVersion && info.version) {
-        log.info(`Minimum app version required: ${options.minimumAppVersion}, detected version: ${info.version}`);
-        if (info.version === "dev")
-          return; // skip version check for dev builds, as they may not follow semver format
-
-        if (!DesktopClient.versionSatisfies(info.version, options.minimumAppVersion)) {
-          onStateChange?.({ type: "appVersionTooLow", requiredVersion: options.minimumAppVersion, detectedVersion: info.version });
-          throw new AutogramAppVersionTooLowException(options.minimumAppVersion, info.version);
-        }
-      } else {
-        log.info("No minimum app version specified, skipping version check")
-      }
     } catch (error) {
       launchFinished = true;
       if (abortController?.signal.aborted) {
@@ -236,12 +245,30 @@ export class DesktopClient {
       onStateChange?.({ type: "appNotInstalled" });
       throw new AutogramAppNotInstalledException();
     }
+
+    // Outside the try/catch so that an old version is not reported as "not installed"
+    this.assertMinimumAppVersion(info, options?.minimumAppVersion, onStateChange);
+    return info;
+  }
+
+  private assertMinimumAppVersion(
+    info: ServerInfo,
+    minimumAppVersion: string | undefined,
+    onStateChange?: DesktopSigningStateConsumer
+  ): void {
+    if (!minimumAppVersion) return;
+    const detectedVersion = info.version ?? "unknown";
+    log.info(`Minimum app version required: ${minimumAppVersion}, detected version: ${detectedVersion}`);
+    if (detectedVersion === "dev") return; // dev builds do not follow semver
+
+    if (!versionSatisfies(detectedVersion, minimumAppVersion)) {
+      onStateChange?.({ type: "appVersionTooLow", requiredVersion: minimumAppVersion, detectedVersion });
+      throw new AutogramAppVersionTooLowException(minimumAppVersion, detectedVersion);
+    }
   }
 
   static versionSatisfies(version: string, requiredVersion: string): boolean {
-    let actual = version.split(".");
-    let required = requiredVersion.split(".");
-    return Number(actual[0]) >= Number(required[0]) && Number(actual[1]) >= Number(required[1]) && Number(actual[2]) >= Number(required[2]);
+    return versionSatisfies(version, requiredVersion);
   }
 
   static stateType(_state: DesktopSigningState): _state is DesktopSigningState {

@@ -5,10 +5,11 @@
  */
 
 import type {
-  SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
   SignResponseBody as DesktopSignResponseBody,
   SignatureParameters,
+  SignV1Document,
+  SignV1SignatureParameters,
 } from "./autogram-api/index";
 
 import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
@@ -25,12 +26,28 @@ import { DesktopClient, type DesktopSignOptions } from "./desktop-client";
 import { createLogger } from "./log";
 import {
   AutogramAppNotInstalledException,
+  AutogramAppVersionTooLowException,
   AutogramSdkException,
+  MultiDocumentSigningOnMobileException,
   UserCancelledSigningException,
 } from "./errors";
+import {
+  normalizeSignArgs,
+  signRequestToLegacy,
+  type SignRequest,
+} from "./sign-request";
+import { isMobileDevice } from "./utils";
 import packageJson from "../package.json";
 
-export type SignedObject = DesktopSignResponseBody;
+// mimeType is always returned by the desktop app, but not by AVM
+export type SignedObject = Omit<DesktopSignResponseBody, "mimeType"> & {
+  mimeType?: string;
+};
+
+export type CombinedSignOptions = DesktopSignOptions & {
+  /** If true the signed content is base64-decoded, otherwise it stays base64 encoded (default false). */
+  decodeBase64?: boolean;
+};
 // We have to leave this in because otherwise the custom elements are not registered
 export { AutogramRoot } from "./injected-ui/main";
 
@@ -143,26 +160,57 @@ export class CombinedClient {
   }
 
   /**
+   * Signs one or more documents, letting the user choose between the desktop app and
+   * Autogram v mobile. Multiple documents (signed together into a single ASiC_E container)
+   * can only be signed with the desktop app, so the method choice is skipped for them.
    *
+   * Autogram >= 2.8.0 is used via `POST /api/v1/sign`; older versions fall back to the legacy
+   * `POST /sign` endpoint for a single document and throw {@link AutogramAppVersionTooLowException}
+   * for multiple documents.
+   */
+  public sign(
+    documents: SignV1Document | SignV1Document[],
+    parameters?: SignV1SignatureParameters,
+    options?: CombinedSignOptions
+  ): Promise<SignedObject>;
+  /**
+   * @deprecated Legacy call shape of the `/sign` endpoint; converted internally. Prefer the `documents` overload.
    * @param document document to sign
    * @param signatureParameters how to sign the document
    * @param payloadMimeType mime type of the input document
    * @param decodeBase64 if false the content will be (stay) base64 encoded, if true we will decode it
-   * @returns
    */
-  public async sign(
+  public sign(
     document: DesktopAutogramDocument,
     signatureParameters: SignatureParameters,
     payloadMimeType: string,
-    decodeBase64 = false,
+    decodeBase64?: boolean,
     options?: DesktopSignOptions
-  ) {
+  ): Promise<SignedObject>;
+  public async sign(
+    first: SignV1Document | SignV1Document[] | DesktopAutogramDocument,
+    second?: SignV1SignatureParameters | SignatureParameters,
+    third?: string | CombinedSignOptions,
+    fourth?: boolean | DesktopSignOptions,
+    fifth?: DesktopSignOptions
+  ): Promise<SignedObject> {
+    let request: SignRequest;
+    let options: CombinedSignOptions | undefined;
+    let decodeBase64: boolean;
+    if (typeof third === "string") {
+      // legacy shape: (document, parameters, payloadMimeType, decodeBase64?, options?)
+      ({ request } = normalizeSignArgs(first, second, third));
+      decodeBase64 = typeof fourth === "boolean" ? fourth : false;
+      options = fifth;
+    } else {
+      ({ request, options } = normalizeSignArgs(first, second, third));
+      decodeBase64 = options?.decodeBase64 ?? false;
+    }
+
     try {
       const signedObject = await this.signBasedOnUserChoice(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        options?.onDesktopStateChange
+        request,
+        options?.onDesktopStateChange ?? options?.onStateChange
       );
       return {
         ...signedObject,
@@ -178,6 +226,10 @@ export class CombinedClient {
       } else if (e instanceof AutogramAppNotInstalledException) {
         log.error("Autogram app not installed", e);
         throw e;
+      } else if (e instanceof AutogramAppVersionTooLowException) {
+        // the reader screen already shows the appVersionTooLow state
+        log.error("Autogram app version too low", e);
+        throw e;
       } else if (e instanceof AutogramSdkException) {
         this.ui.showError(e.message);
       }
@@ -187,16 +239,24 @@ export class CombinedClient {
   }
 
   private async signBasedOnUserChoice(
-    document: DesktopAutogramDocument,
-    signatureParameters: SignatureParameters,
-    payloadMimeType: string,
+    request: SignRequest,
     onDesktopStateChange?: DesktopSigningStateConsumer
   ) {
-    // TODO: remove
-    log.debug("sign", this.ui);
-    const signingMethod = await this.ui.startSigning();
+    const multiDocument = request.documents.length > 1;
+    if (multiDocument && isMobileDevice()) {
+      // the error screen is shown by the caller via ui.showError()
+      this.ui.show();
+      throw new MultiDocumentSigningOnMobileException();
+    }
 
-    log.debug("User chose signing method", signingMethod);
+    let signingMethod: SigningMethod;
+    if (multiDocument) {
+      log.info("Multiple documents can only be signed with the desktop app, skipping method choice");
+      signingMethod = SigningMethod.reader;
+    } else {
+      signingMethod = await this.ui.startSigning();
+      log.debug("User chose signing method", signingMethod);
+    }
 
     const abortController = new AbortController();
     if (signingMethod === SigningMethod.reader) {
@@ -206,27 +266,12 @@ export class CombinedClient {
       };
 
       this.ui.desktopSigning(abortController);
-      return this.getSignatureDesktop(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        abortController,
-        stateConsumer
-      );
+      if (multiDocument) this.ui.show(); // startSigning() was skipped, so nothing has shown the dialog yet
+      return this.getSignatureDesktop(request, abortController, stateConsumer);
     } else if (signingMethod === SigningMethod.mobile) {
-      return this.getSignatureMobile(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        abortController
-      );
+      return this.getSignatureMobile(request, abortController);
     } else if (signingMethod === SigningMethod.mobileOnMobile) {
-      return this.getSignatureMobileOnMobile(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        abortController
-      );
+      return this.getSignatureMobileOnMobile(request, abortController);
     } else {
       log.debug("Invalid signing method");
       throw new Error("Invalid signing method");
@@ -250,20 +295,18 @@ export class CombinedClient {
   }
 
   private async getSignatureDesktop(
-    document: DesktopAutogramDocument,
-    signatureParameters: DesktopSignatureParameters,
-    payloadMimeType: string,
+    request: SignRequest,
     abortController: AbortController,
     onStateChange?: DesktopSigningStateConsumer
   ): Promise<SignedObject> {
     log.info("getSignatureDesktop");
     const signedObject = await this.desktopClient.sign(
-      document,
-      signatureParameters,
-      payloadMimeType,
+      request.documents,
+      request.parameters,
       {
         abortController,
         onStateChange,
+        presentation: request.presentation,
       }
     );
 
@@ -278,17 +321,11 @@ export class CombinedClient {
   }
 
   private async getSignatureMobile(
-    document: DesktopAutogramDocument,
-    signatureParameters: DesktopSignatureParameters,
-    payloadMimeType: string,
+    request: SignRequest,
     abortController: AbortController
   ): Promise<SignedObject> {
     try {
-      const url = await this.getSignatureMobileAvmUrl(
-        signatureParameters,
-        document,
-        payloadMimeType
-      );
+      const url = await this.getSignatureMobileAvmUrl(request);
       // TODO when the user closes the UI we should abort the signing ??
       this.ui.showQRCode(url, abortController);
 
@@ -300,17 +337,11 @@ export class CombinedClient {
   }
 
   private async getSignatureMobileOnMobile(
-    document: DesktopAutogramDocument,
-    signatureParameters: DesktopSignatureParameters,
-    payloadMimeType: string,
+    request: SignRequest,
     abortController: AbortController
   ): Promise<SignedObject> {
     try {
-      const url = await this.getSignatureMobileAvmUrl(
-        signatureParameters,
-        document,
-        payloadMimeType
-      );
+      const url = await this.getSignatureMobileAvmUrl(request);
 
       this.ui.openMobileOnMobile(url, abortController);
       window.open(url, "_blank", "noopener");
@@ -323,18 +354,23 @@ export class CombinedClient {
   }
 
   private async getSignatureMobileAvmUrl(
-    signatureParameters: SignatureParameters,
-    document: { filename?: string; content: string },
-    payloadMimeType: string
+    request: SignRequest
     // TODO add abortController here?
   ) {
-    const params = signatureParameters;
+    // AVM only knows the legacy single-document shape
+    const { document, parameters: params, payloadMimeType } = signRequestToLegacy(request);
     const container =
       params.container == null
         ? null
         : params.container == "ASiC_E"
           ? "ASiC-E"
           : "ASiC-S";
+    // AVM does not support the form-less BASELINE_B / BASELINE_T levels accepted by the desktop app
+    let level = params.level;
+    if (level === "BASELINE_B" || level === "BASELINE_T") {
+      log.warn(`Signature level ${level} is not supported by AVM, using AVM default`);
+      level = undefined;
+    }
 
     await this.clientMobileIntegration.loadOrRegister();
     await this.clientMobileIntegration.addDocument({
@@ -342,6 +378,7 @@ export class CombinedClient {
       parameters: {
         ...params,
         container: container ?? undefined,
+        level,
       },
       payloadMimeType: payloadMimeType,
     });

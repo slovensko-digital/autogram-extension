@@ -244,10 +244,11 @@
         const client = new DesktopClient();
 
         try {
+          // Legacy call shape still works too:
+          // client.sign({ content, filename }, { level: "PAdES_BASELINE_B" }, "application/pdf;base64", options)
           const signed = await client.sign(
-            { content, filename: file.name },
-            { level: "PAdES_BASELINE_B", checkPDFACompliance: false },
-            "application/pdf;base64",
+            { content, filename: file.name, mimeType: "application/pdf;base64" },
+            { form: "PAdES", profile: "BASELINE_B", checkPDFACompliance: false },
             {
               abortController,
               onStateChange(state) {
@@ -270,6 +271,11 @@
                   setDot("launching", "error");
                   installBanner.classList.add("visible");
                   cancelBtn.classList.remove("visible");
+                }
+                if (state.type === "appVersionTooLow") {
+                  setDot("checking", "error");
+                  cancelBtn.classList.remove("visible");
+                  alert(`Autogram ${state.requiredVersion} alebo novší je potrebný, nainštalovaná verzia: ${state.detectedVersion}`);
                 }
                 if (state.type === "signingCancelled") {
                   STEPS.forEach(s => setDot(s, "idle"));

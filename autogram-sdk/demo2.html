@@ -68,13 +68,13 @@
             {
               content: (await toBase64(file)).split(",")[1],
               filename: file.name,
+              mimeType: "application/pdf;base64",
             },
             {
-              level: "PAdES_BASELINE_B",
+              form: "PAdES",
+              profile: "BASELINE_B",
               checkPDFACompliance: false,
-            },
-            "application/pdf;base64",
-            false
+            }
           );
           showSignedObject(signedObject, file.name);
         });

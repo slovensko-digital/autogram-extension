@@ -28,7 +28,8 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc -p tsconfig.test.json",
     "build": "tsdown",
     "build:watch": "npm run build -- --watch",
     "build:release": "NODE_ENV=production $(rm -r dist || true) && npm run build -- --env.NODE_ENV production",
@@ -62,7 +63,8 @@
     "tsdown": "^0.21.6",
     "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "4.4.1",
-    "typedoc-umlclass": "^0.10.1"
+    "typedoc-umlclass": "^0.10.1",
+    "tsx": "^4.21.0"
   },
   "dependencies": {
     "@bwip-js/generic": "^4.5.1",

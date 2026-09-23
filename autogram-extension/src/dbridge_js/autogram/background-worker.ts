@@ -2,9 +2,11 @@ import { z } from "zod";
 import { desktopApiClient, AutogramVMobileIntegration, } from "autogram-sdk";
 
 import type {
-  
   AVMDocumentToSign,
+  DesktopBatchEndResponseBody,
+  DesktopBatchStartResponseBody,
   DesktopSignResponseBody,
+  DesktopSignV1RequestBody,
   DesktopServerInfo,
   AVMIntegrationDocument,
 } from "autogram-sdk";
@@ -511,6 +513,33 @@ class AutogramExecutor {
         payloadMimeType
       );
     },
+    signV1: async (
+      args: unknown,
+      senderId: SenderId
+    ): Promise<DesktopSignResponseBody> => {
+      const { body } = z.object({ body: ZSignV1RequestBody }).parse(args);
+      const abortController = new AbortController();
+      this.abortControllers.set(senderId, abortController);
+      return this.client.signV1(
+        body as DesktopSignV1RequestBody,
+        abortController
+      );
+    },
+    startBatch: async (
+      args: unknown,
+      senderId: SenderId
+    ): Promise<DesktopBatchStartResponseBody> => {
+      const { totalNumberOfDocuments } = z
+        .object({ totalNumberOfDocuments: z.number() })
+        .parse(args);
+      const abortController = new AbortController();
+      this.abortControllers.set(senderId, abortController);
+      return this.client.startBatch(totalNumberOfDocuments, abortController);
+    },
+    endBatch: async (args: unknown): Promise<DesktopBatchEndResponseBody> => {
+      const { batchId } = z.object({ batchId: z.string() }).parse(args);
+      return this.client.endBatch(batchId);
+    },
   };
 }
 
@@ -571,6 +600,25 @@ const ZAutogramDocument = z.object({
 /**
  * Desktop Autogram Signature Params
  */
+/**
+ * `POST /api/v1/sign` request body. Deliberately loose – the desktop app validates it.
+ */
+const ZSignV1RequestBody = z.object({
+  batchId: z.string().optional(),
+  documents: z
+    .array(
+      z.object({
+        filename: z.string().optional(),
+        content: z.string(),
+        mimeType: z.string(),
+        xdcParameters: z.record(z.unknown()).optional(),
+      })
+    )
+    .min(1),
+  parameters: z.record(z.unknown()).optional(),
+  presentation: z.record(z.unknown()).optional(),
+});
+
 const ZSignatureParameters = z.object({
   checkPDFACompliance: z.boolean().optional(),
   autoLoadEform: z.boolean().optional(),
