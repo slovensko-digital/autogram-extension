@@ -5,7 +5,7 @@
  */
 
 import type {
-  AutogramDocument as DesktopAutogramDocument,
+  PresentationParameters,
   SignatureParameters,
   DesktopSigningStateConsumer,
 } from "./autogram-api/index";
@@ -14,19 +14,17 @@ import type {
   SignedDocumentResult,
   SignedObject,
 } from "./types";
-import { toLegacySignedObject, toPayloadMimeType } from "./types";
 
 import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
 import { AvmSimpleChannel } from "./channel-avm";
-import { Base64 } from "js-base64";
 import { AutogramRoot } from "./injected-ui/main";
 import type { AutogramDesktopIntegrationInterface } from "./autogram-api/index";
 import { AutogramDesktopSimpleChannel } from "./channel-desktop";
-import type { DesktopSignOptions } from "./desktop-client";
 import { SigningFlow, SigningState } from "./flow";
 import { createLogger } from "./log";
 import { AutogramError } from "./errors";
-import { waitForDocumentBody } from "./utils";
+import { toSignRequest } from "./sign-request";
+import { isMobileDevice, waitForDocumentBody } from "./utils";
 import packageJson from "../package.json";
 import { AvmRegistrationInfo } from "./avm-api/lib/apiClient";
 
@@ -81,6 +79,11 @@ export interface ClientSignOptions {
   signal?: AbortSignal;
   /** Desktop launch/signing progress updates. */
   onState?: DesktopSigningStateConsumer;
+  /**
+   * How the desktop app presents the documents before signing
+   * (Autogram >= 2.8.0; mapped to `visualizationWidth` for older versions).
+   */
+  presentation?: PresentationParameters;
 }
 
 /**
@@ -136,7 +139,11 @@ export class CombinedClient {
           this.handleFlowState(state, abortController),
         confirmRestorePoint: () => this.ui.maybeRestoreRestorePoint(),
       },
-      { platform: options.platform, displayName: options.displayName }
+      {
+        platform: options.platform,
+        displayName: options.displayName,
+        isMobileDevice,
+      }
     );
 
     this.clientMobileIntegration.init();
@@ -233,11 +240,21 @@ export class CombinedClient {
   }
 
   /**
-   * Signs a document (unified form). The result keeps every signer and
-   * the MIME type of the signed artifact.
+   * Signs one or more documents. The result keeps every signer and the
+   * MIME type of the signed artifact.
    *
-   * @param document document to sign, with its own `mimeType`/`encoding`
-   * @param parameters how to sign the document
+   * Pass an array to sign multiple documents together into a single ASiC_E
+   * container with one signature ("spoločná autorizácia dokumentov"). This
+   * needs the Autogram desktop app 2.8.0 or newer, so the method chooser is
+   * skipped; on mobile devices it fails with `not-supported`.
+   *
+   * Callers holding legacy `POST /sign`-shaped input (`level`, XDC fields in
+   * the parameters, `payloadMimeType`) can convert it with
+   * `fromLegacySignArgs()` / `fromLegacySignatureParameters()`.
+   *
+   * @param documents document(s) to sign, each with its own
+   * `mimeType`/`encoding` and optional `xdcParameters`
+   * @param parameters how to sign (`form`, `profile`, `container`, …)
    * @throws `AutogramError` — always carries a machine-readable `code`;
    * classify with `AutogramError.is()` rather than `instanceof`. Codes
    * that can surface here:
@@ -246,74 +263,37 @@ export class CombinedClient {
    *   closed, `AbortSignal`, page close)
    * - `timeout` — the signing operation did not finish in time
    * - `app-not-installed` — the Autogram desktop app could not be launched
+   * - `app-version-too-low` — the desktop app is too old for the request
+   *   (multiple documents, v1-only checks)
+   * - `not-supported` — the chosen signing method cannot fulfil the
+   *   request (multiple documents on a mobile device, v1-only checks with
+   *   Autogram v mobile)
    * - `connection-failed` — a network request to a signing backend failed
    * - `protocol-error` — an unexpected response shape or bridge failure
    * - `server-error` — a signing backend reported an error
    * - `unknown` — anything that cannot be classified more precisely
    */
   public async sign(
-    document: DocumentToSign,
+    documents: DocumentToSign | DocumentToSign[],
     parameters?: SignatureParameters,
     options?: ClientSignOptions
-  ): Promise<SignedDocumentResult>;
-  /**
-   * Signs a document (legacy positional form).
-   *
-   * @param document document to sign
-   * @param signatureParameters how to sign the document
-   * @param payloadMimeType mime type of the input document
-   * @param decodeBase64 if false the content will be (stay) base64 encoded, if true we will decode it
-   * @throws `AutogramError` — see the unified `sign()` overload for the
-   * full list of error codes this can carry.
-   * @deprecated Prefer the unified form: `sign(document, parameters?, options?)`
-   * with the MIME type on the document.
-   */
-  public async sign(
-    document: DesktopAutogramDocument,
-    signatureParameters: SignatureParameters,
-    payloadMimeType: string,
-    decodeBase64?: boolean,
-    options?: DesktopSignOptions
-  ): Promise<SignedObject>;
-  public async sign(
-    document: DocumentToSign | DesktopAutogramDocument,
-    parametersArg?: SignatureParameters,
-    mimeTypeOrOptions?: string | ClientSignOptions,
-    decodeBase64 = false,
-    legacyOptions?: DesktopSignOptions
-  ): Promise<SignedDocumentResult | SignedObject> {
-    const isLegacyForm = typeof mimeTypeOrOptions === "string";
+  ): Promise<SignedDocumentResult> {
     try {
       this.desktopScreenActive = false;
 
-      if (isLegacyForm) {
-        const result = await this.flow.sign(
-          document as DesktopAutogramDocument,
-          parametersArg ?? {},
-          mimeTypeOrOptions,
-          { onDesktopStateChange: legacyOptions?.onDesktopStateChange }
-        );
-        this.afterSuccessfulSignature();
-        const signedObject = toLegacySignedObject(result);
-        return {
-          ...signedObject,
-          content: decodeBase64
-            ? Base64.decode(signedObject.content)
-            : signedObject.content,
-        };
-      }
-
-      const unifiedDocument = document as DocumentToSign;
-      const options = mimeTypeOrOptions;
-      const result = await this.flow.sign(
-        {
-          content: unifiedDocument.content,
-          filename: unifiedDocument.filename,
-        },
-        parametersArg ?? {},
-        toPayloadMimeType(unifiedDocument),
-        { onDesktopStateChange: options?.onState, signal: options?.signal }
+      const request = toSignRequest(
+        documents,
+        parameters,
+        options?.presentation
       );
+      if (request.documents.length > 1) {
+        // the method chooser is skipped, so nothing else opens the dialog
+        this.ui.show();
+      }
+      const result = await this.flow.sign(request, {
+        onDesktopStateChange: options?.onState,
+        signal: options?.signal,
+      });
       this.afterSuccessfulSignature();
       return result;
     } catch (e) {
@@ -327,6 +307,10 @@ export class CombinedClient {
         throw e;
       } else if (AutogramError.is(e, "app-not-installed")) {
         log.error("Autogram app not installed", e);
+        throw e;
+      } else if (AutogramError.is(e, "app-version-too-low")) {
+        // the desktop screen already shows the appVersionTooLow state
+        log.error("Autogram app version too low", e);
         throw e;
       } else if (AutogramError.is(e)) {
         this.ui.showError(e.message);

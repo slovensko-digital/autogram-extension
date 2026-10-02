@@ -3,8 +3,8 @@ import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
 import {
-  DesktopAutogramDocument,
-  DesktopSignatureParameters,
+  DesktopLegacyAutogramDocument,
+  DesktopLegacySignatureParameters,
 } from "autogram-sdk";
 
 export class XadesBpXmlStrategy implements ObjectStrategy {
@@ -13,7 +13,7 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): DesktopAutogramDocument {
+  get document(): DesktopLegacyAutogramDocument {
     return {
       content: this.obj.xdcXMLData,
       filename: this.obj.objectId,
@@ -73,7 +73,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopLegacySignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
@@ -82,7 +82,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return true;
   }
 
-  get document(): DesktopAutogramDocument {
+  get document(): DesktopLegacyAutogramDocument {
     return {
       content: this.obj.xdcXDCB64,
       filename: this.obj.objectId,

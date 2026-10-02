@@ -44,22 +44,6 @@
 
       async function main() {
         const client = await AutogramSDK.CombinedClient.init();
-        // client
-        //   .sign(
-        //     {
-        //       content: "Hello, World!",
-        //       filename: "hello.txt",
-        //     },
-        //     {
-        //       level: "XAdES_BASELINE_B",
-        //       container: "ASiC_E",
-        //     },
-        //     "text/plain",
-        //     true
-        //   )
-        //   .then((signedObject) => {
-        //     showSignedObject(signedObject, "hello.txt");
-        //   });
         const filePicker = document.createElement("input");
         filePicker.type = "file";
         filePicker.accept = "application/pdf";
@@ -70,14 +54,14 @@
           const signedObject = await client.sign(
             {
               content: (await toBase64(file)).split(",")[1],
+              mimeType: "application/pdf",
+              encoding: "base64",
               filename: file.name,
             },
             {
-              level: "PAdES_BASELINE_B",
+              form: "PAdES",
               checkPDFACompliance: false,
-            },
-            "application/pdf;base64",
-            false
+            }
           );
           showSignedObject(signedObject, file.name);
         });

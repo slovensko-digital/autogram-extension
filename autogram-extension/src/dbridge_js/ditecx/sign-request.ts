@@ -1,4 +1,4 @@
-import { DesktopSignatureParameters, DocumentToSign } from "autogram-sdk";
+import { DesktopLegacySignatureParameters, DocumentToSign } from "autogram-sdk";
 import {
   ObjectStrategy,
 } from "./filetype-strategy/base-strategy";
@@ -50,8 +50,8 @@ export class SignRequest {
   }
 
   public signatureParameters(
-    params: Partial<DesktopSignatureParameters>
-  ): DesktopSignatureParameters {
+    params: Partial<DesktopLegacySignatureParameters>
+  ): DesktopLegacySignatureParameters {
     // const containerXmlns = getProperty(
     //   params,
     //   "containerXmlns",

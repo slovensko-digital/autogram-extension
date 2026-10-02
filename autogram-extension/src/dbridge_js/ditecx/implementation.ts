@@ -1,4 +1,4 @@
-import { DesktopSignatureParameters } from "autogram-sdk";
+import { DesktopLegacySignatureParameters } from "autogram-sdk";
 import { InputObject } from "./types";
 
 /**
@@ -24,7 +24,7 @@ export interface ImplementationInterface {
   ): Promise<void>;
   addObject(obj: InputObject): void;
   getSignature(
-    parameters: Partial<DesktopSignatureParameters>,
+    parameters: Partial<DesktopLegacySignatureParameters>,
     decodeBase64?: boolean
   ): Promise<string>;
   getSignerIdentification(): string;

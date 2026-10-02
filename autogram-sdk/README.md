@@ -49,12 +49,50 @@ const { content, mimeType, signatures } = await client.sign(
     filename: "hello.txt",
   },
   {
-    level: "XAdES_BASELINE_B",
+    form: "XAdES",
     container: "ASiC_E",
   }
 );
 // content is Base64; signatures is [{ signedBy, issuedBy }, ...]
 ```
+
+### Signing multiple documents into one ASiC-E
+
+Pass an array to sign several documents together with a single signature
+("spoločná autorizácia dokumentov"). Each document carries its own MIME type
+and optional XML Datacontainer parameters. Requires the Autogram desktop app
+2.8.0 or newer; the method chooser is skipped (Autogram v mobile cannot do
+this).
+
+```typescript
+const { content, mimeType } = await client.sign(
+  [
+    {
+      content: formXml,
+      mimeType: "application/xml",
+      filename: "form.xml",
+      xdcParameters: { autoLoadEform: true },
+    },
+    {
+      content: pdfBase64,
+      mimeType: "application/pdf",
+      encoding: "base64",
+      filename: "attachment.pdf",
+    },
+  ],
+  { form: "XAdES", container: "ASiC_E" }
+);
+```
+
+The SDK detects the running Autogram version: 2.8.0 and newer is used through
+`POST /api/v1/sign`, older versions through the legacy `POST /sign` (one
+document only). Requests an older Autogram cannot fulfil (multiple
+documents, `requireQualifiedCertificate`, `checkPDFEmbeddedAttachments`)
+fail with an `app-version-too-low` error and the dialog asks the user to
+update Autogram.
+
+Upgrading from 0.6.x? See [docs/MIGRATION.md](docs/MIGRATION.md) — legacy
+calls convert with `fromLegacySignArgs()`.
 
 ## Usage without a bundler
 
@@ -76,7 +114,7 @@ Serve the file yourself or point at a CDN that mirrors npm (e.g. `https://cdn.js
       filename: "hello.txt",
     },
     {
-      level: "XAdES_BASELINE_B",
+      form: "XAdES",
       container: "ASiC_E",
     }
   );
@@ -112,6 +150,8 @@ try {
     // user closed the dialog — not a failure
   } else if (AutogramError.is(e, "app-not-installed")) {
     // point the user to autogram.slovensko.digital
+  } else if (AutogramError.is(e, "app-version-too-low")) {
+    // the dialog already asked the user to update Autogram
   } else {
     throw e;
   }

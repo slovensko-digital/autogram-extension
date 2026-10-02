@@ -244,9 +244,13 @@
 
         try {
           const signed = await client.sign(
-            { content, filename: file.name },
-            { level: "PAdES_BASELINE_B", checkPDFACompliance: false },
-            "application/pdf;base64",
+            {
+              content,
+              mimeType: "application/pdf",
+              encoding: "base64",
+              filename: file.name,
+            },
+            { form: "PAdES", checkPDFACompliance: false },
             {
               abortController,
               onStateChange(state) {

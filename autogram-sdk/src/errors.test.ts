@@ -3,6 +3,8 @@ import {
   AutogramSdkException,
   UserCancelledSigningException,
   AutogramAppNotInstalledException,
+  AutogramAppVersionTooLowException,
+  MultiDocumentSigningOnMobileException,
 } from "./errors";
 
 describe("AutogramError codes", () => {
@@ -108,5 +110,40 @@ describe("AutogramError serialization round trip", () => {
     const e = AutogramError.fromJSON({ message: "weird failure" });
     expect(e.code).toBe("unknown");
     expect(e.message).toBe("weird failure");
+  });
+});
+
+describe("multi-document signing errors", () => {
+  test("carry their codes and survive serialization by code", () => {
+    const tooLow = new AutogramAppVersionTooLowException("2.8.0", "2.7.6");
+    expect(tooLow.code).toBe("app-version-too-low");
+    expect(tooLow.requiredVersion).toBe("2.8.0");
+    expect(tooLow.detectedVersion).toBe("2.7.6");
+    expect(tooLow.message).toContain("2.8.0");
+    expect(tooLow.message).toContain("2.7.6");
+
+    const mobile = new MultiDocumentSigningOnMobileException();
+    expect(mobile.code).toBe("not-supported");
+
+    for (const e of [tooLow, mobile]) {
+      const rehydrated = AutogramError.fromJSON(JSON.parse(JSON.stringify(e)));
+      expect(rehydrated.code).toBe(e.code);
+      expect(rehydrated.message).toBe(e.message);
+    }
+  });
+
+  test("are recognized by their legacy class names", () => {
+    expect(
+      AutogramError.is(
+        { name: "AutogramAppVersionTooLowException", message: "x" },
+        "app-version-too-low"
+      )
+    ).toBe(true);
+    expect(
+      AutogramError.is(
+        { name: "MultiDocumentSigningOnMobileException", message: "x" },
+        "not-supported"
+      )
+    ).toBe(true);
   });
 });

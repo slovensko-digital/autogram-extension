@@ -1,6 +1,7 @@
 import {
-  DesktopSignatureParameters,
+  DesktopLegacySignatureParameters,
   SignedDocumentResult,
+  fromLegacySignatureParameters,
 } from "autogram-sdk";
 import { Base64 } from "js-base64";
 import { CombinedClient, createAutogramClient } from "autogram-sdk/with-ui";
@@ -29,7 +30,7 @@ const AVAILABLE_LANGUAGES = ["sk", "en"];
 async function createRestorePointHash(
   signRequest: SignRequest,
   pageUrl: string,
-  parameters: Partial<DesktopSignatureParameters>
+  parameters: Partial<DesktopLegacySignatureParameters>
 ): Promise<string> {
   const subtleCrypto = globalThis.crypto?.subtle;
   if (!subtleCrypto) {
@@ -170,7 +171,7 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
    * - `unknown` — anything that cannot be classified more precisely
    */
   public async getSignature(
-    parameters: Partial<DesktopSignatureParameters>,
+    parameters: Partial<DesktopLegacySignatureParameters>,
     decodeBase64 = false
   ): Promise<string> {
     log.debug("Options in getSignature", this.extensionOptions);
@@ -205,9 +206,15 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
 
     let result: SignedDocumentResult;
     try {
+      // D.Bridge parameters are legacy (`POST /sign`) shaped
+      const { parameters: signatureParameters, xdcParameters, presentation } =
+        fromLegacySignatureParameters(
+          this.signRequest.signatureParameters(parameters)
+        );
       result = await this.client.sign(
-        this.signRequest.documentToSign,
-        this.signRequest.signatureParameters(parameters)
+        { ...this.signRequest.documentToSign, xdcParameters },
+        signatureParameters,
+        { presentation }
       );
     } catch (e) {
       // A failed/cancelled/aborted attempt must not leave the sign

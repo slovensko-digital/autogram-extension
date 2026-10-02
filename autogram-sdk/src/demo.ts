@@ -2,7 +2,8 @@
  * @module demo
  * Self-running demo entry: renders a file input and signs the chosen file
  * with `createAutogramClient` (XAdES in an ASiC-E container), then offers
- * the result for download. Loaded by the pages in `demos/` — not part of
+ * the result for download. Choosing several files signs them together into
+ * one ASiC-E container (Autogram desktop app >= 2.8.0). Loaded by the pages in `demos/` — not part of
  * the public API.
  */
 import { createAutogramClient } from "./with-ui";
@@ -11,18 +12,22 @@ async function main() {
   const client = await createAutogramClient();
   const filePicker = document.createElement("input");
   filePicker.type = "file";
-  filePicker.addEventListener("change", async (e) => {
-    const file = filePicker.files?.[0];
-    if (!file) return;
+  filePicker.multiple = true;
+  filePicker.addEventListener("change", async () => {
+    const files = Array.from(filePicker.files ?? []);
+    if (files.length === 0) return;
+    const [file] = files;
 
     const signed = await client.sign(
+      await Promise.all(
+        files.map(async (f) => ({
+          content: await f.text(),
+          mimeType: f.type || "application/octet-stream",
+          filename: f.name,
+        }))
+      ),
       {
-        content: await file.text(),
-        mimeType: file.type,
-        filename: file.name,
-      },
-      {
-        level: "XAdES_BASELINE_B",
+        form: "XAdES",
         container: "ASiC_E",
       }
     );

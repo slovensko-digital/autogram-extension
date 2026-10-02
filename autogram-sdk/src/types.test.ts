@@ -60,6 +60,32 @@ describe("fromDesktopResponse", () => {
       "application/octet-stream"
     );
   });
+
+  test("infers from the v1 signature form", () => {
+    expect(fromDesktopResponse(response, { form: "PAdES" }).mimeType).toBe(
+      "application/pdf"
+    );
+    expect(fromDesktopResponse(response, { form: "XAdES" }).mimeType).toBe(
+      "application/xml"
+    );
+  });
+
+  test("prefers the MIME type and filename reported by Autogram >= 2.8.0", () => {
+    const result = fromDesktopResponse(
+      {
+        ...response,
+        mimeType: "application/vnd.etsi.asic-e+zip",
+        filename: "documents.asice",
+      },
+      { form: "PAdES" }
+    );
+    expect(result.mimeType).toBe("application/vnd.etsi.asic-e+zip");
+    expect(result.filename).toBe("documents.asice");
+  });
+
+  test("does not add a filename the desktop app did not report", () => {
+    expect("filename" in fromDesktopResponse(response)).toBe(false);
+  });
 });
 
 describe("fromAvmSignedDocument", () => {

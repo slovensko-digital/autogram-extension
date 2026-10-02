@@ -76,7 +76,7 @@ Built with Lit (web components), the UI provides:
 
 #### autogram-api/
 Handles integration with Autogram Desktop:
-- `apiClient.ts` - API client factory with methods for `info()`, `waitForStatus()`, `sign()`
+- `apiClient.ts` - API client factory with methods for `info()`, `waitForStatus()`, `signLegacy()` (`POST /sign`, all versions, one document), `signV1()` (`POST /api/v1/sign`, Autogram >= 2.8.0, multiple documents), `startBatch()`, `endBatch()`
 - `autogram-api.generated.ts` - Auto-generated TypeScript types from OpenAPI spec
 - `crypto/random.ts` - Cryptographic utilities for security tokens
 - Supports custom protocol URLs for launching the desktop app
@@ -108,8 +108,22 @@ Web Components for user interaction:
 The main high-level API:
 ```typescript
 const client = await CombinedClient.init();
-const signedDoc = await client.sign(document, parameters, mimeType);
+const signedDoc = await client.sign(
+  { content, filename, mimeType: "application/pdf", encoding: "base64" },
+  { form: "PAdES" }
+);
+// or several documents into one ASiC-E container (Autogram >= 2.8.0)
+const asice = await client.sign([documentA, documentB], { form: "XAdES", container: "ASiC_E" });
 ```
+
+#### sign-request.ts
+Pure helpers (unit tested) behind `sign()`:
+- `toSignRequest()` builds the `/api/v1/sign` wire request; `signRequestToLegacy()`
+  converts it to the legacy `/sign` shape used for Autogram < 2.8.0 and for AVM.
+- `supportsSignV1()` picks the endpoint from the detected Autogram version
+  (`>= 2.8.0` or `dev` → `/api/v1/sign`).
+- Public migration helpers `fromLegacySignArgs()` / `fromLegacySignatureParameters()`
+  convert legacy-shaped input (`level`, XDC fields in the parameters, `payloadMimeType`).
 
 Features:
 - Automatic UI injection and lifecycle management

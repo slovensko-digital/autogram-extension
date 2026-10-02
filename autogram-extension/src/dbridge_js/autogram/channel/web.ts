@@ -3,9 +3,10 @@ import {
   AVMDocumentToSign,
   AVMSignedDocument,
   AutogramDesktopIntegrationInterface,
-  DesktopAutogramDocument,
-  DesktopSignatureParameters,
+  DesktopLegacyAutogramDocument,
+  DesktopLegacySignatureParameters,
   DesktopSignResponseBody,
+  DesktopSignRequestBody,
   DesktopServerInfo,
   DesktopBatchStartResponseBody,
   DesktopBatchEndResponseBody,
@@ -55,18 +56,29 @@ export class AutogramDesktopChannel
       { signal: abortController?.signal }
     );
   }
-  async sign(
-    document: DesktopAutogramDocument,
-    signatureParameters?: DesktopSignatureParameters,
+  async signLegacy(
+    document: DesktopLegacyAutogramDocument,
+    signatureParameters?: DesktopLegacySignatureParameters,
     payloadMimeType?: string,
     batchId?: string,
     abortController?: AbortController
   ): Promise<DesktopSignResponseBody> {
-    const response = await this.rpc.sign(
+    const response = await this.rpc.signLegacy(
       { document, signatureParameters, payloadMimeType, batchId },
       { signal: abortController?.signal }
     );
-    log.debug("sign response", response);
+    log.debug("signLegacy response", response);
+    return response;
+  }
+  async signV1(
+    body: DesktopSignRequestBody,
+    abortController?: AbortController
+  ): Promise<DesktopSignResponseBody> {
+    const response = await this.rpc.signV1(
+      { body },
+      { signal: abortController?.signal }
+    );
+    log.debug("signV1 response", response);
     return response;
   }
   startBatch(

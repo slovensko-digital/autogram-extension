@@ -1,7 +1,7 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { DesktopSignatureParameters } from "autogram-sdk";
+import { DesktopLegacySignatureParameters } from "autogram-sdk";
 import { createLogger } from "../../log";
 import { DitecCallback, ImplementationInterface } from "./implementation";
 import {
@@ -82,7 +82,7 @@ export class DSigAdapter {
 
   /** Shimmed entry point used by the concrete `getSigned*` methods. */
   protected getSignature(
-    parameters: Partial<DesktopSignatureParameters>,
+    parameters: Partial<DesktopLegacySignatureParameters>,
     callback: DitecCallback<string>,
     decodeBase64 = false
   ): void {

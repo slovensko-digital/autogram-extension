@@ -268,6 +268,50 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         `;
         break;
 
+      case "appVersionTooLow":
+        title = "Autogram je potrebné aktualizovať";
+        useFullWidthLayout = true;
+        content = html`
+          <div class="not-installed">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+              <div class="not-installed-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Autogram je potrebné aktualizovať</h2>
+              </div>
+            </div>
+            <p>
+              Táto funkcia vyžaduje Autogram verzie ${this.state.requiredVersion} alebo novšej.
+              Nainštalovaná verzia: ${this.state.detectedVersion}. Postupujte podľa nasledujúcich krokov:
+            </p>
+            <ol>
+              <li>
+                Stiahnite a nainštalujte najnovší Autogram zo stránky
+                <a
+                  href="https://autogram.slovensko.digital"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >autogram.slovensko.digital</a
+                >.
+              </li>
+              <li>Vráťte sa na túto stránku a skúste podpisovanie znova.</li>
+            </ol>
+            <a
+              class="download-btn"
+              href="https://autogram.slovensko.digital"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ${unsafeSVG(downloadSvg)}
+              Stiahnuť Autogram
+            </a>
+          </div>
+        `;
+        break;
+
       case "signingCancelled":
         title = "Podpisovanie bolo zrušené";
         content = html`

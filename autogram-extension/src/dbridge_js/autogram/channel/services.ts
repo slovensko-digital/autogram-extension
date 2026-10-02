@@ -21,6 +21,12 @@ const ZSignedObject = z.object({
   issuedBy: z.string().default(""),
 });
 
+/** Desktop sign response; `mimeType`/`filename` only come from Autogram >= 2.8.0. */
+const ZDesktopSignResponse = ZSignedObject.extend({
+  mimeType: z.string().optional(),
+  filename: z.string().optional(),
+});
+
 const ZServerInfo = z.object({
   status: z.literal("READY").optional(),
   version: z.string().optional(),
@@ -140,7 +146,16 @@ const ZSignatureParameters = z.object({
   checkPDFACompliance: z.boolean().optional(),
   autoLoadEform: z.boolean().optional(),
   level: z
-    .enum(["XAdES_BASELINE_B", "PAdES_BASELINE_B", "CAdES_BASELINE_B"])
+    .enum([
+      "XAdES_BASELINE_B",
+      "PAdES_BASELINE_B",
+      "CAdES_BASELINE_B",
+      "XAdES_BASELINE_T",
+      "PAdES_BASELINE_T",
+      "CAdES_BASELINE_T",
+      "BASELINE_B",
+      "BASELINE_T",
+    ])
     .optional(),
   container: z.enum(["ASiC_E"]).optional(),
   containerXmlns: z
@@ -194,6 +209,26 @@ const ZSignatureParameters = z.object({
   fsFormId: z.string().optional(),
 });
 
+/**
+ * `POST /api/v1/sign` request body (Autogram >= 2.8.0). Deliberately loose
+ * – the desktop app validates the details.
+ */
+const ZSignV1RequestBody = z.object({
+  batchId: z.string().optional(),
+  documents: z
+    .array(
+      z.object({
+        filename: z.string().optional(),
+        content: z.string(),
+        mimeType: z.string(),
+        xdcParameters: z.record(z.unknown()).optional(),
+      })
+    )
+    .min(1),
+  parameters: z.record(z.unknown()).optional(),
+  presentation: z.record(z.unknown()).optional(),
+});
+
 export const autogramService = defineRpcService("autogram", {
   getLaunchURL: {
     args: z.object({ command: z.literal("listen").optional() }),
@@ -216,14 +251,19 @@ export const autogramService = defineRpcService("autogram", {
       args.timeout !== undefined ? (args.timeout + 1) * 1000 : null,
     timeoutMessage: "Časový limit čakania na stav servera vypršal",
   },
-  sign: {
+  signLegacy: {
     args: z.object({
       document: ZAutogramDocument,
       signatureParameters: ZSignatureParameters.optional(),
       payloadMimeType: z.string().optional(),
       batchId: z.string().optional(),
     }),
-    result: ZSignedObject,
+    result: ZDesktopSignResponse,
+    // long-running: resolves when the user signs in the desktop app
+  },
+  signV1: {
+    args: z.object({ body: ZSignV1RequestBody }),
+    result: ZDesktopSignResponse,
     // long-running: resolves when the user signs in the desktop app
   },
   startBatch: {

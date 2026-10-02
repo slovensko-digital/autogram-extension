@@ -1,5 +1,5 @@
 import {
-  DesktopSignatureParameters,
+  DesktopLegacySignatureParameters,
   DocumentToSign,
 } from "autogram-sdk";
 import { Base64 } from "js-base64";
@@ -25,8 +25,8 @@ export class FakeImplementation implements ImplementationInterface {
   public nextSignError: unknown = null;
   public signerIdentification = "CN=Testovací Používateľ, C=SK";
 
-  /** Derived DesktopSignatureParameters of the last getSignature call. */
-  public lastParameters: DesktopSignatureParameters | null = null;
+  /** Derived DesktopLegacySignatureParameters of the last getSignature call. */
+  public lastParameters: DesktopLegacySignatureParameters | null = null;
   /** Unified document passed to signing on the last getSignature call. */
   public lastDocument: DocumentToSign | null = null;
   public languages: string[] = [];
@@ -58,7 +58,7 @@ export class FakeImplementation implements ImplementationInterface {
   }
 
   async getSignature(
-    parameters: Partial<DesktopSignatureParameters>,
+    parameters: Partial<DesktopLegacySignatureParameters>,
     decodeBase64 = false
   ): Promise<string> {
     if (this.nextSignError) {

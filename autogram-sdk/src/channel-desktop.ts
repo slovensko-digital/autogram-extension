@@ -1,12 +1,13 @@
 import {
   apiClient,
   AutogramDesktopIntegrationInterface,
-  AutogramDocument,
+  LegacyAutogramDocument,
   BatchEndResponseBody,
   BatchStartResponseBody,
   ServerInfo,
-  SignatureParameters,
+  LegacySignatureParameters,
   SignResponseBody,
+  SignRequestBody,
 } from "./autogram-api/lib/apiClient";
 import { isSafari } from "./utils";
 
@@ -23,7 +24,9 @@ import { isSafari } from "./utils";
  * 1. {@link getLaunchURL} — get a deep-link URL to launch / wake the
  *    desktop app.
  * 2. {@link waitForStatus} — wait until the app reports it is ready.
- * 3. {@link sign} — submit the document and receive the signed result.
+ * 3. {@link signV1} (Autogram >= 2.8.0) / {@link signLegacy} (older
+ *    versions, one document) — submit the document(s) and receive the
+ *    signed result.
  *
  * This class is the default channel used by `CombinedClient`. The
  * browser extension replaces it with `AutogramDesktopChannel`, which
@@ -87,19 +90,25 @@ export class AutogramDesktopSimpleChannel
   ): Promise<BatchEndResponseBody> {
     return this.apiClient.endBatch(batchId, abortController ?? null);
   }
-  sign(
-    document: AutogramDocument,
-    signatureParameters?: SignatureParameters,
+  signLegacy(
+    document: LegacyAutogramDocument,
+    signatureParameters?: LegacySignatureParameters,
     payloadMimeType?: string,
     batchId?: string,
     abortController?: AbortController
   ): Promise<SignResponseBody> {
-    return this.apiClient.sign(
+    return this.apiClient.signLegacy(
       document,
       signatureParameters,
       payloadMimeType,
       batchId ?? null,
       abortController ?? null
     );
+  }
+  signV1(
+    body: SignRequestBody,
+    abortController?: AbortController
+  ): Promise<SignResponseBody> {
+    return this.apiClient.signV1(body, abortController ?? null);
   }
 }

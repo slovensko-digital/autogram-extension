@@ -1,8 +1,11 @@
 /**
  * @module types
  * Core types shared across signing backends (Autogram desktop, Autogram v Mobile).
- * This module must stay dependency-free so any layer can import it.
+ * This module must stay dependency-free so any layer can import it
+ * (type-only imports are erased at compile time).
  */
+
+import type { XDCParameters } from "./autogram-api/lib/apiClient";
 
 /** How the user chose to sign. */
 export enum SigningMethod {
@@ -41,6 +44,12 @@ export interface DocumentToSign {
   /** How `content` is encoded. Default `"utf-8"`. */
   encoding?: "utf-8" | "base64";
   filename?: string;
+  /**
+   * XML Datacontainer / eForm parameters of this document (Autogram
+   * desktop app). Each document of a multi-document request carries its
+   * own.
+   */
+  xdcParameters?: XDCParameters;
 }
 
 /** One signature on a signed document. */
@@ -80,18 +89,29 @@ export function toPayloadMimeType(document: DocumentToSign): string {
 
 /**
  * Adapts a desktop `SignResponseBody`-shaped result to
- * {@link SignedDocumentResult}. The desktop API does not report the
- * artifact MIME type, so it is inferred (best effort) from the signature
- * parameters.
+ * {@link SignedDocumentResult}. Autogram >= 2.8.0 reports the MIME type
+ * and filename of the signed artifact; for older versions the MIME type is
+ * inferred (best effort) from the signature parameters.
  */
 export function fromDesktopResponse(
-  response: { content: string; signedBy: string; issuedBy: string },
-  parameters?: { level?: string | null; container?: string | null }
+  response: {
+    content: string;
+    signedBy: string;
+    issuedBy: string;
+    mimeType?: string;
+    filename?: string;
+  },
+  parameters?: {
+    level?: string | null;
+    form?: string | null;
+    container?: string | null;
+  }
 ): SignedDocumentResult {
   return {
     content: response.content,
-    mimeType: inferDesktopMimeType(parameters),
+    mimeType: response.mimeType || inferDesktopMimeType(parameters),
     encoding: "base64",
+    ...(response.filename ? { filename: response.filename } : {}),
     signatures: [
       { signedBy: response.signedBy, issuedBy: response.issuedBy },
     ],
@@ -100,16 +120,17 @@ export function fromDesktopResponse(
 
 function inferDesktopMimeType(parameters?: {
   level?: string | null;
+  form?: string | null;
   container?: string | null;
 }): string {
   if (parameters?.container) {
     return "application/vnd.etsi.asic-e+zip";
   }
-  const level = parameters?.level ?? "";
-  if (level.startsWith("PAdES")) {
+  const form = parameters?.form ?? parameters?.level ?? "";
+  if (form.startsWith("PAdES")) {
     return "application/pdf";
   }
-  if (level.startsWith("XAdES")) {
+  if (form.startsWith("XAdES")) {
     return "application/xml";
   }
   return "application/octet-stream";

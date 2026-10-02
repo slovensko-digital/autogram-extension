@@ -3,7 +3,30 @@ import fetch from "cross-fetch";
 import { getRandomBytes, toHex, toUint32 } from "./crypto/random";
 
 import { components } from "./autogram-api.generated";
-import { UserCancelledSigningException } from "../../errors";
+import { AutogramError, UserCancelledSigningException } from "../../errors";
+
+/**
+ * Autogram reports a cancelled single signature with `204` and a cancelled
+ * batch with `502` + a `BATCH_CANCELED` body. Both mean the user cancelled.
+ */
+async function parseSigningResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) {
+    throw new UserCancelledSigningException();
+  }
+  if (response.status === 502) {
+    const body = (await response.json().catch(() => undefined)) as
+      | { code?: string; message?: string }
+      | undefined;
+    if (body?.code === "BATCH_CANCELED") {
+      throw new UserCancelledSigningException();
+    }
+    throw new AutogramError(
+      "server-error",
+      body?.message || "Autogram request failed with status 502"
+    );
+  }
+  return response.json() as Promise<T>;
+}
 
 /**
  * Octosign White Label API client for the app running in the server mode.
@@ -19,7 +42,7 @@ import { UserCancelledSigningException } from "../../errors";
  * await client.waitForStatus('READY');
  *
  * const content = '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>';
- * console.log(await client.sign({ content }));
+ * console.log(await client.signLegacy({ content }));
  * // => { content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title>...</Document>' }
  * ```
  *
@@ -35,7 +58,7 @@ import { UserCancelledSigningException } from "../../errors";
  * client.waitForStatus('READY')
  *   .then(function() {
  *     var content = '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>';
- *     return client.sign({ content: content });
+ *     return client.signLegacy({ content: content });
  *   })
  *   .then(function(signedDocument) {
  *     console.log(signedDocument);
@@ -136,12 +159,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<BatchStartResponseBody>
+      );
     },
 
     endBatch(
@@ -159,7 +179,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => response.json());
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<BatchEndResponseBody>
+      );
     },
 
     /**
@@ -248,14 +270,15 @@ export function apiClient(options?: ApiClientConfiguration) {
     },
 
     /**
-     * Sign a document.
+     * Sign a document via the legacy `POST /sign` endpoint (all Autogram
+     * versions; one document only).
      *
      * ### Example
      * ```js
      * import { apiClient } from '@octosign/client';
      * const client = apiClient();
      *
-     * console.log(await client.sign({ content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>' }));
+     * console.log(await client.signLegacy({ content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>' }));
      * // => { content: '...signed document...' }
      * ```
      *
@@ -265,9 +288,9 @@ export function apiClient(options?: ApiClientConfiguration) {
      * @param abortController - Optional AbortController used to cancel the request.
      * @returns Signed document.
      */
-    sign(
-      document: AutogramDocument,
-      signatureParameters: SignatureParameters = {
+    signLegacy(
+      document: LegacyAutogramDocument,
+      signatureParameters: LegacySignatureParameters = {
         level: "XAdES_BASELINE_B",
         checkPDFACompliance: true,
       },
@@ -277,7 +300,7 @@ export function apiClient(options?: ApiClientConfiguration) {
     ): Promise<SignResponseBody> {
       const url = new URL("sign", serverUrl);
 
-      const body: AutogramSignRequestBody = {
+      const body: LegacySignRequestBody = {
         document,
         parameters: signatureParameters,
         payloadMimeType,
@@ -292,17 +315,63 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<SignResponseBody>
+      );
+    },
+
+    /**
+     * Sign one or more documents via `POST /api/v1/sign` (Autogram >= 2.8.0).
+     *
+     * Multiple documents are signed together into a single ASiC_E container
+     * ("spoločná autorizácia dokumentov"). `batchId` may only be used with
+     * exactly one document.
+     *
+     * @param body - Documents (each with its own `mimeType` and optional `xdcParameters`), signature and presentation parameters.
+     * @param abortController - Optional AbortController used to cancel the request.
+     * @returns Signed document (or ASiC_E container for multiple documents).
+     */
+    signV1(
+      body: SignRequestBody,
+      abortController: AbortController | null = null
+    ): Promise<SignResponseBody> {
+      const url = new URL("api/v1/sign", serverUrl);
+
+      const { batchId, ...rest } = body;
+      const requestBody: SignRequestBody = {
+        ...rest,
+        ...(batchId ? { batchId } : {}),
+      };
+
+      const init: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(requestBody),
+        ...(abortController ? { signal: abortController.signal } : {}),
+      } as const;
+
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<SignResponseBody>
+      );
     },
   };
 }
 
-export type AutogramDesktopIntegrationInterface = ReturnType<typeof apiClient>;
+type DesktopApiClient = ReturnType<typeof apiClient>;
+
+/**
+ * Desktop channel used by `DesktopClient` / `CombinedClient`.
+ *
+ * `signLegacy` (`POST /sign`) is required: it is the only endpoint of
+ * Autogram < 2.8.0. `signV1` (`POST /api/v1/sign`) is optional; channels
+ * without it can only sign single documents.
+ */
+export type AutogramDesktopIntegrationInterface = Omit<
+  DesktopApiClient,
+  "signV1"
+> &
+  Partial<Pick<DesktopApiClient, "signV1">>;
 
 type BatchStartRequestBody = components["schemas"]["BatchStartRequestBody"];
 export type BatchStartResponseBody = components["schemas"]["BatchStartResponseBody"];
@@ -397,16 +466,40 @@ export type ApiClientConfiguration = {
 export type ServerInfo = components["schemas"]["Info"];
 
 /**
- * Document exchanged during the signing.
+ * Document to sign via `POST /api/v1/sign` (Autogram >= 2.8.0). Carries its
+ * own `mimeType` (with a `";base64"` suffix for Base64 content) and its own
+ * XML Datacontainer / eForm parameters.
  */
 export type AutogramDocument = components["schemas"]["Document"];
+/** XML Datacontainer / eForm parameters of one document. */
+export type XDCParameters = components["schemas"]["XDCParameters"];
+/** Parameters used to create a signature (`POST /api/v1/sign`). */
+export type SignatureParameters = components["schemas"]["SignatureParameters"];
+/** How Autogram presents the documents to the user before signing. */
+export type PresentationParameters =
+  components["schemas"]["PresentationParameters"];
+/** `POST /api/v1/sign` request body. */
+export type SignRequestBody = components["schemas"]["DocumentsSignRequestBody"];
+
+/** Document exchanged by the legacy `POST /sign` endpoint. */
+export type LegacyAutogramDocument = components["schemas"]["LegacyDocument"];
+/**
+ * Signature parameters of the legacy `POST /sign` endpoint (`level`, with
+ * the XDC parameters and `visualizationWidth` mixed in).
+ */
+export type LegacySignatureParameters =
+  components["schemas"]["LegacySignatureParameters"];
+type LegacySignRequestBody =
+  components["schemas"]["LegacyDocumentSignRequestBody"];
 
 /**
- * Parameters used to create a signature.
+ * Signed document. `mimeType` and `filename` are only returned by
+ * Autogram >= 2.8.0.
  */
-export type SignatureParameters = components["schemas"]["SignatureParameters"];
-type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
-export type SignResponseBody = components["schemas"]["SignResponseBody"];
+export type SignResponseBody = Omit<
+  components["schemas"]["SignResponseBody"],
+  "mimeType"
+> & { mimeType?: string };
 
 /**
  * Represents the current state of the desktop signing process.
@@ -418,6 +511,11 @@ export type DesktopSigningState =
   | { type: "waitingForSignature" }
   | { type: "appNotInstalled" }
   | { type: "signingCancelled" }
+  | {
+      type: "appVersionTooLow";
+      requiredVersion: string;
+      detectedVersion: string;
+    }
   | { type: "error"; message: string };
 
 export type DesktopSigningStateConsumer = (

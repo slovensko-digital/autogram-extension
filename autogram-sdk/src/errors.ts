@@ -17,6 +17,9 @@
  * - `aborted` — the operation was aborted programmatically (AbortSignal, page close)
  * - `timeout` — an operation did not finish in time
  * - `app-not-installed` — the Autogram desktop app could not be launched
+ * - `app-version-too-low` — the installed Autogram desktop app is too old for the request
+ * - `not-supported` — the request cannot be fulfilled by the chosen signing method
+ *   (e.g. signing multiple documents on a mobile device)
  * - `connection-failed` — a network request to a signing backend failed
  * - `protocol-error` — an unexpected response shape or bridge failure
  * - `server-error` — a signing backend reported an error
@@ -27,6 +30,8 @@ export type AutogramErrorCode =
   | "aborted"
   | "timeout"
   | "app-not-installed"
+  | "app-version-too-low"
+  | "not-supported"
   | "connection-failed"
   | "protocol-error"
   | "server-error"
@@ -37,6 +42,8 @@ const AUTOGRAM_ERROR_CODES: readonly AutogramErrorCode[] = [
   "aborted",
   "timeout",
   "app-not-installed",
+  "app-version-too-low",
+  "not-supported",
   "connection-failed",
   "protocol-error",
   "server-error",
@@ -50,6 +57,8 @@ const AUTOGRAM_ERROR_CODES: readonly AutogramErrorCode[] = [
 const LEGACY_NAME_TO_CODE: Readonly<Record<string, AutogramErrorCode>> = {
   UserCancelledSigningException: "user-cancelled",
   AutogramAppNotInstalledException: "app-not-installed",
+  AutogramAppVersionTooLowException: "app-version-too-low",
+  MultiDocumentSigningOnMobileException: "not-supported",
   AutogramTimeoutError: "timeout",
   AutogramSdkException: "unknown",
 };
@@ -158,6 +167,38 @@ export class AutogramAppNotInstalledException extends AutogramSdkException {
       "app-not-installed"
     );
     this.name = "AutogramAppNotInstalledException";
+  }
+}
+
+/**
+ * The installed Autogram desktop app is older than the request needs
+ * (e.g. signing multiple documents requires Autogram 2.8.0).
+ * Code: `app-version-too-low`.
+ */
+export class AutogramAppVersionTooLowException extends AutogramSdkException {
+  constructor(
+    readonly requiredVersion: string,
+    readonly detectedVersion: string
+  ) {
+    super(
+      `Je potrebný Autogram verzie ${requiredVersion} alebo novšej. Nainštalovaná verzia: ${detectedVersion}`,
+      "app-version-too-low"
+    );
+    this.name = "AutogramAppVersionTooLowException";
+  }
+}
+
+/**
+ * Multiple documents can only be signed together with the Autogram
+ * desktop app, which cannot run on a mobile device. Code: `not-supported`.
+ */
+export class MultiDocumentSigningOnMobileException extends AutogramSdkException {
+  constructor() {
+    super(
+      "Podpisovanie viacerých dokumentov naraz je možné len v aplikácii Autogram na počítači. Otvorte túto stránku na počítači a skúste to znova.",
+      "not-supported"
+    );
+    this.name = "MultiDocumentSigningOnMobileException";
   }
 }
 

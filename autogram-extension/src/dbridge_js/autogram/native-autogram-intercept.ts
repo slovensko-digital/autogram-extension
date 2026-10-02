@@ -1,5 +1,10 @@
 import { createAutogramClient, CombinedClient } from "autogram-sdk/with-ui";
-import { AutogramError } from "autogram-sdk";
+import {
+  AutogramError,
+  fromLegacySignArgs,
+  toLegacySignedObject,
+} from "autogram-sdk";
+import type { DesktopLegacySignatureParameters } from "autogram-sdk";
 import {
   AutogramDesktopChannel,
   AvmChannelWeb,
@@ -40,7 +45,7 @@ interface DesktopDocument {
 interface SignRequestBody {
   batchId?: string;
   document: DesktopDocument;
-  parameters?: Record<string, unknown>;
+  parameters?: DesktopLegacySignatureParameters;
   payloadMimeType: string;
 }
 
@@ -110,15 +115,15 @@ async function handleSign(
   }
   try {
     const client = await getClient(extensionOptions);
-    // Legacy positional form: its result shape ({content, signedBy,
-    // issuedBy}) is exactly the portal's expected SignResponseBody.
-    const result = await client.sign(
+    // The portal speaks the legacy `POST /sign` protocol
+    const { documents, parameters, presentation } = fromLegacySignArgs(
       body.document,
       body.parameters ?? {},
-      body.payloadMimeType,
-      false
+      body.payloadMimeType
     );
-    return { status: 200, body: result };
+    const result = await client.sign(documents, parameters, { presentation });
+    // {content, signedBy, issuedBy} is the portal's expected SignResponseBody
+    return { status: 200, body: toLegacySignedObject(result) };
   } catch (e) {
     if (
       AutogramError.is(e, "user-cancelled") ||

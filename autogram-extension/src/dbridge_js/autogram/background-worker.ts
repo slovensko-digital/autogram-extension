@@ -11,6 +11,7 @@ import {
 import type {
   AVMDocumentToSign,
   AVMIntegrationDocument,
+  DesktopSignRequestBody,
   RpcHandler,
   RpcImpl,
   RpcResponseFrame,
@@ -384,15 +385,22 @@ class AutogramExecutor {
       );
     },
 
-    sign: async (
+    signLegacy: async (
       { document, signatureParameters, payloadMimeType, batchId },
       context
     ) => {
-      return this.client.sign(
+      return this.client.signLegacy(
         document,
         signatureParameters,
         payloadMimeType,
         batchId ?? null,
+        toAbortController(context.signal)
+      );
+    },
+
+    signV1: async ({ body }, context) => {
+      return this.client.signV1(
+        body as DesktopSignRequestBody,
         toAbortController(context.signal)
       );
     },

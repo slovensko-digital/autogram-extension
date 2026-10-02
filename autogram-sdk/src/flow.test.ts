@@ -5,6 +5,7 @@ import {
 } from "./flow";
 import { SigningMethod } from "./types";
 import { AutogramError, UserCancelledSigningException } from "./errors";
+import { fromLegacySignArgs, toSignRequest } from "./sign-request";
 import type {
   AutogramDesktopIntegrationInterface,
   ServerInfo,
@@ -33,14 +34,27 @@ const MOBILE_SIGNED: SignedDocument = {
 
 const READY: ServerInfo = { status: "READY", version: "1.0.0" };
 
-function fakeDesktop(): AutogramDesktopIntegrationInterface {
+const DESKTOP_V1_RESPONSE: SignResponseBody = {
+  content: "djE=",
+  mimeType: "application/vnd.etsi.asic-e+zip",
+  filename: "documents.asice",
+  signedBy: "CN=John Smith",
+  issuedBy: "CN=SVK eID ACA2",
+};
+
+function fakeDesktop(
+  info: ServerInfo = READY,
+  overrides: Partial<AutogramDesktopIntegrationInterface> = {}
+): AutogramDesktopIntegrationInterface {
   return {
     getLaunchURL: async () => "autogram://listen",
-    info: async () => READY,
-    waitForStatus: async () => READY,
-    sign: async () => DESKTOP_RESPONSE,
+    info: async () => info,
+    waitForStatus: async () => info,
+    signLegacy: async () => DESKTOP_RESPONSE,
+    signV1: async () => DESKTOP_V1_RESPONSE,
     startBatch: async () => ({ batchId: "b" }),
     endBatch: async () => ({ status: "FINISHED" }),
+    ...overrides,
   };
 }
 
@@ -89,6 +103,8 @@ function fakeDelegate(
 const OPTIONS = { platform: "test-platform", displayName: "Test" };
 const DOCUMENT = { content: "<xml/>", filename: "doc.xml" };
 const PARAMS = { level: "XAdES_BASELINE_B", container: "ASiC_E" } as const;
+const LEGACY = fromLegacySignArgs(DOCUMENT, PARAMS, "application/xml");
+const REQUEST = toSignRequest(LEGACY.documents, LEGACY.parameters);
 
 describe("SigningFlow desktop path", () => {
   test("signs and reports desktop states ending in done", async () => {
@@ -96,7 +112,7 @@ describe("SigningFlow desktop path", () => {
     const desktopStates: string[] = [];
     const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
 
-    const result = await flow.sign(DOCUMENT, PARAMS, "application/xml", {
+    const result = await flow.sign(REQUEST, {
       onDesktopStateChange: (s) => desktopStates.push(s.type),
     });
 
@@ -128,7 +144,7 @@ describe("SigningFlow mobile path", () => {
     const mobile = fakeMobile();
     const flow = new SigningFlow(fakeDesktop(), mobile, delegate, OPTIONS);
 
-    const result = await flow.sign(DOCUMENT, PARAMS, "application/xml");
+    const result = await flow.sign(REQUEST);
 
     // the unified result keeps every signer and the real MIME type
     expect(result).toEqual({
@@ -183,7 +199,7 @@ describe("SigningFlow mobile path", () => {
     });
     const flow = new SigningFlow(fakeDesktop(), mobile, delegate, OPTIONS);
 
-    const result = await flow.sign(DOCUMENT, PARAMS, "application/xml");
+    const result = await flow.sign(REQUEST);
     // the legacy fallback identification is applied by toLegacySignedObject,
     // not by the flow — the raw result carries no signatures
     expect(result.signatures).toEqual([]);
@@ -195,7 +211,7 @@ describe("SigningFlow mobile-on-mobile path", () => {
     const delegate = fakeDelegate(SigningMethod.mobileOnMobile);
     const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
 
-    const result = await flow.sign(DOCUMENT, PARAMS, "application/xml");
+    const result = await flow.sign(REQUEST);
 
     expect(result.content).toBe("bW9iaWxl");
     expect(delegate.states).toEqual([
@@ -217,7 +233,7 @@ describe("SigningFlow cancellation", () => {
     );
     const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
 
-    const pending = flow.sign(DOCUMENT, PARAMS, "application/xml");
+    const pending = flow.sign(REQUEST);
     await expect(pending).rejects.toMatchObject({ code: "user-cancelled" });
     await pending.catch((e) => expect(AutogramError.is(e, "user-cancelled")).toBe(true));
     expect(delegate.states).toEqual([]);
@@ -250,5 +266,105 @@ describe("SigningFlow.useRestorePoint", () => {
     const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
     await expect(flow.useRestorePoint("rp")).resolves.toBeNull();
     expect(confirmRestorePoint).not.toHaveBeenCalled();
+  });
+});
+
+describe("SigningFlow multiple documents", () => {
+  const MULTI = {
+    documents: [
+      { content: "<a/>", mimeType: "application/xml", filename: "a.xml" },
+      { content: "JVBERg==", mimeType: "application/pdf;base64", filename: "b.pdf" },
+    ],
+    parameters: { form: "XAdES", container: "ASiC_E" },
+  } as const;
+  const V2_8: ServerInfo = { status: "READY", version: "2.8.0" };
+
+  test("skips the method chooser and signs on desktop via /api/v1/sign", async () => {
+    const chooseMethod = jest.fn(async () => SigningMethod.mobile);
+    const delegate = { ...fakeDelegate(), chooseMethod };
+    const signV1 = jest.fn(async () => DESKTOP_V1_RESPONSE);
+    const flow = new SigningFlow(fakeDesktop(V2_8, { signV1 }), fakeMobile(), delegate, OPTIONS);
+
+    const result = await flow.sign({
+      documents: [...MULTI.documents],
+      parameters: MULTI.parameters,
+    });
+
+    expect(chooseMethod).not.toHaveBeenCalled();
+    expect(signV1).toHaveBeenCalledTimes(1);
+    expect(signV1.mock.calls[0]).toEqual([
+      { documents: MULTI.documents, parameters: MULTI.parameters },
+      expect.any(AbortController),
+    ]);
+    // the desktop app reports the real MIME type and filename
+    expect(result).toEqual({
+      content: "djE=",
+      mimeType: "application/vnd.etsi.asic-e+zip",
+      encoding: "base64",
+      filename: "documents.asice",
+      signatures: [{ signedBy: "CN=John Smith", issuedBy: "CN=SVK eID ACA2" }],
+    });
+    expect(delegate.states[0]).toEqual({ type: "desktop", state: { type: "checkingApp" } });
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+  });
+
+  test("is not supported on mobile devices", async () => {
+    const delegate = fakeDelegate();
+    const flow = new SigningFlow(fakeDesktop(V2_8), fakeMobile(), delegate, {
+      ...OPTIONS,
+      isMobileDevice: () => true,
+    });
+
+    await expect(
+      flow.sign({ documents: [...MULTI.documents], parameters: MULTI.parameters })
+    ).rejects.toMatchObject({ code: "not-supported" });
+    expect(delegate.states).toEqual([]);
+  });
+
+  test("asks for an Autogram update when the app is too old", async () => {
+    const delegate = fakeDelegate();
+    const flow = new SigningFlow(fakeDesktop(READY), fakeMobile(), delegate, OPTIONS);
+
+    await expect(
+      flow.sign({ documents: [...MULTI.documents], parameters: MULTI.parameters })
+    ).rejects.toMatchObject({ code: "app-version-too-low" });
+    expect(delegate.states).toContainEqual({
+      type: "desktop",
+      state: { type: "appVersionTooLow", requiredVersion: "2.8.0", detectedVersion: "1.0.0" },
+    });
+  });
+
+  test("rejects an empty document list", async () => {
+    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), fakeDelegate(), OPTIONS);
+    await expect(flow.sign({ documents: [] })).rejects.toBeInstanceOf(AutogramError);
+  });
+});
+
+describe("SigningFlow mobile path with v1 parameters", () => {
+  test("sends the legacy shape to AVM and drops form-less levels it does not know", async () => {
+    const mobile = fakeMobile();
+    const flow = new SigningFlow(fakeDesktop(), mobile, fakeDelegate(SigningMethod.mobile), OPTIONS);
+
+    await flow.sign({
+      documents: [{ content: "JVBERg==", mimeType: "application/pdf;base64", filename: "a.pdf" }],
+      parameters: { profile: "BASELINE_T" },
+    });
+
+    const [, addDocumentArgs] = mobile.calls.find(([name]) => name === "addDocument")!;
+    expect(addDocumentArgs[0]).toEqual({
+      document: { content: "JVBERg==", filename: "a.pdf" },
+      parameters: {},
+      payloadMimeType: "application/pdf;base64",
+    });
+  });
+
+  test("refuses v1-only safety checks instead of silently skipping them", async () => {
+    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), fakeDelegate(SigningMethod.mobile), OPTIONS);
+    await expect(
+      flow.sign({
+        documents: [{ content: "x", mimeType: "application/pdf;base64" }],
+        parameters: { form: "PAdES", requireQualifiedCertificate: true },
+      })
+    ).rejects.toMatchObject({ code: "not-supported" });
   });
 });

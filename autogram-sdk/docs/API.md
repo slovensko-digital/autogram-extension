@@ -1,4 +1,4 @@
-# Autogram SDK — public API (0.6.x)
+# Autogram SDK — public API (0.7.x)
 
 This documents the supported public surface of `autogram-sdk`. Anything not
 listed here (internal channels, injected-ui internals, generated API types
@@ -26,7 +26,7 @@ const client = await createAutogramClient();
 
 const { content, mimeType, signatures } = await client.sign(
   { content: "hello world", mimeType: "text/plain", filename: "hello.txt" },
-  { level: "XAdES_BASELINE_B", container: "ASiC_E" }
+  { form: "XAdES", container: "ASiC_E" }
 );
 ```
 
@@ -54,22 +54,41 @@ The positional factory `CombinedClient.init(mobileChannel?,
 desktopChannel?, resetSignRequestCallback?, options?)` is **deprecated**
 but keeps working; it is equivalent to the options form above.
 
-### `client.sign(document, parameters?, options?)`
+### `client.sign(documents, parameters?, options?)`
 
 Returns `Promise<SignedDocumentResult>`. Throws `AutogramError` (see
 [Errors](#errors)); user cancellation is an error with code `user-cancelled`.
 
-- `document` — `DocumentToSign`:
+- `documents` — a `DocumentToSign` or an array of them:
   - `content` — the document bytes/text
   - `mimeType` — MIME type of `content`, **without** any `";base64"` suffix
   - `encoding` — `"utf-8"` (default) or `"base64"`
-  - `filename` — optional
-- `parameters` — see `SignatureParameters` (generated from the desktop
-  OpenAPI spec); notable fields: `level`, `container`, `packaging`,
-  `digestAlgorithm`, XML/XSD/XSLT fields for XAdES.
+  - `filename` — optional; names the file inside an ASiC container
+  - `xdcParameters` — optional XML Datacontainer / eForm parameters of
+    this document (`autoLoadEform`, `identifier`, `containerXmlns`,
+    `schema`, `transformation`, `fsFormIdentifier`, …)
+
+  An array signs all documents together into **one** ASiC-E container with
+  one signature ("spoločná autorizácia dokumentov"). This needs the Autogram
+  desktop app 2.8.0 or newer. The method chooser is skipped, and on mobile
+  devices the call fails with `not-supported`.
+- `parameters` — `SignatureParameters` (desktop `POST /api/v1/sign`):
+  `form` (`XAdES` | `PAdES` | `CAdES`), `profile` (`BASELINE_B` default |
+  `BASELINE_T`), `container`, `packaging`, `digestAlgorithm`,
+  canonicalization, `checkPDFACompliance`, and, for Autogram >= 2.8.0 on
+  desktop only, `requireQualifiedCertificate` and
+  `checkPDFEmbeddedAttachments`.
 - `options.signal` — an `AbortSignal` that cancels the signing step.
 - `options.onState` — receives `DesktopSigningState` updates when the
   desktop path is used.
+- `options.presentation` — `{ visualizationWidth }` for the desktop app's
+  document preview.
+
+The running Autogram version picks the endpoint. 2.8.0 and newer uses
+`POST /api/v1/sign`. Older versions use the legacy `POST /sign`, and
+requests they cannot fulfil fail with `app-version-too-low`; the dialog
+asks the user to update. Autogram v mobile receives the legacy shape, and
+v1-only checks fail there with `not-supported`.
 
 `SignedDocumentResult`:
 
@@ -83,25 +102,16 @@ interface SignedDocumentResult {
 }
 ```
 
-#### Deprecated positional form
+#### Legacy input
 
-The previous signature is still available and behaves exactly as before,
-returning the legacy `SignedObject` (`{ content, signedBy, issuedBy }`,
-last signer only):
-
-```typescript
-client.sign(document, signatureParameters, payloadMimeType, decodeBase64?, options?)
-```
-
-- `document` — `{ content: string; filename?: string }`
-- `payloadMimeType` — MIME type of `document.content`; append `;base64`
-  for Base64-encoded binary.
-- `decodeBase64` — when `true`, the returned `content` is Base64-decoded.
-- `options.onDesktopStateChange` — desktop state updates.
-
-Prefer the unified form; convert between shapes with `toLegacySignedObject`,
-`fromDesktopResponse`, `fromAvmSignedDocument` and `toPayloadMimeType`
-(all exported from `autogram-sdk`).
+The positional form `sign(document, parameters, payloadMimeType,
+decodeBase64?)` was removed in 0.7.0. Convert legacy-shaped input with
+`fromLegacySignArgs(document, legacyParameters?, payloadMimeType?)` →
+`{ documents, parameters, presentation }`, or
+`fromLegacySignatureParameters(legacyParameters)` →
+`{ parameters, xdcParameters, presentation }`. Convert the result back to
+the old `{ content, signedBy, issuedBy }` with `toLegacySignedObject`. See
+[MIGRATION.md](MIGRATION.md#06x--070).
 
 ### `client.useRestorePoint(restorePoint)`
 
@@ -121,19 +131,27 @@ app, readiness polling, and mapping cancellations.
 import { DesktopClient } from "autogram-sdk";
 
 const desktop = new DesktopClient();
-const signed = await desktop.sign(document, parameters, payloadMimeType, {
-  abortController,
-  onStateChange: (state) => console.log(state.type),
-});
+const signed = await desktop.sign(
+  { content, mimeType: "application/pdf", encoding: "base64", filename },
+  { form: "PAdES" },
+  {
+    abortController,
+    onStateChange: (state) => console.log(state.type),
+  }
+);
 ```
 
-- `desktop.sign(document, parameters?, payloadMimeType?, options?)` — sign a
-  single document. `options`: `onStateChange`, `abortController`, `batchId`.
+- `desktop.sign(documents, parameters?, options?)` — same `documents` and
+  `parameters` as `CombinedClient.sign`, returns `SignedDocumentResult`.
+  `options`: `onStateChange`, `abortController`, `batchId` (single document
+  only), `presentation`.
 - `desktop.startBatch(totalNumberOfDocuments, options?)` — start a batch
   signing session; resolves with the `batchId` to pass to `sign`.
 - `desktop.endBatch(batchId, abortController?)` — close the batch.
-- `desktop.launch(abortController?, onStateChange?)` — ensure the app is
-  running (called automatically by `sign`/`startBatch`).
+- `desktop.launch(abortController?, onStateChange?, { minimumAppVersion }?)`
+  — ensure the app is running (called automatically by `sign`/`startBatch`);
+  resolves with the server info (`version`, `features`, …). With
+  `minimumAppVersion`, an older app fails with `app-version-too-low`.
 
 `DesktopSigningState` (reported via `onStateChange` and shown by the
 `CombinedClient` UI):
@@ -141,7 +159,7 @@ const signed = await desktop.sign(document, parameters, payloadMimeType, {
 ```
 checkingApp → launchingApp → (appMayNotBeInstalled) → waitingForSignature
                                    ↘ appNotInstalled
-signingCancelled | error
+appVersionTooLow (requiredVersion, detectedVersion) | signingCancelled | error
 ```
 
 ## Mobile-only signing: `MobileClient` (`autogram-sdk`)
@@ -260,7 +278,9 @@ interface SignedObject {
 
 Backend-specific generated types are re-exported with `Desktop`/`AVM`
 prefixes, e.g. `DesktopSignatureParameters`, `DesktopAutogramDocument`,
-`DesktopServerInfo`, `AVMDocumentToSign`, `AVMSignedDocument`,
+`DesktopXDCParameters`, `DesktopPresentationParameters` (`POST /api/v1/sign`),
+`DesktopLegacySignatureParameters`, `DesktopLegacyAutogramDocument`
+(`POST /sign`), `DesktopServerInfo`, `AVMDocumentToSign`, `AVMSignedDocument`,
 `AVMIntegrationDocument`. Use these when you talk to one backend directly.
 
 ## Errors
@@ -292,6 +312,8 @@ try {
 | `aborted` | Operation aborted programmatically (AbortSignal, page close) |
 | `timeout` | Operation did not finish in time |
 | `app-not-installed` | Desktop app could not be launched |
+| `app-version-too-low` | Desktop app is too old for the request (multiple documents, v1-only checks need 2.8.0) |
+| `not-supported` | The signing method cannot fulfil the request (multiple documents on a mobile device, v1-only checks with Autogram v mobile) |
 | `connection-failed` | Network request to a signing backend failed |
 | `protocol-error` | Unexpected response shape or bridge failure |
 | `server-error` | Signing backend reported an error |

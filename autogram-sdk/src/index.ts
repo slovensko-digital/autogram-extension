@@ -11,6 +11,11 @@ export type {
   AutogramDesktopIntegrationInterface,
   SignatureParameters as DesktopSignatureParameters,
   AutogramDocument as DesktopAutogramDocument,
+  XDCParameters as DesktopXDCParameters,
+  PresentationParameters as DesktopPresentationParameters,
+  SignRequestBody as DesktopSignRequestBody,
+  LegacySignatureParameters as DesktopLegacySignatureParameters,
+  LegacyAutogramDocument as DesktopLegacyAutogramDocument,
   SignResponseBody as DesktopSignResponseBody, // TODO we could unify SignResponseBody from desktop and SignedDocument from avm
   BatchStartResponseBody as DesktopBatchStartResponseBody,
   BatchEndResponseBody as DesktopBatchEndResponseBody,
@@ -46,6 +51,8 @@ export {
   UserCancelledSigningException,
   AutogramSdkException,
   AutogramAppNotInstalledException,
+  AutogramAppVersionTooLowException,
+  MultiDocumentSigningOnMobileException,
 } from "./errors";
 export type { AutogramErrorCode, SerializedAutogramError } from "./errors";
 
@@ -62,6 +69,13 @@ export {
   fromAvmSignedDocument,
   toLegacySignedObject,
 } from "./types";
+
+export {
+  SIGN_V1_MIN_APP_VERSION,
+  fromLegacySignArgs,
+  fromLegacySignatureParameters,
+  fromPayloadMimeType,
+} from "./sign-request";
 
 export { DesktopClient } from "./desktop-client";
 export type { DesktopSignOptions } from "./desktop-client";
