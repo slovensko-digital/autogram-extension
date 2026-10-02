@@ -46,20 +46,39 @@ export type ConflictResolutionStrategy =
   | typeof CONFLICT_RESOLUTION_REPLACE_ORIGINAL
   | typeof CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
 
+/** Optional per-site behavior, on top of the `window.ditec` replacement. */
+interface SiteFeatures {
+  /**
+   * Also install the native-Autogram network interceptor (see
+   * `native-autogram-intercept.ts`) on this site, alongside the usual
+   * `window.ditec` replacement. For portals that ship their own direct
+   * client to the local Autogram desktop app (e.g. nove.slovensko.sk's
+   * message composer), independent of `window.ditec`.
+   */
+  interceptNativeAutogram?: boolean;
+
+  /**
+   * Fix the picker on nove.slovensko.sk's message composer: pin its
+   * signing method to "Dsigner" (served by our `window.ditec`, so Autogram
+   * desktop + AVM) and replace the method switcher with a label — see
+   * `fixed-signer.ts`.
+   */
+  fixPickerNoveSlovenskoSk?: boolean;
+}
+
 class Site {
+  public interceptNativeAutogram: boolean;
+  public fixPickerNoveSlovenskoSk: boolean;
+
   constructor(
     public url: string,
     public injectionStrategy: InjectionStrategy,
     public conflictResolution: ConflictResolutionStrategy,
-    /**
-     * Also install the native-Autogram network interceptor (see
-     * `native-autogram-intercept.ts`) on this site, alongside the usual
-     * `window.ditec` replacement. For portals that ship their own direct
-     * client to the local Autogram desktop app (e.g. nove.slovensko.sk's
-     * message composer), independent of `window.ditec`.
-     */
-    public interceptNativeAutogram: boolean = false
-  ) {}
+    features: SiteFeatures = {}
+  ) {
+    this.interceptNativeAutogram = features.interceptNativeAutogram ?? false;
+    this.fixPickerNoveSlovenskoSk = features.fixPickerNoveSlovenskoSk ?? false;
+  }
 
   matchRuleExpl(str: string, rule: string) {
     // for this solution to work on any string, no matter what characters it has
@@ -98,11 +117,9 @@ class SupportedSites {
     url: string,
     injection: InjectionStrategy,
     conflictResolution: ConflictResolutionStrategy,
-    interceptNativeAutogram: boolean = false
+    features: SiteFeatures = {}
   ) {
-    this.sites.push(
-      new Site(url, injection, conflictResolution, interceptNativeAutogram)
-    );
+    this.sites.push(new Site(url, injection, conflictResolution, features));
   }
 
   get enabledUrls() {
@@ -145,12 +162,14 @@ supportedSites.addSite(
 
 // The message composer also ships its own direct client to the local
 // Autogram desktop app (see native-autogram-intercept.ts) — independent of
-// window.ditec, hence its own addSite() call with the extra flag.
+// window.ditec. We pin it to its D.Signer path (our window.ditec) and hide
+// its signing-method picker; the intercept stays as a fallback for when
+// that pin fails.
 supportedSites.addSite(
   "https://message-constructor-web.slovensko.sk/*",
   ON_DOCUMENT_LOAD_INJECTION,
   CONFLICT_RESOLUTION_REPLACE_ORIGINAL,
-  true
+  { fixPickerNoveSlovenskoSk: true }
 );
 
 [

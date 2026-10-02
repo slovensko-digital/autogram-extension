@@ -2,7 +2,10 @@ import { getOptions } from "../options/content";
 import browser from "webextension-polyfill";
 import packageJson from "../../package.json";
 import { ContentChannelPassthrough } from "../dbridge_js/autogram/channel/content";
-import { preselectAutogramSigner } from "../dbridge_js/autogram/preselect-signer";
+import {
+  forceDSignerSigner,
+  replaceSignerTypeSwitcher,
+} from "../dbridge_js/autogram/fixed-signer";
 import {
   supportedSites,
   ON_DOCUMENT_LOAD_INJECTION,
@@ -63,7 +66,7 @@ getOptions()
 
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
-      maybePreselectAutogramSigner(document);
+      maybeFixSignerType(document);
       insertInjectScript(document, extensionOptions);
 
       // TODO: probably this should be conditional, based on the website
@@ -82,21 +85,22 @@ getOptions()
   .catch(captureException);
 
 /**
- * On portals that ship their own client to the local Autogram desktop app
- * (nove.slovensko.sk's message composer), make Autogram the preselected
- * signing method — the extension serves that API, so the portal's own
- * "Autogram" option is the one that works without D.Launcher.
+ * On nove.slovensko.sk's message composer, because native Autogram integration cannot be overriden,
+ * we pin the signing method to "Dsigner" — that path goes through `window.ditec`, which we replace,
+ * so the user gets Autogram desktop + AVM mobile signing — and swap the
+ * portal's signing-method switcher for an "Autogram (cez rozšírenie)" label.
  */
-function maybePreselectAutogramSigner(doc: Document) {
+function maybeFixSignerType(doc: Document) {
   const site = supportedSites.matchUrl(doc.location.href);
-  if (!site.interceptNativeAutogram) {
+  if (!site.fixPickerNoveSlovenskoSk) {
     return;
   }
   const targetWindow = doc.defaultView;
   if (!targetWindow) {
     return;
   }
-  preselectAutogramSigner(targetWindow);
+  forceDSignerSigner(targetWindow);
+  replaceSignerTypeSwitcher(doc);
 }
 
 function insertInjectScript(doc: Document, extensionOptions: ExtensionOptions) {
