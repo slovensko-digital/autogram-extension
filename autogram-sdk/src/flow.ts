@@ -327,11 +327,12 @@ export class SigningFlow {
   }
 
   /**
-   * Polls the paired devices of the current mobile signing until one shows
-   * up (resolves with the list), `signal` aborts or the timeout passes
+   * Polls the paired devices of the current mobile signing until a new one
+   * shows up (resolves with the list), `signal` aborts or the timeout passes
    * (resolves `null`). Refreshes the pairing URL before its JWT expires
    * and reports it through `onPairingUrl`. Use it while a pairing QR is
-   * shown. Never throws.
+   * shown. Devices paired before the wait started do not count, so an
+   * already paired phone does not end the wait. Never throws.
    */
   async waitForPairing(
     signal: AbortSignal,
@@ -358,6 +359,18 @@ export class SigningFlow {
       }
     };
 
+    const listDeviceIds = async () => {
+      try {
+        const devices = await mobile.getPairedDevices();
+        return { devices, ids: new Set(devices.map((d) => d.deviceId)) };
+      } catch (e) {
+        log.warn("Polling paired devices failed", e);
+        return null;
+      }
+    };
+    // device ids already paired; null until the first successful listing
+    let knownDeviceIds = (await listDeviceIds())?.ids ?? null;
+
     const startedAt = Date.now();
     while (!signal.aborted && Date.now() - startedAt < timeoutMs) {
       try {
@@ -369,18 +382,20 @@ export class SigningFlow {
       if (signal.aborted) {
         break;
       }
-      try {
-        const devices = await mobile.getPairedDevices();
-        if (signal.aborted) {
-          break;
-        }
-        if (devices.length > 0) {
-          pairing.hasPairedDevice = true;
-          return devices;
-        }
-      } catch (e) {
-        log.warn("Polling paired devices failed", e);
+      const listing = await listDeviceIds();
+      if (signal.aborted) {
+        break;
       }
+      if (!listing) {
+        continue;
+      }
+      const known = knownDeviceIds;
+      if (known && listing.devices.some((d) => !known.has(d.deviceId))) {
+        pairing.hasPairedDevice = true;
+        return listing.devices;
+      }
+      // forget unpaired devices too, so pairing the same phone again counts
+      knownDeviceIds = listing.ids;
     }
     return null;
   }
