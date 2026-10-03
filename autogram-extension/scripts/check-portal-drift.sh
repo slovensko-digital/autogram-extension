@@ -26,7 +26,15 @@ while read -r expected url fixture; do
       rm -f "$tmp"
       ;;
     *)
-      actual=$(curl --fail --silent --show-error --location "$url" | shasum -a 256 | cut -d' ' -f1)
+      # Download to a file first: hashing a piped curl would turn a failed
+      # download into the empty-input hash and misreport it as drift.
+      tmp=$(mktemp)
+      if curl --fail --silent --show-error --location "$url" -o "$tmp"; then
+        actual=$(shasum -a 256 "$tmp" | cut -d' ' -f1)
+      else
+        actual=""
+      fi
+      rm -f "$tmp"
       ;;
   esac
   if [ -z "$actual" ]; then

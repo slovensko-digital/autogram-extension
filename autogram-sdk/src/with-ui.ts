@@ -63,13 +63,17 @@ export interface AutogramClientOptions {
   desktopChannel?: AutogramDesktopIntegrationInterface;
   /** Called when the client resets its signing state. */
   onResetSignRequest?: () => void;
-  /** Send push notifications to paired mobile devices. Default `true`. */
+  /**
+   * Send push notifications to paired mobile devices. Default `true`.
+   * Applies to the default mobile channel; a custom `mobileChannel`
+   * decides about notifications itself.
+   */
   enableNotifications?: boolean;
   /** Platform reported when registering the AVM integration. */
   platform?: string;
   /** Display name reported when registering the AVM integration. */
   displayName?: string;
-  /** Whether pairing is enabled for mobile notifications. Default `true`. */
+  /** Whether pairing is enabled for mobile notifications. Default `false`. */
   pairingEnabled?: boolean;
 }
 
@@ -93,12 +97,14 @@ export interface ClientSignOptions {
 export async function createAutogramClient(
   options: AutogramClientOptions = {}
 ): Promise<CombinedClient> {
+  const enableNotifications = options.enableNotifications ?? true;
   return CombinedClient.init(
-    options.mobileChannel ?? new AvmSimpleChannel(),
+    options.mobileChannel ??
+      new AvmSimpleChannel({ notifyDevices: enableNotifications }),
     options.desktopChannel ?? new AutogramDesktopSimpleChannel(),
     options.onResetSignRequest,
     {
-      enableNotifications: options.enableNotifications ?? true,
+      enableNotifications,
       platform: options.platform ?? "unknown",
       displayName: options.displayName ?? "",
       pairingEnabled: options.pairingEnabled ?? false,
@@ -161,7 +167,7 @@ export class CombinedClient {
    * @deprecated Prefer {@link createAutogramClient} (options object).
    */
   public static async init(
-    clientMobileIntegration: AutogramVMobileIntegrationInterfaceStateful = new AvmSimpleChannel(),
+    clientMobileIntegration?: AutogramVMobileIntegrationInterfaceStateful,
     clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
     resetSignRequestCallback?: () => void,
     options: CombinedClientOptions = {
@@ -170,6 +176,11 @@ export class CombinedClient {
       displayName: "",
     }
   ): Promise<CombinedClient> {
+    const mobileIntegration =
+      clientMobileIntegration ??
+      new AvmSimpleChannel({
+        notifyDevices: options.enableNotifications ?? true,
+      });
     log.debug(`init version ${packageJson.version}`);
     async function createUI(): Promise<AutogramRoot> {
       // The client can be constructed at document_start (the extension's
@@ -222,7 +233,7 @@ export class CombinedClient {
     log.debug("CombinedClient init new CombinedClient");
     return new CombinedClient(
       ui,
-      clientMobileIntegration,
+      mobileIntegration,
       clientDesktopIntegration,
       resetSignRequestCallback,
       options

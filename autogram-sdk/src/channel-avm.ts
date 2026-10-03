@@ -45,6 +45,12 @@ export class AvmSimpleChannel
   private request: SignatureRequest | null = null;
   private abortController: AbortController | null = null;
 
+  /**
+   * @param options.notifyDevices send a push notification to paired
+   * devices when a document is added (default `true`).
+   */
+  constructor(private options: { notifyDevices?: boolean } = {}) {}
+
   init(): Promise<void> {
     return Promise.resolve();
   }
@@ -58,7 +64,9 @@ export class AvmSimpleChannel
     return this.client.pairingQrCodeUrl();
   }
   async addDocument(documentToSign: AVMDocumentToSign): Promise<void> {
-    this.request = await this.client.requestSignature(documentToSign);
+    this.request = await this.client.requestSignature(documentToSign, {
+      notifyDevices: this.options.notifyDevices ?? true,
+    });
   }
   async sendNotification(): Promise<void> {
     await this.currentRequest().notifyDevices();

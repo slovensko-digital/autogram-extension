@@ -22,6 +22,7 @@ import { get, set } from "idb-keyval";
 import browser from "webextension-polyfill";
 import { createLogger } from "../../log";
 import { getAvmIntegrationRegistrationInfo } from "../../util-extension";
+import { getOptions } from "../../options/content";
 
 const log = createLogger("ag-ext.bg.worker");
 
@@ -282,14 +283,12 @@ class AvmExecutor {
     },
 
     addDocument: async ({ documentToSign }, context) => {
-      const storageData = await browser.storage.local.get({
-        options: { notifyPairedDevices: true },
-      });
+      // Opt-in beta setting: only an explicit `true` enables notifications
+      // (stored options from older versions lack the key).
+      const { notifyPairedDevices } = await getOptions();
       const request = await this.client.requestSignature(
         documentToSign as unknown as AVMDocumentToSign,
-        {
-          notifyDevices: storageData.options?.notifyPairedDevices !== false,
-        }
+        { notifyDevices: notifyPairedDevices === true }
       );
       await set(dbKeyDocumentRef(context.senderId), request.token);
       return null;

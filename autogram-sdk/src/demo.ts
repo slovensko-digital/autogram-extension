@@ -6,6 +6,7 @@
  * one ASiC-E container (Autogram desktop app >= 2.8.0). Loaded by the pages in `demos/` — not part of
  * the public API.
  */
+import { Base64 } from "js-base64";
 import { createAutogramClient } from "./with-ui";
 
 async function main() {
@@ -21,8 +22,10 @@ async function main() {
     const signed = await client.sign(
       await Promise.all(
         files.map(async (f) => ({
-          content: await f.text(),
+          // read as bytes: File.text() would corrupt binary files (PDF, …)
+          content: Base64.fromUint8Array(new Uint8Array(await f.arrayBuffer())),
           mimeType: f.type || "application/octet-stream",
+          encoding: "base64" as const,
           filename: f.name,
         }))
       ),
@@ -35,9 +38,16 @@ async function main() {
     console.log(signed);
 
     const a = document.createElement("a");
-    const blob = new Blob([signed.content], {
-      type: signed.mimeType,
-    });
+    const blob = new Blob(
+      [
+        signed.encoding === "base64"
+          ? Base64.toUint8Array(signed.content)
+          : signed.content,
+      ],
+      {
+        type: signed.mimeType,
+      }
+    );
     const url = URL.createObjectURL(blob);
     a.href = url;
     a.download = `${file.name}.asice`;
