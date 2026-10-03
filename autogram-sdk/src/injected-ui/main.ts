@@ -12,6 +12,7 @@ import "./suggest-pairing.screen";
 import {
   EventChoice,
   EventClose,
+  EventPairingStep,
   EventRestorePointResult,
   EventRetryMobileNotification,
 } from "./events";
@@ -113,6 +114,17 @@ export class AutogramRoot extends LitElement {
 
   onRetryMobileNotification: (() => Promise<void>) | null = null;
 
+  /** Polls for a new pairing; resolves the devices, `null` on abort/timeout. */
+  onWaitForPairing:
+    | ((
+        signal: AbortSignal,
+        onPairingUrl: (pairingUrl: string) => void
+      ) => Promise<PairedDevice[] | null>)
+    | null = null;
+
+  /** the pairing poll of the QR screen's pairing step */
+  private pairingWatch: AbortController | null = null;
+
   /**
    * Some host pages (e.g. konto.bratislava.sk) manage focus traps by setting the
    * `inert` attribute on every element outside their own modal — including
@@ -131,6 +143,7 @@ export class AutogramRoot extends LitElement {
 
   constructor() {
     super();
+    this.stopPairingWatch();
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
     this.mobilePairingUrl = null;
@@ -191,6 +204,45 @@ export class AutogramRoot extends LitElement {
     }
   }
 
+  _handlePairingStep(event: EventPairingStep) {
+    log.debug("_handlePairingStep", event.detail);
+    this.stopPairingWatch();
+    if (!event.detail.open || !this.onWaitForPairing) {
+      return;
+    }
+
+    const watch = new AbortController();
+    this.pairingWatch = watch;
+    this.onWaitForPairing(watch.signal, (pairingUrl) => {
+      this.mobilePairingUrl = pairingUrl;
+    })
+      .then((devices) => {
+        if (
+          !devices ||
+          watch.signal.aborted ||
+          this.screen !== Screens.signMobile
+        ) {
+          return;
+        }
+        // the pairing step confirms it; the request goes to the phone
+        this.pairedDevices = devices;
+        void this._handleRetryMobileNotification(
+          new EventRetryMobileNotification()
+        );
+      })
+      .catch((error) => log.warn("Waiting for pairing failed", error))
+      .finally(() => {
+        if (this.pairingWatch === watch) {
+          this.pairingWatch = null;
+        }
+      });
+  }
+
+  private stopPairingWatch() {
+    this.pairingWatch?.abort();
+    this.pairingWatch = null;
+  }
+
   render() {
     log.debug("render");
     return html`
@@ -210,8 +262,10 @@ export class AutogramRoot extends LitElement {
                   @autogram-close=${this._closeSigningScreen}
                   @autogram-retry-mobile-notification=${this
                     ._handleRetryMobileNotification}
+                  @autogram-pairing-step=${this._handlePairingStep}
                   .url=${this.mobileSigningUrl ?? ""}
                   .pairingUrl=${this.mobilePairingUrl}
+                  .pairedDevices=${this.pairedDevices}
                 ></autogram-sign-mobile-screen>`
               : this.screen === Screens.signingCancelled
                 ? html`<autogram-signing-cancelled-screen
@@ -308,9 +362,11 @@ export class AutogramRoot extends LitElement {
     pairingUrl: string | null,
     abortController: AbortController
   ) {
+    this.stopPairingWatch();
     this.screen = Screens.signMobile;
     this.mobileSigningUrl = url;
     this.mobilePairingUrl = pairingUrl;
+    this.pairedDevices = null;
     this.abortController = abortController;
   }
 
@@ -319,12 +375,15 @@ export class AutogramRoot extends LitElement {
    * URL before the pairing JWT expires; closing aborts `abortController`.
    */
   suggestPairing(pairingUrl: string, abortController: AbortController) {
-    const alreadyShown = this.screen === Screens.suggestPairing;
+    this.stopPairingWatch();
+    const visible = this.style.display === "flex";
+    if (this.screen !== Screens.suggestPairing) {
+      this.pairedDevices = null;
+    }
     this.screen = Screens.suggestPairing;
     this.mobilePairingUrl = pairingUrl;
-    this.pairedDevices = null;
     this.abortController = abortController;
-    if (!alreadyShown) {
+    if (!visible) {
       this.show();
     }
   }

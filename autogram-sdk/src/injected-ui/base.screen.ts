@@ -142,6 +142,83 @@ export class AutogramBaseScreen extends LitElement {
         line-height: 24px;
       }
 
+      .main p.paired-notice {
+        margin: 20px 0 0;
+        padding: 12px 16px;
+        border-radius: var(--ag-radius);
+        background: var(--ag-success-soft);
+        color: var(--ag-text);
+        font-size: 15px;
+        line-height: 24px;
+      }
+
+      .main .col > p.paired-notice:first-child {
+        margin-top: 0;
+      }
+
+      .main p.after-notice {
+        margin-top: 16px;
+      }
+
+      .main p.waiting {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        line-height: 24px;
+        color: var(--ag-text-subtle);
+      }
+
+      .main p.waiting::before {
+        content: "";
+        flex-shrink: 0;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--ag-border);
+        border-top-color: var(--ag-primary);
+        border-radius: 50%;
+        animation: ag-spin 0.8s linear infinite;
+      }
+
+      @keyframes ag-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* sits where the QR code would, centered on the text beside it */
+      .success-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        align-self: center;
+        width: 246px;
+      }
+
+      .success-mark span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--ag-success-soft);
+        color: var(--ag-success);
+      }
+
+      .success-mark svg {
+        width: 64px;
+        height: 64px;
+      }
+
+      @media (max-width: 768px) {
+        .success-mark {
+          width: auto;
+          order: -1;
+        }
+      }
+
       /* numbered steps with round badges, as on the AVM site */
       .main ol {
         list-style: none;

@@ -374,3 +374,126 @@ describe("CombinedClient.sign errors", () => {
     expect(root().errorMessage).toBe("Signing failed badly");
   });
 });
+
+describe("CombinedClient phone pairing", () => {
+  const PHONE = { deviceId: "d1", platform: "android", displayName: "Pixel" };
+
+  type Screen = HTMLElement & {
+    step: unknown;
+    pairedDevices: unknown;
+    updateComplete: Promise<boolean>;
+    shadowRoot: ShadowRoot;
+  };
+  const screen = (tag: string) =>
+    root().shadowRoot!.querySelector(tag) as Screen | null;
+
+  async function until(condition: () => unknown) {
+    for (let i = 0; i < 200 && !condition(); i++) {
+      await new Promise((r) => setTimeout(r, 1));
+    }
+    expect(condition()).toBeTruthy();
+  }
+
+  /** `deviceLists`: what successive paired-device lookups return */
+  async function setupPairing(
+    deviceLists: (typeof PHONE)[][],
+    waitForSignature: () => Promise<SignedDocument> = async () => MOBILE_SIGNED
+  ) {
+    document.body.innerHTML = "";
+    desktop = fakeDesktop();
+    let call = 0;
+    mobile = Object.assign(fakeMobile(), {
+      getPairedDevices: async () => {
+        mobile.calls.push(["getPairedDevices", []]);
+        return deviceLists[Math.min(call++, deviceLists.length - 1)];
+      },
+      waitForSignature: async () => {
+        mobile.calls.push(["waitForSignature", []]);
+        return waitForSignature();
+      },
+    });
+    client = await createAutogramClient({
+      desktopChannel: desktop,
+      mobileChannel: mobile,
+      pairingEnabled: true,
+    });
+    // poll fast instead of every 3 s
+    (
+      client as unknown as { flow: { options: Record<string, number> } }
+    ).flow.options.pairingPollIntervalMs = 1;
+  }
+
+  const signDocument = () =>
+    client.sign({ content: "<a/>", mimeType: "application/xml" });
+
+  test("no paired phone: the dialog stays open on a success page offering pairing", async () => {
+    await setupPairing([[]]);
+    const pending = signDocument();
+    await choose(SigningMethod.mobile);
+    await pending;
+
+    expect(root().style.display).toBe("flex");
+    const suggestion = screen("autogram-suggest-pairing-screen")!;
+    expect(suggestion.step).toBe("success");
+    await suggestion.updateComplete;
+    const buttons = Array.from(
+      suggestion.shadowRoot.querySelectorAll<HTMLButtonElement>(".main button")
+    );
+    expect(buttons.map((b) => b.textContent!.trim())).toEqual([
+      "Spárovať mobil",
+      "Teraz nie",
+    ]);
+
+    buttons[0].click();
+    await suggestion.updateComplete;
+    expect(suggestion.step).toBe("pairing");
+    expect(suggestion.shadowRoot.querySelector(".qr")).not.toBeNull();
+  });
+
+  test("already paired phone: the dialog closes after signing", async () => {
+    await setupPairing([[PHONE]]);
+    const pending = signDocument();
+    await choose(SigningMethod.mobile);
+    await pending;
+
+    expect(root().style.display).toBe("none");
+    expect(screen("autogram-suggest-pairing-screen")).toBeNull();
+  });
+
+  test("pairing during signing confirms it, notifies the phone and keeps the way back", async () => {
+    let deliver: () => void = () => {};
+    const signed = new Promise<SignedDocument>(
+      (resolve) => (deliver = () => resolve(MOBILE_SIGNED))
+    );
+    await setupPairing([[], [], [PHONE]], () => signed);
+    const pending = signDocument();
+    await choose(SigningMethod.mobile);
+    await until(() => screen("autogram-sign-mobile-screen"));
+    const qrScreen = screen("autogram-sign-mobile-screen")!;
+    await qrScreen.updateComplete;
+
+    qrScreen.shadowRoot.querySelector<HTMLAnchorElement>(".hint a")!.click();
+    expect(qrScreen.step).toBe(1); // pairing step
+    await until(() => argsOf(mobile.calls, "sendNotification"));
+
+    await qrScreen.updateComplete;
+    expect(qrScreen.step).toBe(1); // still on the pairing step
+    expect(qrScreen.pairedDevices).toEqual([PHONE]);
+    expect(
+      qrScreen.shadowRoot.querySelector(".paired-notice")!.textContent
+    ).toContain("Pixel");
+
+    const back =
+      qrScreen.shadowRoot.querySelector<HTMLButtonElement>(".main button")!;
+    expect(back.textContent!.trim()).toBe("Späť na podpisovanie");
+    back.click();
+    await qrScreen.updateComplete;
+    expect(qrScreen.step).toBe(0); // signing QR, still showing the notice
+    expect(qrScreen.shadowRoot.querySelector(".paired-notice")).not.toBeNull();
+
+    // paired meanwhile: no pairing suggestion after the signature
+    deliver();
+    await pending;
+    expect(root().style.display).toBe("none");
+  });
+});

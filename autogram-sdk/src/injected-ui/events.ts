@@ -34,6 +34,17 @@ export class EventRestorePointResult extends CustomEvent<boolean> {
   }
 }
 
+/** The "pair this computer" step of the QR screen was opened or left. */
+export class EventPairingStep extends CustomEvent<{ open: boolean }> {
+  constructor(open: boolean) {
+    super("autogram-pairing-step", {
+      detail: { open },
+      bubbles: true,
+      composed: true,
+    });
+  }
+}
+
 export class EventRetryMobileNotification extends CustomEvent<null> {
   constructor() {
     super("autogram-retry-mobile-notification", {

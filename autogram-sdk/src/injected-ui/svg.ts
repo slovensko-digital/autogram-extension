@@ -2,6 +2,10 @@ export const closeSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.
 <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
 
+export const checkSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<path d="M5 12.5L10 17.5L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
 export const computerSvg = `<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_646_952)">
 <path d="M6 10.5C6 9.675 6.675 9 7.5 9H31.5C32.325 9 33 8.325 33 7.5C33 6.675 32.325 6 31.5 6H6C4.35 6 3 7.35 3 9V25.5H2.25C1.005 25.5 0 26.505 0 27.75C0 28.995 1.005 30 2.25 30H21V25.5H6V10.5ZM34.5 12H25.5C24.675 12 24 12.675 24 13.5V28.5C24 29.325 24.675 30 25.5 30H34.5C35.325 30 36 29.325 36 28.5V13.5C36 12.675 35.325 12 34.5 12ZM33 25.5H27V15H33V25.5Z" fill="currentColor"/>

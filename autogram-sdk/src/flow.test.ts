@@ -321,35 +321,105 @@ describe("SigningFlow notifications", () => {
     expect(delegate.states.at(-1)).toEqual({ type: "done" });
   });
 
-  test("no paired device: suggests pairing after sign() resolved, then reports the pairing", async () => {
+  test("no paired device: done keeps the dialog for a pairing suggestion, then reports the pairing", async () => {
     const delegate = fakeDelegate(SigningMethod.mobile);
-    let openGate: () => void = () => {};
-    const gate = new Promise<void>((resolve) => (openGate = resolve));
-    const lists = [[], [], [PHONE]];
-    let call = 0;
-    const mobile = fakeMobile({
-      getPairedDevices: async () => {
-        await gate;
-        return lists[Math.min(call++, lists.length - 1)];
-      },
-    });
+    // first lookup happens while preparing the signing
+    const mobile = notifyingMobile([[], [], [PHONE]]);
     const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
 
-    // resolves while the device lookup is still blocked
     const result = await flow.sign(REQUEST);
     expect(result.content).toBe("bW9iaWxl");
-    expect(delegate.states.at(-1)).toEqual({ type: "done" });
-
-    openGate();
-    await waitForState(delegate, isState("paired"));
+    // both emitted before sign() resolved, so the dialog never closes
     expect(delegate.states.slice(-2)).toEqual([
+      { type: "done", pairingSuggestion: true },
       {
         type: "mobile",
         state: "suggest-pairing",
         pairingUrl: "https://avm/pair",
       },
-      { type: "mobile", state: "paired", devices: [PHONE] },
     ]);
+
+    await waitForState(delegate, isState("paired"));
+    expect(delegate.states.at(-1)).toEqual({
+      type: "mobile",
+      state: "paired",
+      devices: [PHONE],
+    });
+  });
+
+  test("a phone paired during signing skips the suggestion", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    let deliverSignature: () => void = () => {};
+    const signed = new Promise<void>((resolve) => (deliverSignature = resolve));
+    const mobile = notifyingMobile([[], [PHONE]]);
+    mobile.waitForSignature = async () => {
+      await signed;
+      return { content: "bW9iaWxl", signedBy: "s", issuedBy: "i" } as never;
+    };
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    const pending = flow.sign(REQUEST);
+    await waitForState(delegate, isState("qr-ready"));
+    // the "pair this computer" step of the QR screen
+    const devices = await flow.waitForPairing(new AbortController().signal);
+    expect(devices).toEqual([PHONE]);
+
+    deliverSignature();
+    await pending;
+    await new Promise((r) => setTimeout(r, 20));
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+    expect(delegate.states.some(isState("suggest-pairing"))).toBe(false);
+  });
+
+  test("waitForPairing resolves null when aborted or outside a mobile signing", async () => {
+    const mobile = notifyingMobile([[]]);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      FAST
+    );
+    await expect(
+      flow.waitForPairing(new AbortController().signal)
+    ).resolves.toBeNull();
+
+    const pending = flow.sign(REQUEST);
+    await pending;
+    const abortController = new AbortController();
+    const waiting = flow.waitForPairing(abortController.signal);
+    abortController.abort();
+    await expect(waiting).resolves.toBeNull();
+  });
+
+  test("waitForPairing reports a refreshed pairing URL", async () => {
+    let n = 0;
+    const mobile = fakeMobile({
+      getPairedDevices: async () => [],
+      getPairingQrCodeUrl: async () => `https://avm/pair/${n++}`,
+    });
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      { ...FAST, pairingUrlRefreshMs: 0, pairingTimeoutMs: 30 }
+    );
+    let release: () => void = () => {};
+    const signed = new Promise<void>((resolve) => (release = resolve));
+    mobile.waitForSignature = async () => {
+      await signed;
+      return null as never;
+    };
+    const pending = flow.sign(REQUEST).catch(() => undefined);
+    await new Promise((r) => setTimeout(r, 5));
+
+    const urls: string[] = [];
+    await flow.waitForPairing(new AbortController().signal, (url) =>
+      urls.push(url)
+    );
+    expect(urls.length).toBeGreaterThan(0);
+    expect(urls[0]).not.toBe("https://avm/pair/0");
+    release();
+    await pending;
   });
 
   test("refreshes the pairing URL before its JWT expires", async () => {

@@ -48,10 +48,13 @@ Async factory (waits for the dialog UI element to attach). Returns a
 - `enableNotifications` — send push notifications to paired mobile
   devices (default `true`).
 - `pairingEnabled` — offer pairing a phone for notifications (default
-  `false`): a link on the QR screen, and after a successful mobile signature
-  with no paired phone, a pairing QR screen (`sign()` has already resolved
-  by then). Has effect only when the mobile channel supports notifications
-  (see [Notifications](#notifications)).
+  `false`). The QR screen gets a "pair this computer" step; once a phone is
+  paired there, the dialog confirms it and sends the request to the phone
+  (a button leads back to the signing QR). After a successful mobile signature with no paired phone,
+  the dialog shows a success page offering pairing (`sign()` has already
+  resolved by then). Users with a paired phone skip it. Has effect only
+  when the mobile channel supports notifications (see
+  [Notifications](#notifications)).
 - `platform` / `displayName` — how this integration identifies itself
   when registering with the AVM server.
 

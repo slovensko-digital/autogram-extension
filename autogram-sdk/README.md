@@ -16,12 +16,12 @@ Some dependencies (`zod`, `js-base64`, `idb-keyval`, …) are declared as peer d
 
 The package exposes four entry points. Pick the highest-level one that fits — most applications only need `autogram-sdk/with-ui`.
 
-| Import                     | What it contains                                                                                                                                                                       | Where it can run                                                                                       |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `autogram-sdk/with-ui`     | `CombinedClient` / `createAutogramClient` — the full signing flow with the built-in dialog UI for choosing between desktop and mobile signing. `autogram-sdk/ui` is an alias.            | Browser page only — importing it registers custom elements as a side effect.                            |
-| `autogram-sdk`             | The headless core: `DesktopClient`, `MobileClient`, error classes (`AutogramError`, …), shared types, and the RPC helpers (`defineRpcService`, …) used to bridge contexts.               | Anywhere — pages, service workers, extension background scripts. No UI, no side effects.                |
-| `autogram-sdk/autogram-api` | Low-level HTTP client (`apiClient`) for the Autogram desktop app's local server.                                                                                                        | Anywhere.                                                                                                |
-| `autogram-sdk/avm-api`     | Low-level client for the Autogram v mobile (AVM) server API, including device pairing (`AutogramVMobileIntegration`) and the QR-pairing simulation helper (`AutogramVMobileSimulation`). | Anywhere.                                                                                                |
+| Import                      | What it contains                                                                                                                                                                         | Where it can run                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `autogram-sdk/with-ui`      | `CombinedClient` / `createAutogramClient` — the full signing flow with the built-in dialog UI for choosing between desktop and mobile signing. `autogram-sdk/ui` is an alias.            | Browser page only — importing it registers custom elements as a side effect.             |
+| `autogram-sdk`              | The headless core: `DesktopClient`, `MobileClient`, error classes (`AutogramError`, …), shared types, and the RPC helpers (`defineRpcService`, …) used to bridge contexts.               | Anywhere — pages, service workers, extension background scripts. No UI, no side effects. |
+| `autogram-sdk/autogram-api` | Low-level HTTP client (`apiClient`) for the Autogram desktop app's local server.                                                                                                         | Anywhere.                                                                                |
+| `autogram-sdk/avm-api`      | Low-level client for the Autogram v mobile (AVM) server API, including device pairing (`AutogramVMobileIntegration`) and the QR-pairing simulation helper (`AutogramVMobileSimulation`). | Anywhere.                                                                                |
 
 The layering: `with-ui` builds on `DesktopClient`/`MobileClient` from the core, which in turn build on `autogram-api`/`avm-api`. Drop down a level when you need your own UI (see the `DesktopClient` demo) or your own transport (see [channels](#advanced-usage--channels)).
 
@@ -29,11 +29,11 @@ The layering: `with-ui` builds on `DesktopClient`/`MobileClient` from the core, 
 
 Every entry point is built in three flavors:
 
-| Files                                | Format                              | Dependencies                       | Intended consumer                                                                     |
-| ------------------------------------ | ----------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
-| `dist/*.mjs`, `dist/*.js` + `.d.ts`  | ESM + CJS (the npm `exports` map)   | External (`dependencies` / `peerDependencies`) | Projects with a bundler (Vite, webpack, …) — gives tree-shaking and dependency deduping. |
-| `dist/bundled/*.mjs`                 | ESM, self-contained                 | Inlined                            | `<script type="module">` straight from a static server or CDN, no bundler needed.       |
-| `dist/*.iife.js`                     | IIFE, self-contained (`AutogramSDK` global) | Inlined                            | Classic `<script>` tag; `index-all.iife.js` is the usual choice (core + UI).            |
+| Files                               | Format                                      | Dependencies                                   | Intended consumer                                                                        |
+| ----------------------------------- | ------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `dist/*.mjs`, `dist/*.js` + `.d.ts` | ESM + CJS (the npm `exports` map)           | External (`dependencies` / `peerDependencies`) | Projects with a bundler (Vite, webpack, …) — gives tree-shaking and dependency deduping. |
+| `dist/bundled/*.mjs`                | ESM, self-contained                         | Inlined                                        | `<script type="module">` straight from a static server or CDN, no bundler needed.        |
+| `dist/*.iife.js`                    | IIFE, self-contained (`AutogramSDK` global) | Inlined                                        | Classic `<script>` tag; `index-all.iife.js` is the usual choice (core + UI).             |
 
 ## Usage (module import)
 
@@ -176,7 +176,7 @@ const client = await createAutogramClient();
 
 // Advanced case — inject custom channel implementations
 const client = await createAutogramClient({
-  mobileChannel: new MyAvmChannel(),      // implements AutogramVMobileIntegrationInterfaceStateful
+  mobileChannel: new MyAvmChannel(), // implements AutogramVMobileIntegrationInterfaceStateful
   desktopChannel: new MyDesktopChannel(), // implements AutogramDesktopIntegrationInterface
 });
 ```
@@ -189,7 +189,7 @@ A user who pairs a phone with your integration gets later signing requests as pu
 const client = await createAutogramClient({ pairingEnabled: true });
 ```
 
-The dialog then shows a pairing link on the QR screen. After a successful mobile signature with no paired phone, it also shows a pairing QR code. `sign()` has already resolved by then.
+The dialog then shows a pairing link on the QR screen. Once a phone is paired there, the dialog confirms it and sends the request to the phone; the user can still go back to the signing QR. After a successful mobile signature with no paired phone, the dialog shows a success page offering pairing; `sign()` has already resolved by then. Users who already have a paired phone skip it.
 
 Notifications are an **optional capability** of the mobile channel. The default channel supports them. A custom `mobileChannel` supports them only if it implements `getPairingQrCodeUrl()`, `sendNotification()` and `getPairedDevices()`. If it leaves them out, users sign by scanning the per-document QR code and are never asked to pair.
 
@@ -238,9 +238,9 @@ npm run demo
 
 Build the lib first (`npm run build`), then `npm run demo` starts a static server on port 8080 and opens http://localhost:8080/demos/ with one demo page per build flavor:
 
-| Demo                 | Build flavor                                                     | How it loads the SDK                                              |
-| -------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `esm-bundled.html`   | `dist/bundled/*.mjs` — ESM, dependencies inlined                 | `<script type="module">`, works from any static server            |
+| Demo                 | Build flavor                                                      | How it loads the SDK                                                                   |
+| -------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `esm-bundled.html`   | `dist/bundled/*.mjs` — ESM, dependencies inlined                  | `<script type="module">`, works from any static server                                 |
 | `esm-external.html`  | `dist/*.mjs` — ESM, dependencies external (the npm package build) | `<script type="module">` + import map resolving bare imports to esm.sh (needs network) |
-| `iife-combined.html` | `dist/index-all.iife.js` — IIFE, dependencies inlined            | Classic `<script>` tag, `AutogramSDK` global; signs a PDF via `CombinedClient` |
-| `iife-desktop.html`  | `dist/index-all.iife.js` — IIFE, dependencies inlined            | Classic `<script>` tag; headless `DesktopClient` with custom progress UI |
+| `iife-combined.html` | `dist/index-all.iife.js` — IIFE, dependencies inlined             | Classic `<script>` tag, `AutogramSDK` global; signs a PDF via `CombinedClient`         |
+| `iife-desktop.html`  | `dist/index-all.iife.js` — IIFE, dependencies inlined             | Classic `<script>` tag; headless `DesktopClient` with custom progress UI               |

@@ -181,6 +181,8 @@ export class CombinedClient {
 
     this.clientMobileIntegration.init();
     this.ui.onRetryMobileNotification = this.retryMobileNotification.bind(this);
+    this.ui.onWaitForPairing = (signal, onPairingUrl) =>
+      this.flow.waitForPairing(signal, onPairingUrl);
 
     this.resetSignRequest();
 
@@ -399,8 +401,11 @@ export class CombinedClient {
         break;
       case "done":
         this.desktopScreenActive = false;
-        this.ui.hide();
-        this.ui.reset();
+        // with a pairing suggestion the dialog stays open for it
+        if (!state.pairingSuggestion) {
+          this.ui.hide();
+          this.ui.reset();
+        }
         break;
     }
   }

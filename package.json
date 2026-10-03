@@ -25,7 +25,8 @@
     "start": "echo 'Please specify which extension manifest version to start: npm run watch:mv2 or npm run watch:mv3'",
     "build:sdk": "turbo run build --filter=autogram-sdk",
     "build:extension": "turbo run build --filter=autogram-extension",
-    "build:dev": "turbo run build:dev --filter=autogram-extension"
+    "build:dev": "turbo run build:dev --filter=autogram-extension",
+    "ui:gallery": "npm run build --workspace=autogram-sdk && echo '\nUI galleries:\n  http://localhost:8080/autogram-sdk/demos/ui-gallery.html\n  http://localhost:8080/autogram-extension/demos/ui-gallery.html\n' && serve --listen 8080 --no-clipboard ."
   },
   "packageManager": "npm@10.8.2",
   "repository": {
