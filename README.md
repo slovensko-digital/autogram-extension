@@ -16,7 +16,7 @@ This repository contains the source code of two related projects built around [A
 
 If you just want to use the extension, you don't need anything from this repository — install it from your browser's extension store, see the [installation guide](./autogram-extension/README.md#inštalácia).
 
---- 
+---
 
 ## Development
 
@@ -74,6 +74,8 @@ See the individual package READMEs for package-specific documentation:
 
 - [autogram-sdk/README.md](./autogram-sdk/README.md)
 - [autogram-extension/README.md](./autogram-extension/README.md)
+
+Generated autogram-sdk API reference is published to GitHub Pages: https://slovensko-digital.github.io/autogram-extension/autogram-sdk/
 
 ## License
 
