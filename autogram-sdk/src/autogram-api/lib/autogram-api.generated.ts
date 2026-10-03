@@ -3,111 +3,141 @@
  * Do not make direct changes to the file.
  */
 
+/** WithRequired type helpers */
+type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+
 export interface paths {
   "/info": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     /** Retrieve info and the current server status */
     get: operations["getInfo"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/sign": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
-     * Sign a single document or single document in batch
-     * @description Sign a single document or single document in batch.
+     * Sign one document
+     * @description Sign one document.
      *
-     *     If the `batchId` is provided, the document is signed inside the batch.
+     * If `batchId` is provided, the request must contain exactly one input document and the document is signed inside the batch.
      *
-     *     If the `batchId` is not provided, the document is signed as a standalone document.
+     * If `batchId` is not provided, the document is signed as a standalone document.
      *
+     * For shared authorization of multiple documents (`spolocna autorizacia dokumentov`) use `POST /api/v1/sign`.
      */
     post: operations["signDocument"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
   };
   "/batch": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Start a batch session
      * @description Start a batch session, `batchId` is returned.
      *
-     *     Batch session is used to sign multiple documents with the same signature.
-     *     The batch session is identified and authorized by the `batchId`, keep it secret.
+     * Batch session is used to sign multiple documents with the same signature.
+     * The batch session is identified and authorized by the `batchId`, keep it secret.
      *
-     *     After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
-     *     When you are done signing documents, you can end the batch session using `DELETE /batch`.
-     *
+     * After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
+     * When you are done signing documents, you can end the batch session using `DELETE /batch`.
      */
     post: operations["startBatch"];
     /**
      * End a batch session
      * @description End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
-     *
      */
     delete: operations["endBatch"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
+  };
+  "/certificates": {
+    /** Retrieve list of certificates available for signing */
+    get: operations["getCertificates"];
+  };
+  "/api/v1/info": {
+    /** Retrieve info and the current server status */
+    get: operations["getInfo"];
+  };
+  "/api/v1/sign": {
+    /**
+     * Sign one document or create a shared-authorization ASiC_E
+     * @description Sign one document or sign multiple documents together into a single ASiC_E container.
+     *
+     * For the common single-document case, use `document`.
+     *
+     * Use `documents` when you need shared authorization of documents (`spolocna autorizacia dokumentov`) or when you prefer the array form.
+     *
+     * If `batchId` is provided, the request must contain exactly one input document and the document is signed inside the batch.
+     *
+     * If `batchId` is not provided, the document is signed as a standalone document or, for multiple input documents, as one shared-authorization ASiC_E container.
+     */
+    post: operations["signDocumentV1"];
+  };
+  "/api/v1/batch": {
+    /**
+     * Start a batch session
+     * @description Start a batch session, `batchId` is returned.
+     *
+     * Batch session is used to sign multiple documents with the same signature.
+     * The batch session is identified and authorized by the `batchId`, keep it secret.
+     *
+     * After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
+     * When you are done signing documents, you can end the batch session using `DELETE /batch`.
+     */
+    post: operations["startBatchV1"];
+    /**
+     * End a batch session
+     * @description End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+     */
+    delete: operations["endBatchV1"];
+  };
+  "/api/v1/certificates": {
+    /** Retrieve list of certificates available for signing */
+    get: operations["getCertificatesV1"];
   };
 }
+
 export type webhooks = Record<string, never>;
+
 export interface components {
   schemas: {
-    Info: {
-      /** @example 1.2.3 */
-      version?: string;
-      /** @enum {string} */
-      status?: "READY";
-    };
-    SignRequestBody: {
+    /**
+     * @description Sign request body.
+     *
+     * Use `document` for the common single-document case.
+     *
+     * Use `documents` when signing multiple documents into a single ASiC_E container or when providing input in array form.
+     */
+    SignRequestBody:
+      | components["schemas"]["SingleDocumentSignRequestBody"]
+      | components["schemas"]["DocumentsSignRequestBody"];
+    SingleDocumentSignRequestBody: {
       /**
-       * @description Optional identifier of the batch.
-       *     If not provided, document will be signed as single standalone document.
-       *     If provided, document will be signed inside batch.
+       * @description Optional identifier of the batch signing session.
+       * If not provided, the document is signed as a standalone document.
+       * If provided, the document is signed inside batch.
        *
        * @example 0c62536c-f43f-4302-b8f0-e2ad521c8175
        */
       batchId?: string;
       document: components["schemas"]["Document"];
       parameters?: components["schemas"]["SignatureParameters"];
-      /**
-       * @description MIME type for document content and signature parameters like transformation and schema.
-       *     Binary files should be encoded using base64, e.g., `application/pdf;base64`.
-       *     Text formats like XML can be optionally encoded using base64 but can be supplied as plain text as seen in the examples, in which case the type is `application/xml`.
-       *
-       * @example application/xml
-       */
-      payloadMimeType: string;
+      presentation?: components["schemas"]["PresentationParameters"];
     };
+    DocumentsSignRequestBody: WithRequired<
+      {
+        /**
+         * @description Optional identifier of the batch signing session.
+         * Can be used only when `documents` contains exactly one document.
+         *
+         * @example 0c62536c-f43f-4302-b8f0-e2ad521c8175
+         */
+        batchId?: string;
+        /**
+         * @description Ordered list of input documents.
+         * If exactly one document is provided, it is signed as a standalone document or inside ASiC container based on `parameters.container`.
+         * If more than one document is provided, all documents are signed together into a single ASiC_E container using one signature.
+         * For multi-document requests, `parameters.container`, if provided, must be `ASiC_E` and `parameters.format` must be `XAdES` or `CAdES`.
+         * The order of documents is preserved for presentation and for the resulting ASiC_E container.
+         */
+        documents: components["schemas"]["Document"][];
+        parameters?: components["schemas"]["SignatureParameters"];
+        presentation?: components["schemas"]["PresentationParameters"];
+      },
+      "documents"
+    >;
     Document: {
       /**
        * @description Filename of the original file to be signed. Is used to name the file inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container. If XML Document container is created, filename extension is set to `.xdcf` or filename is set to `document.xdcf` if empty.
@@ -115,10 +145,118 @@ export interface components {
        */
       filename?: string;
       /**
-       * @description Content of the document to sign, format is dictated by `payloadMimeType`.
+       * @description Content of the document to sign, format is specified by `mimeType`.
        * @example <?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>
        */
       content: string;
+      /**
+       * @description MIME type for document content.
+       * Binary files should be encoded using base64, e.g., `application/pdf;base64`.
+       * Text formats like XML can be optionally encoded using base64 but can be also supplied as plain text as seen in the examples, in which case the type is `application/xml`.
+       *
+       * @example application/xml
+       */
+      mimeType: string;
+      xdcParameters?: components["schemas"]["XDCParameters"];
+    };
+    SignatureParameters: components["schemas"]["CoreSignatureParameters"] & {
+      /**
+       * @description Optional flag to control whether the signature should be made according to ETSI EN 319132 for XAdES and ETSI EN 319122 for CAdES and PAdES.
+       * @default false
+       */
+      en319132?: boolean;
+      /**
+       * @description Require the signing certificate to be qualified.
+       * @default false
+       */
+      requireQualifiedCertificate?: boolean;
+    };
+    XDCParameters: {
+      /**
+       * @description Specific identifier for financnasprava.sk EForms. For example, 792_772 is an identifier of "Danove priznanie - riadne".
+       * @default null
+       * @example 792_772
+       */
+      fsFormIdentifier?: string;
+      /**
+       * @description Try to find XSD and XSLT for this document's eForm and load them automatically. Useful for visualizing and signing eForms.
+       * If true, this document's `schema`, `transformation`, `containerXmlns`, and `identifier` are ignored.
+       * If resources are not found, the response is 422.
+       * If the provided document is an ASiC_E container containing XML Datacontainer or it is an XML Datacontainer itself, the XSLT found is used for visualization of the signing document. Also, XSD and XSLT hashes are compared with hashes of XSD and XSLT found in the XML Datacontainer eForm. If they differ, the response is 422.
+       * If the provided document is an XML document, Autogram will try to parse `xmlns` from the root element and find resources based on its value.
+       * If successful, XML Datacontainer with `xmlns="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"` is created, the document is validated against the XSD and visualized using the XSLT. If XSD validation fails, the response is 422.
+       * The XSLT transformation is found based on `transformationLanguage` (defaults to user preferred), `transformationMediaDestinationTypeDescription` (default XHTML, then HTML, then TXT), and `transformationTargetEnvironment`.
+       * If multiple transformations meet the criteria, the first one found is used.
+       *
+       * @default false
+       */
+      autoLoadEform?: boolean;
+      /**
+       * @description Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1. Defaults to null. Is ignored with autoLoadEform true.
+       * @example https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9
+       */
+      identifier?: string;
+      /**
+       * @description XML namespace for the XML Datacontainer. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if document.mimeType is application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only. Defaults to null. Is ignored with autoLoadEform true.
+       * @example http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
+       * @enum {string}
+       */
+      containerXmlns?:
+        | "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
+        | null;
+      /**
+       * @description When creating XML Datacontainer, parameter indicates whether to embed XSD and XML or reference them. Practically this should be only used for ORSR EForms in which case (when identifier contains "justice.gov.sk/Forms") this parameter is overridden to true.
+       * @example false
+       */
+      embedUsedSchemas?: boolean;
+      /**
+       * @description Optional XML schema used to validate the signing document and to compute digest used in "UsedXSDReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is specified by `document.mimeType`. Is ignored with autoLoadEform true.
+       * @example <?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>
+       */
+      schema?: string;
+      /**
+       * @description mimeType of XSD schema and XSLT transformation.
+       * Should be either application/xml or application/xml;base64.
+       * Is ignored with autoLoadEform true.
+       *
+       * @example application/xml
+       */
+      schemaMimeType?: string;
+      /**
+       * @description Optional identifier of the XML schema. The value is used in "UsedXSDReference" field inside created XML Datacontainer. If provided with autoLoadEform true, Autogram will try to find such schema. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xsd".
+       * @example http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd
+       */
+      schemaIdentifier?: string;
+      /**
+       * @description Optional XML transformation used to present the signing document to user and to compute digest used in "UsedPresentationSchemaReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is specified by `document.mimeType`. Is ignored with autoLoadEform true.
+       * @example <?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>
+       */
+      transformation?: string;
+      /**
+       * @description Optional identifier of the XML transformation. If provided with autoLoadEform true, Autogram will try to find such transformation. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xslt".
+       * @example http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt
+       */
+      transformationIdentifier?: string;
+      /**
+       * @description Optional language of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this language. Otherwise transformation must be provided. Default value is user preferred or "sk".
+       * @example sk
+       */
+      transformationLanguage?: string;
+      /**
+       * @description Optional media destination type description of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this type. Otherwise transformation must be provided. Overrides value of the output method in provided or auto-loaded transformation which is used by default.
+       * @example HTML
+       * @enum {string}
+       */
+      transformationMediaDestinationTypeDescription?:
+        | "XHTML"
+        | "HTML"
+        | "TXT"
+        | null;
+      /**
+       * @description Optional target environment of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this target. Otherwise transformation must be provided. Null and not used by default.
+       * @example example-value
+       */
+      transformationTargetEnvironment?: string;
     };
     SignResponseBody: {
       /**
@@ -126,6 +264,16 @@ export interface components {
        * @example TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvQDSdd57FueSBoYW5kcyBtYWtlIGxpZ2h0IHdvsRWdaAeSBoYW5kcyBtYW==
        */
       content: string;
+      /**
+       * @description MIME type of the signed output.
+       * @example application/vnd.etsi.asic-e+zip
+       */
+      mimeType: string;
+      /**
+       * @description Suggested filename of the signed output.
+       * @example signed-documents.asice
+       */
+      filename?: string;
       /**
        * @description Distinguished name of the certificate used/attempting to sign the document.
        * @example SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith
@@ -136,6 +284,151 @@ export interface components {
        * @example CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK
        */
       issuedBy: string;
+    };
+    CoreSignatureParameters: {
+      /**
+       * @description Signature format. Format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container. Format is not required when signing already signed documents - PAdES or ASiC-E.
+       * @example XAdES
+       * @enum {string}
+       */
+      form?: "XAdES" | "PAdES" | "CAdES" | null;
+      /**
+       * @description Signature profile. If null, the BASELINE_B profile is used by default.
+       * @example BASELINE_B
+       * @enum {string}
+       */
+      profile?: "BASELINE_B" | "BASELINE_T" | null;
+      /**
+       * @description Optional container type that should be used to place the file with signature to. Defaults to null. For a document with `xdcParameters.autoLoadEform=true`, this value can be overridden by the resolved eForm requirements.
+       * @example ASiC_E
+       * @enum {string}
+       */
+      container?: "ASiC_E" | null;
+      /**
+       * @description Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. For a document with `xdcParameters.autoLoadEform=true`, this value can be overridden by the resolved eForm requirements.
+       * @default ENVELOPED
+       * @enum {string}
+       */
+      packaging?: "ENVELOPED" | "ENVELOPING" | null;
+      /**
+       * @description Optional algorithm used to calculate digests.
+       * @default SHA256
+       * @enum {string}
+       */
+      digestAlgorithm?: "SHA256" | "SHA384" | "SHA512" | null;
+      /**
+       * @description Optional info canonicalization method.
+       * @default INCLUSIVE
+       * @enum {string}
+       */
+      infoCanonicalization?:
+        | "INCLUSIVE"
+        | "EXCLUSIVE"
+        | "INCLUSIVE_WITH_COMMENTS"
+        | "EXCLUSIVE_WITH_COMMENTS"
+        | "INCLUSIVE_11"
+        | "INCLUSIVE_11_WITH_COMMENTS"
+        | null;
+      /**
+       * @description Optional properties canonicalization method.
+       * @default INCLUSIVE
+       * @enum {string}
+       */
+      propertiesCanonicalization?:
+        | "INCLUSIVE"
+        | "EXCLUSIVE"
+        | "INCLUSIVE_WITH_COMMENTS"
+        | "EXCLUSIVE_WITH_COMMENTS"
+        | "INCLUSIVE_11"
+        | "INCLUSIVE_11_WITH_COMMENTS"
+        | null;
+      /**
+       * @description Optional key info canonicalization method.
+       * @default INCLUSIVE
+       * @enum {string}
+       */
+      keyInfoCanonicalization?:
+        | "INCLUSIVE"
+        | "EXCLUSIVE"
+        | "INCLUSIVE_WITH_COMMENTS"
+        | "EXCLUSIVE_WITH_COMMENTS"
+        | "INCLUSIVE_11"
+        | "INCLUSIVE_11_WITH_COMMENTS"
+        | null;
+      /**
+       * @description Check for PDF/A compliance and show warning if not compliant.
+       * @default false
+       */
+      checkPDFACompliance?: boolean;
+      /**
+       * @description Check for attachments embedded inside PDF file and show warning if any are found.
+       * @default false
+       */
+      checkPDFEmbeddedAttachments?: boolean;
+    };
+    ContentDigestResponseBody: {
+      /**
+       * @description Optional algorithm used to calculate digest.
+       * @example SHA256
+       */
+      digestAlgorithm?: string;
+      /**
+       * @description Base64-encoded digest of the content to be timestamped.
+       * @example dGhpcyBzaG91bGQgYmUgQ01TIFRpbWVzdGFtcFRva2VuIHJlc3BvbnNl
+       */
+      digest?: string;
+    };
+    /** @description Parameters affecting how Autogram presents the input documents to the user before signing. */
+    PresentationParameters: {
+      /**
+       * @description Optional width of the signing document visualization. Values are sm (640px), md (768px), lg (1024px), xl (1280px), xxl (1536px). The minimum visualization width is set to 640px. If the preferred visualization width is exceeds width of client's screen, the visualization width is set to the width of the client's screen.
+       * @default sm
+       * @enum {string}
+       */
+      visualizationWidth?: "sm" | "md" | "lg" | "xl" | "xxl" | null;
+    };
+    Info: {
+      /** @example 1.2.3 */
+      version?: string;
+      /** @enum {string} */
+      status?: "READY";
+      /** @description List of available (detected) card drivers that can be used for signing */
+      availableDrivers?: (
+        | "eid"
+        | "cz_eid"
+        | "secure_store"
+        | "monet"
+        | "gemalto"
+        | "fake"
+        | "keystore"
+        | "custom_pkcs11"
+      )[];
+      /** @description List of supported features */
+      features?: (
+        | "CONTENT_TIMESTAMP"
+        | "EXTERNAL_CONTENT_TIMESTAMP"
+        | "TIMESTAMP"
+        | "EN319132"
+        | "BATCH_SIGN"
+        | "PDF_A_CHECK"
+        | "PDF_EMBEDDED_ATTACHMENTS_CHECK"
+        | "SIGNING_CERTIFICATE_QUALIFIED_CHECK"
+        | "PADES"
+        | "PADES_VISUAL_SIGNATURE"
+        | "CADES"
+        | "XADES"
+        | "ASICE"
+        | "ASICE_MULTIPLE_DOCUMENTS"
+        | "ASICS"
+        | "AUTOLOAD_EFORMS"
+        | "XDC_SIGN"
+        | "XDC_VISUALIZE"
+        | "XDC_CREATE"
+        | "XDC_EMBEDDED_SIGN"
+        | "XDC_EMBEDDED_VISUALIZE"
+        | "XDC_EMBEDDED_CREATE"
+        | "SIGNATURE_VALIDATION"
+      )[];
     };
     BatchStartRequestBody: {
       /**
@@ -159,10 +452,42 @@ export interface components {
       batchId?: string;
     };
     BatchEndResponseBody: {
-      /** @enum {enum} */
+      /** @enum {string} */
       status?: "FINISHED" | "NOT_FINISHED";
     };
-    SignatureParameters: {
+    LegacyDocumentSignRequestBody: {
+      /**
+       * @description Optional identifier of the batch.
+       * If not provided, document will be signed as single standalone document.
+       * If provided, document will be signed inside batch.
+       *
+       * @example 0c62536c-f43f-4302-b8f0-e2ad521c8175
+       */
+      batchId?: string;
+      document: components["schemas"]["LegacyDocument"];
+      parameters?: components["schemas"]["LegacySignatureParameters"];
+      /**
+       * @description MIME type for document content and signature parameters like transformation and schema.
+       * Binary files should be encoded using base64, e.g., `application/pdf;base64`.
+       * Text formats like XML can be optionally encoded using base64 but can be supplied as plain text as seen in the examples, in which case the type is `application/xml`.
+       *
+       * @example application/xml
+       */
+      payloadMimeType: string;
+    };
+    LegacyDocument: {
+      /**
+       * @description Filename of the original file to be signed. Is used to name the file inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container. If XML Document container is created, filename extension is set to `.xdcf` or filename is set to `document.xdcf` if empty.
+       * @example document.xml
+       */
+      filename?: string;
+      /**
+       * @description Content of the document to sign, format is dictated by `payloadMimeType`.
+       * @example <?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>
+       */
+      content: string;
+    };
+    LegacySignatureParameters: {
       /**
        * @description Check for PDF/A compliance and show warning if not compliant.
        * @default false
@@ -176,12 +501,22 @@ export interface components {
       /**
        * @description Signature format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container.
        *
-       *     If document is already signed (PAdES PDF or ASiC), this parameter is optional and signature level is decided based on the already signed document if empty.
+       * If document is already signed (PAdES PDF or ASiC), this parameter is optional and signature format is decided based on the already signed document if empty.
+       *
+       * For already signed documents, BASELINE_B or BASELINE_T can be used to add another signature of the same format as the existing signature but different level.
        *
        * @example XAdES_BASELINE_B
        * @enum {string}
        */
-      level?: "XAdES_BASELINE_B" | "PAdES_BASELINE_B" | "CAdES_BASELINE_B";
+      level?:
+        | "XAdES_BASELINE_B"
+        | "PAdES_BASELINE_B"
+        | "CAdES_BASELINE_B"
+        | "XAdES_BASELINE_T"
+        | "PAdES_BASELINE_T"
+        | "CAdES_BASELINE_T"
+        | "BASELINE_B"
+        | "BASELINE_T";
       /**
        * @description Optional container type that should be used to place the file with signature to. Defaults to null. Is ignored with autoLoadEform true.
        * @example ASiC_E
@@ -313,62 +648,52 @@ export interface components {
   headers: never;
   pathItems: never;
 }
+
 export type $defs = Record<string, never>;
+
+export type external = Record<string, never>;
+
 export interface operations {
+  /** Retrieve info and the current server status */
   getInfo: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
     responses: {
       /** @description successful operation */
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": components["schemas"]["Info"];
         };
       };
     };
   };
+  /**
+   * Sign one document
+   * @description Sign one document.
+   *
+   * If `batchId` is provided, the request must contain exactly one input document and the document is signed inside the batch.
+   *
+   * If `batchId` is not provided, the document is signed as a standalone document.
+   *
+   * For shared authorization of multiple documents (`spolocna autorizacia dokumentov`) use `POST /api/v1/sign`.
+   */
   signDocument: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["SignRequestBody"];
+        "application/json": components["schemas"]["LegacyDocumentSignRequestBody"];
       };
     };
     responses: {
-      /** @description The document was successfully signed and its content is available in the response body. */
+      /** @description The signed output was successfully created and its content is available in the response body. */
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": components["schemas"]["SignResponseBody"];
         };
       };
       /** @description The document was not signed because the user cancelled the signing process. */
       204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
+        content: never;
       };
       /** @description The request body cannot be processed. */
       400: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": {
             /**
@@ -383,7 +708,6 @@ export interface operations {
               | "BATCH_NOT_STARTED"
               | "EMPTY_BODY"
               | "MALFORMED_INPUT"
-              | "MULTIPLE_ORIGINAL_DOCUMENTS"
               | "ORIGINAL_DOCUMENT_NOT_FOUND";
             /**
              * @description Human readable error message.
@@ -400,9 +724,6 @@ export interface operations {
       };
       /** @description Batch with the given `batchId` was not found or the batch session has ended. */
       404: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": {
             /**
@@ -426,9 +747,6 @@ export interface operations {
       };
       /** @description The request body is valid but the document cannot be signed. */
       422: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": {
             /**
@@ -444,7 +762,7 @@ export interface operations {
             message?: string;
             /**
              * @description Optional details.
-             * @example PayloadMimeType must be PDF when using PAdES.
+             * @example Document.MimeType must be PDF when using PAdES.
              */
             details?: string;
           };
@@ -452,9 +770,6 @@ export interface operations {
       };
       /** @description Request failed due to some unexpected error. */
       500: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": {
             /**
@@ -477,9 +792,6 @@ export interface operations {
       };
       /** @description Request failed due to an error with the signing process. */
       502: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": {
             /**
@@ -503,13 +815,17 @@ export interface operations {
       };
     };
   };
+  /**
+   * Start a batch session
+   * @description Start a batch session, `batchId` is returned.
+   *
+   * Batch session is used to sign multiple documents with the same signature.
+   * The batch session is identified and authorized by the `batchId`, keep it secret.
+   *
+   * After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
+   * When you are done signing documents, you can end the batch session using `DELETE /batch`.
+   */
   startBatch: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     requestBody?: {
       content: {
         "application/json": components["schemas"]["BatchStartRequestBody"];
@@ -518,22 +834,40 @@ export interface operations {
     responses: {
       /** @description successful operation */
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": components["schemas"]["BatchStartResponseBody"];
         };
       };
+      /** @description Batch canceled */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example BATCH_CANCELED
+             * @enum {string}
+             */
+            code?: "BATCH_CANCELED";
+            /**
+             * @description Human readable error message.
+             * @example
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example Batch canceled
+             */
+            details?: string;
+          };
+        };
+      };
     };
   };
+  /**
+   * End a batch session
+   * @description End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+   */
   endBatch: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
     requestBody?: {
       content: {
         "application/json": components["schemas"]["BatchEndRequestBody"];
@@ -542,11 +876,453 @@ export interface operations {
     responses: {
       /** @description successful operation */
       200: {
-        headers: {
-          [name: string]: unknown;
-        };
         content: {
           "application/json": components["schemas"]["BatchEndResponseBody"];
+        };
+      };
+    };
+  };
+  /** Retrieve list of certificates available for signing */
+  getCertificates: {
+    parameters: {
+      query?: {
+        /** @description Optional list of PKCSs driver names to load certificates from. Examples are `eid`, `gemalto`, `monet`, `ica`, `keystore`, `custom_pkcs11`. */
+        driver?: string;
+      };
+    };
+    responses: {
+      /** @description successful operation */
+      200: {
+        content: {
+          "application/json": {
+            certificates?: {
+              /**
+               * @description Distinguished name of the certificate.
+               * @example SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith
+               */
+              subject?: string;
+              /**
+               * @description Distinguished name of the issuer of the certificate.
+               * @example CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK
+               */
+              issuedBy?: string;
+            }[];
+          };
+        };
+      };
+      /** @description User cancelled operation */
+      204: {
+        content: never;
+      };
+      /** @description User cancelled the certificate selection dialog */
+      403: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example CERTIFICATES_READING_CONSENT_REJECTED
+             */
+            code?: string;
+            /**
+             * @description Human readable error message.
+             * @example Zamietnuté
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example Používateľ zamietol žiadosť o prečítanie podpisových certifikátov
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description No certificates or driver found */
+      404: {
+        content: {
+          "application/json": {
+            /** @description Code that can be used to identify the error. */
+            code?: string;
+            /** @description Human readable error message. */
+            message?: string;
+            /** @description Optional details. */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to some unexpected error. */
+      500: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error. Possibly INTERNAL_ERROR or INITIALIZATION_FAILED (probably card not connected to the computer).
+             * @example INTERNAL_ERROR - INTERNAL_ERROR
+             */
+            code?: string;
+            /**
+             * @description Human readable error message.
+             * @example Unexpected exception signing document
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example java.lang.NullPointerException: null
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to an error with the certificates loading process. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example UNRECOGNIZED_DSS_ERROR
+             */
+            code?: string;
+            /**
+             * @description Human readable error message.
+             * @example Unable to sign document
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example no such algorithm: PKCS11 for provider
+             */
+            details?: string;
+          };
+        };
+      };
+    };
+  };
+  /**
+   * Sign one document or create a shared-authorization ASiC_E
+   * @description Sign one document or sign multiple documents together into a single ASiC_E container.
+   *
+   * For the common single-document case, use `document`.
+   *
+   * Use `documents` when you need shared authorization of documents (`spolocna autorizacia dokumentov`) or when you prefer the array form.
+   *
+   * If `batchId` is provided, the request must contain exactly one input document and the document is signed inside the batch.
+   *
+   * If `batchId` is not provided, the document is signed as a standalone document or, for multiple input documents, as one shared-authorization ASiC_E container.
+   */
+  signDocumentV1: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SignRequestBody"];
+      };
+    };
+    responses: {
+      /** @description The signed output was successfully created and its content is available in the response body. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["SignResponseBody"];
+        };
+      };
+      /** @description The document was not signed because the user cancelled the signing process. */
+      204: {
+        content: never;
+      };
+      /** @description The request body cannot be processed. */
+      400: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example MALFORMED_INPUT
+             * @enum {string}
+             */
+            code?:
+              | "BATCH_CONFLICT"
+              | "BATCH_ENDED"
+              | "BATCH_EXPIRED"
+              | "BATCH_NOT_STARTED"
+              | "EMPTY_BODY"
+              | "MALFORMED_INPUT"
+              | "ORIGINAL_DOCUMENT_NOT_FOUND";
+            /**
+             * @description Human readable error message.
+             * @example JsonSyntaxException parsing request body.
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example JsonSyntaxException: Unexpected token END OF FILE at position 0.
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description Batch with the given `batchId` was not found or the batch session has ended. */
+      404: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example BATCH_NOT_FOUND
+             * @enum {string}
+             */
+            code?: "BATCH_NOT_FOUND";
+            /**
+             * @description Human readable error message.
+             * @example Invalid BatchId provided
+             */
+            message?: string;
+            /**
+             * @description More detailed human readable error message.
+             * @example Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description The request body is valid but the document cannot be signed. */
+      422: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example UNPROCESSABLE_INPUT
+             * @enum {string}
+             */
+            code?: "UNPROCESSABLE_INPUT" | "UNSUPPORTED_SIGNATURE_LEVEL";
+            /**
+             * @description Human readable error message.
+             * @example IllegalArgumentException parsing request body
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example Document.MimeType must be PDF when using PAdES.
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to some unexpected error. */
+      500: {
+        content: {
+          "application/json": {
+            /**
+             * @example INTERNAL_ERROR
+             * @enum {string}
+             */
+            code?: "INTERNAL_ERROR";
+            /**
+             * @description Human readable error message.
+             * @example Unexpected exception signing document
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example java.lang.NullPointerException: null
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to an error with the signing process. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example UNRECOGNIZED_DSS_ERROR
+             * @enum {string}
+             */
+            code?: "UNRECOGNIZED_DSS_ERROR" | "SIGNING_FAILED";
+            /**
+             * @description Human readable error message.
+             * @example Unable to sign document
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example no such algorithm: PKCS11 for provider
+             */
+            details?: string;
+          };
+        };
+      };
+    };
+  };
+  /**
+   * Start a batch session
+   * @description Start a batch session, `batchId` is returned.
+   *
+   * Batch session is used to sign multiple documents with the same signature.
+   * The batch session is identified and authorized by the `batchId`, keep it secret.
+   *
+   * After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
+   * When you are done signing documents, you can end the batch session using `DELETE /batch`.
+   */
+  startBatchV1: {
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["BatchStartRequestBody"];
+      };
+    };
+    responses: {
+      /** @description successful operation */
+      200: {
+        content: {
+          "application/json": components["schemas"]["BatchStartResponseBody"];
+        };
+      };
+      /** @description Batch canceled */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example BATCH_CANCELED
+             * @enum {string}
+             */
+            code?: "BATCH_CANCELED";
+            /**
+             * @description Human readable error message.
+             * @example
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example Batch canceled
+             */
+            details?: string;
+          };
+        };
+      };
+    };
+  };
+  /**
+   * End a batch session
+   * @description End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+   */
+  endBatchV1: {
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["BatchEndRequestBody"];
+      };
+    };
+    responses: {
+      /** @description successful operation */
+      200: {
+        content: {
+          "application/json": components["schemas"]["BatchEndResponseBody"];
+        };
+      };
+    };
+  };
+  /** Retrieve list of certificates available for signing */
+  getCertificatesV1: {
+    parameters: {
+      query?: {
+        /** @description Optional list of PKCSs driver names to load certificates from. Examples are `eid`, `gemalto`, `monet`, `ica`, `keystore`, `custom_pkcs11`. */
+        driver?: string;
+      };
+    };
+    responses: {
+      /** @description successful operation */
+      200: {
+        content: {
+          "application/json": {
+            certificates?: {
+              /**
+               * @description Distinguished name of the certificate.
+               * @example SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith
+               */
+              subject?: string;
+              /**
+               * @description Distinguished name of the issuer of the certificate.
+               * @example CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK
+               */
+              issuedBy?: string;
+            }[];
+          };
+        };
+      };
+      /** @description User cancelled operation */
+      204: {
+        content: never;
+      };
+      /** @description User cancelled the certificate selection dialog */
+      403: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example CERTIFICATES_READING_CONSENT_REJECTED
+             */
+            code?: string;
+            /**
+             * @description Human readable error message.
+             * @example Zamietnuté
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example Používateľ zamietol žiadosť o prečítanie podpisových certifikátov
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description No certificates or driver found */
+      404: {
+        content: {
+          "application/json": {
+            /** @description Code that can be used to identify the error. */
+            code?: string;
+            /** @description Human readable error message. */
+            message?: string;
+            /** @description Optional details. */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to some unexpected error. */
+      500: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error. Possibly INTERNAL_ERROR or INITIALIZATION_FAILED (probably card not connected to the computer).
+             * @example INTERNAL_ERROR - INTERNAL_ERROR
+             */
+            code?: string;
+            /**
+             * @description Human readable error message.
+             * @example Unexpected exception signing document
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example java.lang.NullPointerException: null
+             */
+            details?: string;
+          };
+        };
+      };
+      /** @description Request failed due to an error with the certificates loading process. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * @description Code that can be used to identify the error.
+             * @example UNRECOGNIZED_DSS_ERROR
+             */
+            code?: string;
+            /**
+             * @description Human readable error message.
+             * @example Unable to sign document
+             */
+            message?: string;
+            /**
+             * @description Optional details.
+             * @example no such algorithm: PKCS11 for provider
+             */
+            details?: string;
+          };
         };
       };
     };

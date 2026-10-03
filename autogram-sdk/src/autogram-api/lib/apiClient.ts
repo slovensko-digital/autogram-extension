@@ -1,9 +1,35 @@
 import fetch from "cross-fetch";
+import { z } from "zod";
 
 import { getRandomBytes, toHex, toUint32 } from "./crypto/random";
 
 import { components } from "./autogram-api.generated";
-import { UserCancelledSigningException } from "../../errors";
+import { AutogramError, UserCancelledSigningException } from "../../errors";
+import type { SignedObject } from "../../types";
+import type { ZodKeysOf, ZodShapeOf } from "../../zod-shape";
+
+/**
+ * Autogram reports a cancelled single signature with `204` and a cancelled
+ * batch with `502` + a `BATCH_CANCELED` body. Both mean the user cancelled.
+ */
+async function parseSigningResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) {
+    throw new UserCancelledSigningException();
+  }
+  if (response.status === 502) {
+    const body = (await response.json().catch(() => undefined)) as
+      | { code?: string; message?: string }
+      | undefined;
+    if (body?.code === "BATCH_CANCELED") {
+      throw new UserCancelledSigningException();
+    }
+    throw new AutogramError(
+      "server-error",
+      body?.message || "Autogram request failed with status 502"
+    );
+  }
+  return response.json() as Promise<T>;
+}
 
 /**
  * Octosign White Label API client for the app running in the server mode.
@@ -19,7 +45,7 @@ import { UserCancelledSigningException } from "../../errors";
  * await client.waitForStatus('READY');
  *
  * const content = '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>';
- * console.log(await client.sign({ content }));
+ * console.log(await client.signLegacy({ content }));
  * // => { content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title>...</Document>' }
  * ```
  *
@@ -35,7 +61,7 @@ import { UserCancelledSigningException } from "../../errors";
  * client.waitForStatus('READY')
  *   .then(function() {
  *     var content = '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>';
- *     return client.sign({ content: content });
+ *     return client.signLegacy({ content: content });
  *   })
  *   .then(function(signedDocument) {
  *     console.log(signedDocument);
@@ -99,7 +125,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         }
       }
 
-      return Promise.resolve(`${configuration.customProtocol}://${command}?${params}`);
+      return Promise.resolve(
+        `${configuration.customProtocol}://${command}?${params}`
+      );
     },
 
     /**
@@ -136,12 +164,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<BatchStartResponseBody>
+      );
     },
 
     endBatch(
@@ -159,7 +184,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => response.json());
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<BatchEndResponseBody>
+      );
     },
 
     /**
@@ -214,10 +241,13 @@ export function apiClient(options?: ApiClientConfiguration) {
         // _eslint-disable-next-line functional/no-loop-statement
         while (!finished) {
           requestAbortController = new AbortController();
-          const requestTimeout = setTimeout(() => {
-            if (!requestAbortController.signal.aborted)
-              requestAbortController.abort();
-          }, (delay + 1) * 1000);
+          const requestTimeout = setTimeout(
+            () => {
+              if (!requestAbortController.signal.aborted)
+                requestAbortController.abort();
+            },
+            (delay + 1) * 1000
+          );
 
           try {
             lastResponse = await (
@@ -236,7 +266,8 @@ export function apiClient(options?: ApiClientConfiguration) {
           } catch (error) {
             clearTimeout(requestTimeout);
 
-            const normalizedError = error instanceof Error ? error : new Error(String(error));
+            const normalizedError =
+              error instanceof Error ? error : new Error(String(error));
             if (normalizedError.name !== "AbortError") {
               lastError = normalizedError;
             }
@@ -248,14 +279,15 @@ export function apiClient(options?: ApiClientConfiguration) {
     },
 
     /**
-     * Sign a document.
+     * Sign a document via the legacy `POST /sign` endpoint (all Autogram
+     * versions; one document only).
      *
      * ### Example
      * ```js
      * import { apiClient } from '@octosign/client';
      * const client = apiClient();
      *
-     * console.log(await client.sign({ content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>' }));
+     * console.log(await client.signLegacy({ content: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>' }));
      * // => { content: '...signed document...' }
      * ```
      *
@@ -265,9 +297,9 @@ export function apiClient(options?: ApiClientConfiguration) {
      * @param abortController - Optional AbortController used to cancel the request.
      * @returns Signed document.
      */
-    sign(
-      document: AutogramDocument,
-      signatureParameters: SignatureParameters = {
+    signLegacy(
+      document: LegacyAutogramDocument,
+      signatureParameters: LegacySignatureParameters = {
         level: "XAdES_BASELINE_B",
         checkPDFACompliance: true,
       },
@@ -277,7 +309,7 @@ export function apiClient(options?: ApiClientConfiguration) {
     ): Promise<SignResponseBody> {
       const url = new URL("sign", serverUrl);
 
-      const body: AutogramSignRequestBody = {
+      const body: LegacySignRequestBody = {
         document,
         parameters: signatureParameters,
         payloadMimeType,
@@ -292,22 +324,70 @@ export function apiClient(options?: ApiClientConfiguration) {
         ...(abortController ? { signal: abortController.signal } : {}),
       } as const;
 
-      return fetch(url.toString(), init).then((response) => {
-        if (response.status == 204) {
-          throw new UserCancelledSigningException();
-        }
-        return response.json();
-      });
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<SignResponseBody>
+      );
+    },
+
+    /**
+     * Sign one or more documents via `POST /api/v1/sign` (Autogram >= 2.8.0).
+     *
+     * Multiple documents are signed together into a single ASiC_E container
+     * ("spoločná autorizácia dokumentov"). `batchId` may only be used with
+     * exactly one document.
+     *
+     * @param body - Documents (each with its own `mimeType` and optional `xdcParameters`), signature and presentation parameters.
+     * @param abortController - Optional AbortController used to cancel the request.
+     * @returns Signed document (or ASiC_E container for multiple documents).
+     */
+    signV1(
+      body: SignRequestBody,
+      abortController: AbortController | null = null
+    ): Promise<SignResponseBody> {
+      const url = new URL("api/v1/sign", serverUrl);
+
+      const { batchId, ...rest } = body;
+      const requestBody: SignRequestBody = {
+        ...rest,
+        ...(batchId ? { batchId } : {}),
+      };
+
+      const init: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify(requestBody),
+        ...(abortController ? { signal: abortController.signal } : {}),
+      } as const;
+
+      return fetch(url.toString(), init).then(
+        parseSigningResponse<SignResponseBody>
+      );
     },
   };
 }
 
-export type AutogramDesktopIntegrationInterface = ReturnType<typeof apiClient>;
+type DesktopApiClient = ReturnType<typeof apiClient>;
+
+/**
+ * Desktop channel used by `DesktopClient` / `CombinedClient`.
+ *
+ * `signLegacy` (`POST /sign`) is required: it is the only endpoint of
+ * Autogram < 2.8.0. `signV1` (`POST /api/v1/sign`) is optional; channels
+ * without it can only sign single documents.
+ */
+export type AutogramDesktopIntegrationInterface = Omit<
+  DesktopApiClient,
+  "signV1"
+> &
+  Partial<Pick<DesktopApiClient, "signV1">>;
 
 type BatchStartRequestBody = components["schemas"]["BatchStartRequestBody"];
-export type BatchStartResponseBody = components["schemas"]["BatchStartResponseBody"];
+export type BatchStartResponseBody =
+  components["schemas"]["BatchStartResponseBody"];
 type BatchEndRequestBody = components["schemas"]["BatchEndRequestBody"];
-export type BatchEndResponseBody = components["schemas"]["BatchEndResponseBody"];
+export type BatchEndResponseBody =
+  components["schemas"]["BatchEndResponseBody"];
 
 /**
  * Client configuration options.
@@ -397,16 +477,40 @@ export type ApiClientConfiguration = {
 export type ServerInfo = components["schemas"]["Info"];
 
 /**
- * Document exchanged during the signing.
+ * Document to sign via `POST /api/v1/sign` (Autogram >= 2.8.0). Carries its
+ * own `mimeType` (with a `";base64"` suffix for Base64 content) and its own
+ * XML Datacontainer / eForm parameters.
  */
 export type AutogramDocument = components["schemas"]["Document"];
+/** XML Datacontainer / eForm parameters of one document. */
+export type XDCParameters = components["schemas"]["XDCParameters"];
+/** Parameters used to create a signature (`POST /api/v1/sign`). */
+export type SignatureParameters = components["schemas"]["SignatureParameters"];
+/** How Autogram presents the documents to the user before signing. */
+export type PresentationParameters =
+  components["schemas"]["PresentationParameters"];
+/** `POST /api/v1/sign` request body. */
+export type SignRequestBody = components["schemas"]["DocumentsSignRequestBody"];
+
+/** Document exchanged by the legacy `POST /sign` endpoint. */
+export type LegacyAutogramDocument = components["schemas"]["LegacyDocument"];
+/**
+ * Signature parameters of the legacy `POST /sign` endpoint (`level`, with
+ * the XDC parameters and `visualizationWidth` mixed in).
+ */
+export type LegacySignatureParameters =
+  components["schemas"]["LegacySignatureParameters"];
+type LegacySignRequestBody =
+  components["schemas"]["LegacyDocumentSignRequestBody"];
 
 /**
- * Parameters used to create a signature.
+ * Signed document. `mimeType` and `filename` are only returned by
+ * Autogram >= 2.8.0.
  */
-export type SignatureParameters = components["schemas"]["SignatureParameters"];
-type AutogramSignRequestBody = components["schemas"]["SignRequestBody"];
-export type SignResponseBody = components["schemas"]["SignResponseBody"];
+export type SignResponseBody = Omit<
+  components["schemas"]["SignResponseBody"],
+  "mimeType"
+> & { mimeType?: string };
 
 /**
  * Represents the current state of the desktop signing process.
@@ -418,8 +522,122 @@ export type DesktopSigningState =
   | { type: "waitingForSignature" }
   | { type: "appNotInstalled" }
   | { type: "signingCancelled" }
+  | {
+      type: "appVersionTooLow";
+      requiredVersion: string;
+      detectedVersion: string;
+    }
   | { type: "error"; message: string };
 
-export type DesktopSigningStateConsumer = (
-  state: DesktopSigningState
-) => void;
+export type DesktopSigningStateConsumer = (state: DesktopSigningState) => void;
+
+// Zod schemas
+//
+// Runtime mirrors of the types above, for validating data crossing a trust
+// boundary (e.g. the extension's injected-script ↔ background RPC). The
+// `satisfies` clauses make drift from the generated types a compile error.
+
+const ZServerStatus = z.literal("READY");
+
+/** Subset of {@link ServerInfo} the integrations rely on. */
+export const ZServerInfo = z.object({
+  status: ZServerStatus.optional(),
+  version: z.string().optional(),
+} satisfies ZodShapeOf<Pick<ServerInfo, "status" | "version">>);
+
+/** Legacy result shape; missing signer fields default to `""`. */
+export const ZSignedObject = z.object({
+  content: z.string(),
+  signedBy: z.string().default(""),
+  issuedBy: z.string().default(""),
+} satisfies ZodShapeOf<SignedObject>);
+
+/** {@link SignResponseBody}; `mimeType`/`filename` only from Autogram >= 2.8.0. */
+export const ZSignResponseBody = z.object({
+  ...ZSignedObject.shape,
+  mimeType: z.string().optional(),
+  filename: z.string().optional(),
+} satisfies ZodShapeOf<SignResponseBody>);
+
+export const ZLegacyAutogramDocument = z.object({
+  content: z.string(),
+  filename: z.string().optional(),
+} satisfies ZodShapeOf<LegacyAutogramDocument>);
+
+const ZCanonicalization = z.enum([
+  "INCLUSIVE",
+  "EXCLUSIVE",
+  "INCLUSIVE_WITH_COMMENTS",
+  "EXCLUSIVE_WITH_COMMENTS",
+  "INCLUSIVE_11",
+  "INCLUSIVE_11_WITH_COMMENTS",
+]);
+
+export const ZLegacySignatureParameters = z.object({
+  checkPDFACompliance: z.boolean().optional(),
+  autoLoadEform: z.boolean().optional(),
+  level: z
+    .enum([
+      "XAdES_BASELINE_B",
+      "PAdES_BASELINE_B",
+      "CAdES_BASELINE_B",
+      "XAdES_BASELINE_T",
+      "PAdES_BASELINE_T",
+      "CAdES_BASELINE_T",
+      "BASELINE_B",
+      "BASELINE_T",
+    ])
+    .optional(),
+  container: z.enum(["ASiC_E"]).optional(),
+  containerXmlns: z
+    .enum(["http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"])
+    .optional(),
+  embedUsedSchemas: z.boolean().optional(),
+  identifier: z.string().optional(),
+  packaging: z.enum(["ENVELOPED", "ENVELOPING"]).optional(),
+  digestAlgorithm: z.enum(["SHA256", "SHA384", "SHA512"]).optional(),
+  en319132: z.boolean().optional(),
+  infoCanonicalization: ZCanonicalization.optional(),
+  propertiesCanonicalization: ZCanonicalization.optional(),
+  keyInfoCanonicalization: ZCanonicalization.optional(),
+  schema: z.string().optional(),
+  schemaIdentifier: z.string().optional(),
+  transformation: z.string().optional(),
+  transformationIdentifier: z.string().optional(),
+  transformationLanguage: z.string().optional(),
+  transformationMediaDestinationTypeDescription: z
+    .enum(["XHTML", "HTML", "TXT"])
+    .optional(),
+  transformationTargetEnvironment: z.string().optional(),
+  visualizationWidth: z.enum(["sm", "md", "lg", "xl", "xxl"]).optional(),
+  fsFormId: z.string().optional(),
+} satisfies ZodShapeOf<LegacySignatureParameters>);
+
+/**
+ * {@link SignRequestBody} (`POST /api/v1/sign`). Deliberately loose – only
+ * the keys are checked against the type, the desktop app validates the
+ * details.
+ */
+export const ZSignRequestBody = z.object({
+  batchId: z.string().optional(),
+  documents: z
+    .array(
+      z.object({
+        filename: z.string().optional(),
+        content: z.string(),
+        mimeType: z.string(),
+        xdcParameters: z.record(z.unknown()).optional(),
+      } satisfies ZodKeysOf<AutogramDocument>)
+    )
+    .min(1),
+  parameters: z.record(z.unknown()).optional(),
+  presentation: z.record(z.unknown()).optional(),
+} satisfies ZodKeysOf<SignRequestBody>);
+
+export const ZBatchStartResponseBody = z.object({
+  batchId: z.string().optional(),
+} satisfies ZodShapeOf<BatchStartResponseBody>);
+
+export const ZBatchEndResponseBody = z.object({
+  status: z.enum(["FINISHED", "NOT_FINISHED"]).optional(),
+} satisfies ZodShapeOf<BatchEndResponseBody>);

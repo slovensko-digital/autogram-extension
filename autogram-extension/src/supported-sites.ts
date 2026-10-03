@@ -46,16 +46,43 @@ export type ConflictResolutionStrategy =
   | typeof CONFLICT_RESOLUTION_REPLACE_ORIGINAL
   | typeof CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
 
+/** Optional per-site behavior, on top of the `window.ditec` replacement. */
+interface SiteFeatures {
+  /**
+   * Also install the native-Autogram network interceptor (see
+   * `native-autogram-intercept.ts`) on this site, alongside the usual
+   * `window.ditec` replacement. For portals that ship their own direct
+   * client to the local Autogram desktop app (e.g. nove.slovensko.sk's
+   * message composer), independent of `window.ditec`.
+   */
+  interceptNativeAutogram?: boolean;
+
+  /**
+   * Fix the picker on nove.slovensko.sk's message composer: pin its
+   * signing method to "Dsigner" (served by our `window.ditec`, so Autogram
+   * desktop + AVM) and replace the method switcher with a label — see
+   * `fixed-signer.ts`.
+   */
+  fixPickerNoveSlovenskoSk?: boolean;
+}
+
 class Site {
+  public interceptNativeAutogram: boolean;
+  public fixPickerNoveSlovenskoSk: boolean;
+
   constructor(
     public url: string,
     public injectionStrategy: InjectionStrategy,
-    public conflictResolution: ConflictResolutionStrategy
-  ) {}
+    public conflictResolution: ConflictResolutionStrategy,
+    features: SiteFeatures = {}
+  ) {
+    this.interceptNativeAutogram = features.interceptNativeAutogram ?? false;
+    this.fixPickerNoveSlovenskoSk = features.fixPickerNoveSlovenskoSk ?? false;
+  }
 
-  matchRuleExpl(str, rule) {
+  matchRuleExpl(str: string, rule: string) {
     // for this solution to work on any string, no matter what characters it has
-    const escapeRegex = (str) =>
+    const escapeRegex = (str: string) =>
       str.replace(/([.*+?^=!:${}()|\\[\]\\/\\])/g, "\\$1");
 
     // "."  => Find a single character, except newline or line terminator
@@ -89,9 +116,10 @@ class SupportedSites {
   addSite(
     url: string,
     injection: InjectionStrategy,
-    conflictResolution: ConflictResolutionStrategy
+    conflictResolution: ConflictResolutionStrategy,
+    features: SiteFeatures = {}
   ) {
-    this.sites.push(new Site(url, injection, conflictResolution));
+    this.sites.push(new Site(url, injection, conflictResolution, features));
   }
 
   get enabledUrls() {
@@ -104,17 +132,19 @@ export const supportedSites = new SupportedSites();
 
 const basicUrls = [
   "https://www.slovensko.sk/*",
+  "https://nove.slovensko.sk/*",
   "https://prihlasenie.slovensko.sk/*",
   "https://schranka.slovensko.sk/*",
   "https://schranka.upvsfixnew.gov.sk/*",
+  "https://schranka3.slovensko.sk/*",
   "https://pfseform.financnasprava.sk/*",
   "https://www.financnasprava.sk/*",
   "https://cep.financnasprava.sk/*",
   "https://www.cep.financnasprava.sk/*",
   "https://eformulare.socpoist.sk/*",
+  "https://eform.esluzbykosice.sk/*",
   "https://sluzby.orsr.sk/*",
 ];
-
 
 for (const url of basicUrls) {
   supportedSites.addSite(
@@ -130,6 +160,18 @@ supportedSites.addSite(
   CONFLICT_RESOLUTION_IMMUTABLE_PROXY
 );
 
+// The message composer also ships its own direct client to the local
+// Autogram desktop app (see native-autogram-intercept.ts) — independent of
+// window.ditec. We pin it to its D.Signer path (our window.ditec) and hide
+// its signing-method picker; the intercept stays as a fallback for when
+// that pin fails.
+supportedSites.addSite(
+  "https://message-constructor-web.slovensko.sk/*",
+  ON_DOCUMENT_LOAD_INJECTION,
+  CONFLICT_RESOLUTION_REPLACE_ORIGINAL,
+  { fixPickerNoveSlovenskoSk: true }
+);
+
 [
   "https://city-account-next.dev.bratislava.sk/*",
   "https://city-account-next.staging.bratislava.sk/*",
@@ -142,15 +184,29 @@ supportedSites.addSite(
   );
 });
 
-const debugUrls = !(process.env.NODE_ENV === "production")
-  ? [
-      "http://localhost:3000/*",
-      "http://localhost:49675/*",
-      "http://localhost/*",
-      "http://127.0.0.1/*",
-      "http://127.0.0.1:49675/*",
-    ]
-  : [];
+const isProductionBuild =
+  typeof __IS_PRODUCTION__ !== "undefined"
+    ? __IS_PRODUCTION__
+    : process.env.NODE_ENV === "production";
+
+const includeDebugUrlsFromDefine =
+  typeof __INCLUDE_DEBUG_URLS__ !== "undefined" && __INCLUDE_DEBUG_URLS__;
+
+const includeDebugUrlsFromEnv =
+  typeof process !== "undefined" &&
+  typeof process.env !== "undefined" &&
+  process.env.AE_INCLUDE_DEBUG_URLS === "1";
+
+const debugUrls =
+  !isProductionBuild || includeDebugUrlsFromDefine || includeDebugUrlsFromEnv
+    ? [
+        "http://localhost:3000/*",
+        "http://localhost:49675/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "http://127.0.0.1:49675/*",
+      ]
+    : [];
 
 for (const url of debugUrls) {
   supportedSites.addSite(

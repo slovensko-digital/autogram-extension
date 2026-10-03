@@ -1,10 +1,25 @@
 import browser from "webextension-polyfill";
-import {
-  getOptions,
-} from "../options/content";
+import { toSVG as bwipToSvg } from "@bwip-js/generic";
+import { get, set } from "idb-keyval";
+import { AutogramVMobileIntegration, type PairedDevice } from "autogram-sdk";
+import { getOptions } from "../options/content";
 import { createLogger } from "../log";
+import { getAvmIntegrationRegistrationInfo } from "../util-extension";
 
 const log = createLogger("ag-ext.ent.options");
+const avmIntegration = new AutogramVMobileIntegration({
+  get,
+  set,
+});
+
+const PLATFORM_LABELS: Record<string, string> = {
+  ios: "iOS",
+  android: "Android",
+};
+
+const QR_REFRESH_INTERVAL_MS = 4 * 60 * 1000;
+let qrRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+let qrIsOutdated = false;
 
 log.debug("options");
 
@@ -18,11 +33,16 @@ function save_options() {
     document.getElementById("restorePointEnabled") as HTMLInputElement
   ).checked;
 
+  const notifyPairedDevices = (
+    document.getElementById("notifyPairedDevices") as HTMLInputElement
+  ).checked;
+
   browser.storage.local
     .set({
       options: {
         extensionEnabled,
         restorePointEnabled,
+        notifyPairedDevices,
       },
     })
     .then(function () {
@@ -49,7 +69,245 @@ function restore_options() {
     (
       document.getElementById("restorePointEnabled") as HTMLInputElement
     ).checked = options.restorePointEnabled;
+
+    (
+      document.getElementById("notifyPairedDevices") as HTMLInputElement
+    ).checked = options.notifyPairedDevices;
   });
 }
-document.addEventListener("DOMContentLoaded", restore_options);
-document.getElementById("save")?.addEventListener("click", save_options);
+
+function renderQrCode(selector: string, value: string) {
+  const container = document.getElementById(selector);
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = bwipToSvg({
+    bcid: "qrcode",
+    text: value,
+    scale: 6,
+    width: 100,
+    height: 100,
+  });
+}
+
+function scheduleQrRefresh() {
+  if (qrRefreshTimer !== null) {
+    clearTimeout(qrRefreshTimer);
+  }
+  qrRefreshTimer = setTimeout(() => {
+    qrRefreshTimer = null;
+    if (document.visibilityState === "visible") {
+      void showPairingQrCode();
+    } else {
+      qrIsOutdated = true;
+      const pairingQrImage = document.getElementById("pairingQrImage");
+      if (pairingQrImage) {
+        pairingQrImage.style.opacity = "0.3";
+      }
+    }
+  }, QR_REFRESH_INTERVAL_MS);
+}
+
+async function showPairingQrCode() {
+  const pairingQrStatus = document.getElementById("pairingQrStatus");
+  const pairingQrUrl = document.getElementById(
+    "pairingQrUrl"
+  ) as HTMLTextAreaElement | null;
+
+  if (!pairingQrStatus || !pairingQrUrl) {
+    return;
+  }
+
+  pairingQrStatus.textContent = "Pripravujem párovací QR kód...";
+
+  try {
+    await avmIntegration.loadOrRegister(
+      await getAvmIntegrationRegistrationInfo()
+    );
+    const pairingUrl = await avmIntegration.getPairingQrCodeUrl();
+    pairingQrUrl.value = pairingUrl;
+    qrIsOutdated = false;
+    const pairingQrImage = document.getElementById("pairingQrImage");
+    if (pairingQrImage) {
+      pairingQrImage.style.opacity = "";
+    }
+    renderQrCode("pairingQrImage", pairingUrl);
+    pairingQrStatus.textContent = "Párovací QR kód je pripravený.";
+    scheduleQrRefresh();
+  } catch (error) {
+    log.error("Failed to prepare pairing QR code", error);
+    const pairingQrImage = document.getElementById("pairingQrImage");
+    if (pairingQrImage) {
+      pairingQrImage.innerHTML = "";
+    }
+    pairingQrUrl.value = "";
+    pairingQrStatus.textContent =
+      "Nepodarilo sa pripraviť párovací QR kód. Skúste to znova.";
+  }
+}
+
+async function copyPairingUrl() {
+  const pairingQrStatus = document.getElementById("pairingQrStatus");
+  const pairingQrUrl = document.getElementById(
+    "pairingQrUrl"
+  ) as HTMLTextAreaElement | null;
+
+  if (!pairingQrStatus || !pairingQrUrl || !pairingQrUrl.value) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(pairingQrUrl.value);
+    pairingQrStatus.textContent = "Párovacia URL bola skopírovaná.";
+  } catch (error) {
+    log.error("Failed to copy pairing URL", error);
+    pairingQrStatus.textContent = "Nepodarilo sa skopírovať párovaciu URL.";
+  }
+}
+
+function openPairingUrl() {
+  const pairingQrStatus = document.getElementById("pairingQrStatus");
+  const pairingQrUrl = document.getElementById(
+    "pairingQrUrl"
+  ) as HTMLTextAreaElement | null;
+
+  if (!pairingQrStatus || !pairingQrUrl || !pairingQrUrl.value) {
+    return;
+  }
+
+  window.open(pairingQrUrl.value, "_blank", "noopener,noreferrer");
+}
+
+async function loadPairedDevices() {
+  const container = document.getElementById("pairedDevicesList");
+  const status = document.getElementById("pairedDevicesStatus");
+  if (!container || !status) {
+    return;
+  }
+
+  status.textContent = "Načítavam zariadenia...";
+  container.replaceChildren();
+
+  try {
+    await avmIntegration.loadOrRegister(
+      await getAvmIntegrationRegistrationInfo()
+    );
+    const devices = await avmIntegration.getDevices();
+
+    status.textContent = "";
+
+    if (devices.length === 0) {
+      status.textContent = "Žiadne párované zariadenia.";
+      return;
+    }
+
+    for (const device of devices) {
+      const li = document.createElement("li");
+      li.className = "device-item";
+
+      const name = document.createElement("span");
+      name.className = "device-name";
+      name.textContent = device.displayName;
+
+      const platform = document.createElement("span");
+      platform.className = "device-platform";
+      platform.textContent =
+        PLATFORM_LABELS[device.platform.toLowerCase()] ?? device.platform;
+
+      const unpair = document.createElement("button");
+      unpair.type = "button";
+      unpair.className = "secondary device-unpair";
+      unpair.textContent = "Zrušiť párovanie";
+      unpair.setAttribute(
+        "aria-label",
+        `Zrušiť párovanie zariadenia ${device.displayName}`
+      );
+      unpair.addEventListener(
+        "click",
+        () => void unpairDevice(device, unpair, status)
+      );
+
+      li.append(name, platform, unpair);
+      container.appendChild(li);
+    }
+  } catch (error) {
+    log.error("Failed to load paired devices", error);
+    status.textContent = "Nepodarilo sa načítať zariadenia.";
+  }
+}
+
+async function unpairDevice(
+  device: PairedDevice,
+  button: HTMLButtonElement,
+  status: HTMLElement
+) {
+  if (
+    !window.confirm(
+      `Naozaj chcete zrušiť párovanie zariadenia ${device.displayName}? ` +
+        "Upozornenia na podpisovanie mu prestanú chodiť."
+    )
+  ) {
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "Ruším párovanie...";
+
+  try {
+    await avmIntegration.loadOrRegister(
+      await getAvmIntegrationRegistrationInfo()
+    );
+    await avmIntegration.unpairDevice(device.deviceId);
+    await loadPairedDevices();
+    // keep the confirmation unless the list itself reports something
+    if (!status.textContent) {
+      status.textContent = `Párovanie zariadenia ${device.displayName} bolo zrušené.`;
+    }
+  } catch (error) {
+    log.error("Failed to unpair device", error);
+    button.disabled = false;
+    status.textContent = "Nepodarilo sa zrušiť párovanie. Skúste to znova.";
+  }
+}
+
+function initPairingQrControls() {
+  document
+    .getElementById("copyPairingUrl")
+    ?.addEventListener("click", () => void copyPairingUrl());
+  document
+    .getElementById("openPairingUrl")
+    ?.addEventListener("click", openPairingUrl);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && qrIsOutdated) {
+      void showPairingQrCode();
+    }
+  });
+
+  void showPairingQrCode();
+}
+
+let optionsPageInitialized = false;
+
+function initOptionsPage() {
+  if (optionsPageInitialized) {
+    return;
+  }
+
+  optionsPageInitialized = true;
+
+  restore_options();
+  initPairingQrControls();
+  void loadPairedDevices();
+
+  document.getElementById("save")?.addEventListener("click", save_options);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initOptionsPage, {
+    once: true,
+  });
+} else {
+  initOptionsPage();
+}

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autogram UI gallery</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px 16px;
+        background: #f3f4f6;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      nav,
+      .intro {
+        max-width: 800px;
+        margin: 0 auto 12px;
+        font-size: 15px;
+        color: #4b5563;
+      }
+      nav strong {
+        color: #111827;
+      }
+      a {
+        color: #0055d0;
+      }
+      h2.label {
+        max-width: 800px;
+        margin: 32px auto 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #111827;
+        overflow-wrap: anywhere;
+      }
+      h2.label code {
+        font-weight: 400;
+        font-size: 13px;
+        color: #4b5563;
+      }
+      /* mirrors .dialog in <autogram-root>, which is a modal singleton */
+      .frame {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>UI gallery</strong> · Signing dialog ·
+      <a href="../../autogram-extension/demos/ui-gallery.html"
+        >Extension pages</a
+      >
+    </nav>
+    <p class="intro">
+      Every screen of the built-in signing dialog, for design work. Run
+      <code>npm run ui:gallery</code> in the repository root (it rebuilds the
+      SDK) and reload after changes.
+    </p>
+    <div id="gallery"></div>
+
+    <script src="../dist/index-all.iife.js"></script>
+    <script>
+      const signingUrl =
+        "https://autogram.slovensko.digital/api/v1/qr-code?guid=e7e95411-66a1-4f5e-9d2b-4fdb2b4b9f2a&key=aAAKfO0hXMWqvaG3PPAbnLU5bPDLP4bnPLxs4Mr4u2w%3D";
+      const pairingUrl =
+        "https://autogram.slovensko.digital/api/v1/pairing?integration=eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJkZW1vIn0.c2lnbmF0dXJl";
+      const phone = [
+        { deviceId: "1", platform: "android", displayName: "Pixel 8" },
+      ];
+
+      // [title, element, properties]
+      const screens = [
+        ["Method choice", "autogram-choice-screen", {}],
+        [
+          "Desktop: checking the app",
+          "autogram-sign-reader-screen",
+          { state: { type: "checkingApp" } },
+        ],
+        [
+          "Desktop: launching the app",
+          "autogram-sign-reader-screen",
+          { state: { type: "launchingApp" } },
+        ],
+        [
+          "Desktop: waiting for the signature",
+          "autogram-sign-reader-screen",
+          { state: { type: "waitingForSignature" } },
+        ],
+        [
+          "Desktop: app may not be installed",
+          "autogram-sign-reader-screen",
+          { state: { type: "appMayNotBeInstalled" } },
+        ],
+        [
+          "Desktop: app not installed",
+          "autogram-sign-reader-screen",
+          { state: { type: "appNotInstalled" } },
+        ],
+        [
+          "Desktop: app too old",
+          "autogram-sign-reader-screen",
+          {
+            state: {
+              type: "appVersionTooLow",
+              requiredVersion: "2.5.0",
+              detectedVersion: "2.3.1",
+            },
+          },
+        ],
+        [
+          "Desktop: cancelled in the app",
+          "autogram-sign-reader-screen",
+          { state: { type: "signingCancelled" } },
+        ],
+        [
+          "Desktop: error",
+          "autogram-sign-reader-screen",
+          {
+            state: { type: "error", message: "Autogram vrátil neznámu chybu." },
+          },
+        ],
+        [
+          "Mobile: signing QR, integration without notifications",
+          "autogram-sign-mobile-screen",
+          { url: signingUrl, pairingUrl: null },
+        ],
+        [
+          "Mobile: signing QR with the pairing link",
+          "autogram-sign-mobile-screen",
+          { url: signingUrl, pairingUrl },
+        ],
+        [
+          "Mobile: pair this computer (polls for the pairing)",
+          "autogram-sign-mobile-screen",
+          { url: signingUrl, pairingUrl, step: 1 },
+        ],
+        [
+          "Mobile: paired during signing, request sent to the phone",
+          "autogram-sign-mobile-screen",
+          { url: signingUrl, pairingUrl, step: 1, pairedDevices: phone },
+        ],
+        [
+          "Mobile: back on the signing QR after pairing",
+          "autogram-sign-mobile-screen",
+          { url: signingUrl, pairingUrl, pairedDevices: phone },
+        ],
+        [
+          "Mobile on mobile",
+          "autogram-signing-mobile-on-mobile-screen",
+          { url: signingUrl },
+        ],
+        ["Restore point", "autogram-restore-point-choice-screen", {}],
+        [
+          "After signing: success, no phone paired",
+          "autogram-suggest-pairing-screen",
+          { pairingUrl },
+        ],
+        [
+          "After signing: pairing",
+          "autogram-suggest-pairing-screen",
+          { pairingUrl, step: "pairing" },
+        ],
+        [
+          "After signing: phone paired",
+          "autogram-suggest-pairing-screen",
+          { pairingUrl, pairedDevices: phone },
+        ],
+        ["Signing cancelled", "autogram-signing-cancelled-screen", {}],
+        [
+          "Error",
+          "autogram-error-screen",
+          { errorMessage: "Nepodarilo sa pripojiť k serveru." },
+        ],
+      ];
+
+      const gallery = document.getElementById("gallery");
+      for (const [title, tag, props] of screens) {
+        const label = document.createElement("h2");
+        label.className = "label";
+        label.textContent = title;
+        const element = document.createElement("code");
+        element.textContent = `<${tag}>`;
+        label.append(" ", element);
+        const frame = document.createElement("div");
+        frame.className = "frame";
+        frame.appendChild(Object.assign(document.createElement(tag), props));
+        gallery.append(label, frame);
+      }
+    </script>
+  </body>
+</html>

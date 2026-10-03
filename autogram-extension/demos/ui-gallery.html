@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Extension UI gallery</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px 16px;
+        background: #e5e7eb;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      nav,
+      .intro,
+      h2.label {
+        max-width: 960px;
+        margin: 0 auto 12px;
+        font-size: 15px;
+        color: #4b5563;
+      }
+      nav strong,
+      h2.label {
+        color: #111827;
+      }
+      a {
+        color: #0055d0;
+      }
+      h2.label {
+        margin-top: 32px;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      .frame {
+        display: block;
+        max-width: 960px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgb(0 0 0 / 0.08);
+      }
+      iframe {
+        display: block;
+        width: 100%;
+        border: 0;
+        background: #fff;
+      }
+      /* the browser shows the popup at its own width */
+      .frame.popup {
+        width: max-content;
+        margin-left: max(16px, calc((100% - 960px) / 2));
+      }
+      .frame.popup iframe {
+        width: 312px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong>UI gallery</strong> ·
+      <a href="../../autogram-sdk/demos/ui-gallery.html">Signing dialog</a> ·
+      Extension pages
+    </nav>
+    <p class="intro">
+      The extension's options page and popup with sample data (outside the
+      extension their script cannot load, so this page fills them in). Run
+      <code>npm run ui:gallery</code> in the repository root.
+    </p>
+    <div id="gallery"></div>
+
+    <script type="module">
+      import { toSVG } from "/node_modules/@bwip-js/generic/dist/bwip-js-gen.mjs";
+
+      const devices = [
+        ["Pixel 8", "Android"],
+        ["iPhone 15", "iOS"],
+      ];
+
+      /** mirrors loadPairedDevices() in src/entrypoint/options.ts */
+      function fillDevices(doc, list) {
+        const ul = doc.getElementById("pairedDevicesList");
+        for (const [name, platform] of list) {
+          const li = doc.createElement("li");
+          li.className = "device-item";
+          li.innerHTML =
+            '<span class="device-name"></span><span class="device-platform"></span>' +
+            '<button type="button" class="secondary device-unpair">Zrušiť párovanie</button>';
+          li.querySelector(".device-name").textContent = name;
+          li.querySelector(".device-platform").textContent = platform;
+          ul.appendChild(li);
+        }
+        doc.getElementById("pairedDevicesStatus").textContent = list.length
+          ? ""
+          : "Žiadne párované zariadenia.";
+      }
+
+      function fillPairingQr(doc) {
+        const url =
+          "https://autogram.slovensko.digital/api/v1/pairing?integration=demo";
+        doc.getElementById("pairingQrImage").innerHTML = toSVG({
+          bcid: "qrcode",
+          text: url,
+          scale: 6,
+        });
+        doc.getElementById("pairingQrUrl").value = url;
+        doc.getElementById("pairingQrStatus").textContent =
+          "Párovací QR kód je pripravený.";
+      }
+
+      const pages = [
+        [
+          "Options: no paired phone",
+          "../src/static/options.html",
+          (doc) => {
+            doc.getElementById("extensionEnabled").checked = true;
+            fillDevices(doc, []);
+            fillPairingQr(doc);
+          },
+        ],
+        [
+          "Options: two paired phones, settings saved",
+          "../src/static/options.html",
+          (doc) => {
+            doc.getElementById("extensionEnabled").checked = true;
+            doc.getElementById("notifyPairedDevices").checked = true;
+            doc.getElementById("status").textContent =
+              "Nastavenia boli uložené.";
+            fillDevices(doc, devices);
+            fillPairingQr(doc);
+          },
+        ],
+        ["Popup", "../src/static/popup.html", () => {}, "popup"],
+      ];
+
+      const gallery = document.getElementById("gallery");
+      for (const [title, src, fill, variant] of pages) {
+        const label = document.createElement("h2");
+        label.className = "label";
+        label.textContent = title;
+        const frame = document.createElement("div");
+        frame.className = `frame ${variant ?? ""}`;
+        const iframe = document.createElement("iframe");
+        iframe.title = title;
+        iframe.addEventListener("load", () => {
+          const doc = iframe.contentDocument;
+          fill(doc);
+          iframe.style.height = `${doc.documentElement.scrollHeight}px`;
+        });
+        iframe.src = src;
+        frame.appendChild(iframe);
+        gallery.append(label, frame);
+      }
+    </script>
+  </body>
+</html>

@@ -4,65 +4,143 @@
     <meta charset="UTF-8" />
     <title>Autogram na štátnych weboch</title>
     <style>
-      body {
-        font-family: "Source Sans 3", sans-serif;
-        font-style: normal;
-        font-weight: 400;
-        font-size: 16px;
-        line-height: 22px;
-        /* identical to box height, or 137% */
-
-        /* Farby pozadia/Light */
-
-        background: #ffffff;
-        margin: 10px;
+      /*
+       * Design tokens, kept in sync with
+       * autogram-sdk/src/injected-ui/theme.ts (src/entrypoint/theme-tokens.test.ts checks).
+       */
+      :root {
+        --ag-font:
+          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        --ag-text: #111827;
+        --ag-text-muted: #4b5563;
+        --ag-text-subtle: #6b7280;
+        --ag-border: #e5e7eb;
+        --ag-ring: #d1d5db;
+        --ag-surface: #ffffff;
+        --ag-surface-muted: #f9fafb;
+        --ag-surface-hover: #f3f4f6;
+        --ag-primary: #0055d0;
+        --ag-primary-hover: #0044a8;
+        --ag-primary-soft: #eef4ff;
+        --ag-link: #0055d0;
+        --ag-link-hover: #0044a8;
+        --ag-focus: #0055d0;
+        --ag-success: #15803d;
+        --ag-success-soft: #f0fdf4;
+        --ag-danger: #dc2626;
+        --ag-danger-soft: #fef2f2;
+        --ag-warning: #b45309;
+        --ag-warning-soft: #fffbeb;
+        --ag-radius: 6px;
+        --ag-radius-lg: 12px;
       }
 
-      h2 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 16px;
-        text-align: center;
-      }
-      .button {
-        margin-top: 20px;
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
-        /* Website/Button */
+      }
 
-        display: inline-block;
-        padding: 8px 16px;
-        gap: 10px;
+      body {
+        width: 280px;
+        margin: 0;
+        padding: 16px;
+        font-family: var(--ag-font);
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--ag-text-muted);
+        background: var(--ag-surface);
+        -webkit-font-smoothing: antialiased;
+      }
 
-        font-family: "Source Sans 3", sans-serif;
-        font-style: normal;
+      :focus-visible {
+        outline: 2px solid var(--ag-focus);
+        outline-offset: 2px;
+      }
+
+      /* same eyebrow + title pattern as the signing dialog and options page */
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--ag-border);
+      }
+
+      .header img {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-size: 12px;
         font-weight: 600;
-        font-size: 18px;
+        line-height: 16px;
+        color: var(--ag-text-subtle);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--ag-primary);
+      }
+
+      h1 {
+        margin: 2px 0 0;
+        font-size: 17px;
+        font-weight: 700;
         line-height: 24px;
-        /* identical to box height, or 133% */
+        letter-spacing: -0.01em;
+        color: var(--ag-text);
+      }
 
-        text-align: center;
-        text-decoration: none;
+      p {
+        margin: 16px 0;
+      }
 
-        /* Farby tlačidiel/Primárne tlačidlo */
-        background: #126dff;
-        border-radius: 8px;
-        border: none;
+      .button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 9px 16px;
+        font-family: var(--ag-font);
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 22px;
         color: #ffffff;
-
+        background: var(--ag-primary);
+        border: none;
+        border-radius: var(--ag-radius);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
         cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+      .button:hover {
+        background: var(--ag-primary-hover);
       }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap"
-      rel="stylesheet"
-    />
   </head>
 
   <body>
-    <h2>Autogram</h2>
-    <h2>na štátnych weboch</h2>
+    <header class="header">
+      <img src="logo-64.png" alt="" />
+      <div>
+        <p class="eyebrow">Autogram</p>
+        <h1>na štátnych weboch</h1>
+      </div>
+    </header>
+    <p>
+      Podpisujte na štátnych weboch aplikáciou Autogram v počítači alebo
+      Autogram v mobile.
+    </p>
     <button id="open-options" class="button">Nastavenia</button>
     <script src="/autogram-popup.bundle.js"></script>
   </body>

@@ -6,7 +6,9 @@ import {
   supportedSites,
 } from "../supported-sites";
 import { createLogger } from "../log";
+import { captureException } from "../sentry";
 import { ExtensionOptions } from "../options/default";
+import { installNativeAutogramIntercept } from "./autogram/native-autogram-intercept";
 
 const log = createLogger("ag-ext.inject-ditec");
 
@@ -49,6 +51,15 @@ export function inject(
   }
   conflictResolver.inject(windowAny, extensionOptions);
 
+  if (site.interceptNativeAutogram) {
+    installNativeAutogramIntercept(
+      windowAny as unknown as Parameters<
+        typeof installNativeAutogramIntercept
+      >[0],
+      extensionOptions
+    );
+  }
+
   log.debug("End inject", windowAny.ditec);
 }
 
@@ -63,11 +74,16 @@ abstract class ConflictResolver {
 class ProxyConflictResolver extends ConflictResolver {
   public static readonly key = CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
   inject(windowAny, extensionOptions) {
-    Promise.all([import("./proxy"), constructDitecX(extensionOptions)]).then(
-      ([{ wrapWithProxy }, ditecX]) => {
+    Promise.all([import("./proxy"), constructDitecX(extensionOptions)])
+      .then(([{ wrapWithProxy }, ditecX]) => {
         windowAny.ditec = wrapWithProxy(ditecX);
-      }
-    );
+      })
+      // A silent failure here leaves the portal's own D.Bridge in charge
+      // and signing falls back to D.Launcher (issue #101) — always log it.
+      .catch((error) => {
+        log.error("Failed to install ditec replacement", error);
+        captureException(error);
+      });
   }
 }
 
@@ -84,9 +100,14 @@ class ReplaceOriginalConflictResolver extends ConflictResolver {
   public static readonly key = CONFLICT_RESOLUTION_REPLACE_ORIGINAL;
   inject(windowAny, extensionOptions) {
     if (windowAny.ditec) {
-      constructDitecX(extensionOptions).then((ditecX) => {
-        windowAny.ditec = ditecX;
-      });
+      constructDitecX(extensionOptions)
+        .then((ditecX) => {
+          windowAny.ditec = ditecX;
+        })
+        .catch((error) => {
+          log.error("Failed to install ditec replacement", error);
+          captureException(error);
+        });
     } else {
       log.info("No original ditec to replace");
     }

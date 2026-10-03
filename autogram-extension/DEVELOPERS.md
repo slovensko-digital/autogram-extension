@@ -167,7 +167,7 @@ API dbridge_js funguje nasledovne:
   - `static` - staticke subory vkladane do buildu (obrazky, podstranky)
 - `example-usage` - sample aplikacia pouzivajuca dbrige_js (dsigner), kde sa da vyskusat funkcionalita extension-u
 - `scripts` - pomocné skripty
-- `webpack` - konfigurácie webpacku pre rôzne prostredia
+- `manifest` - manifest.json generation (`manifest.ts`) shared by the vite build scripts
 
 ## Autogram SDK
 

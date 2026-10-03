@@ -3,8 +3,8 @@ import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { ObjectXadesBp2Xml, ObjectXadesBpXml } from "../types";
 import { Base64 } from "js-base64";
 import {
-  DesktopAutogramDocument,
-  DesktopSignatureParameters,
+  DesktopLegacyAutogramDocument,
+  DesktopLegacySignatureParameters,
 } from "autogram-sdk";
 
 export class XadesBpXmlStrategy implements ObjectStrategy {
@@ -13,7 +13,7 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     this.obj = object;
   }
 
-  get document(): DesktopAutogramDocument {
+  get document(): DesktopLegacyAutogramDocument {
     return {
       content: this.obj.xdcXMLData,
       filename: this.obj.objectId,
@@ -32,10 +32,16 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     return this.obj.objectId;
   }
   get identifier() {
-    if (this.obj.xdcIdentifier.includes("/"))
-      return this.obj.xdcIdentifier;
-
-    return this.obj.xdcIdentifier + "/" + this.obj.xdcVersion;
+    // Canonical form identifier includes the version as the last path
+    // segment. Mirrors the PFS bundle's own derivation (Podanie
+    // initializedCallback): append xdcVersion unless the identifier
+    // already ends with it. A bare `includes("/")` check is wrong here —
+    // it matches every URI, so a versionless URI would stay versionless.
+    const identifier = this.obj.xdcIdentifier;
+    if (identifier.split("/").pop() === this.obj.xdcVersion) {
+      return identifier;
+    }
+    return identifier + "/" + this.obj.xdcVersion;
   }
   get schemaIdentifier() {
     return this.obj.xsdReferenceURI;
@@ -67,7 +73,7 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopLegacySignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
@@ -76,26 +82,26 @@ export class XadesBp2XmlStrategy implements ObjectStrategy {
     return true;
   }
 
-  get document(): DesktopAutogramDocument {
+  get document(): DesktopLegacyAutogramDocument {
     return {
-      content: this.obj.sourceXml,
+      content: this.obj.xdcXDCB64,
       filename: this.obj.objectId,
     };
   }
   get objSchema(): string {
-    return Base64.encode(this.obj.sourceXsd);
+    return Base64.encode(this.obj.xdcUsedXSD);
   }
   get objTransformation(): string {
-    return Base64.encode(this.obj.sourceXsl);
+    return Base64.encode(this.obj.xdcUsedXSLT);
   }
   get formVersion() {
-    return this.obj.namespaceUri;
+    return this.obj.objectFormatIdentifier;
   }
   get objectId() {
     return this.obj.objectId;
   }
   get identifier() {
-    return this.obj.namespaceUri;
+    return this.obj.objectFormatIdentifier;
   }
   get payloadMimeType(): PayloadMimeTypeStr {
     if (this.isXmlDataContainer()) {

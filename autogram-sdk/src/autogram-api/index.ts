@@ -1,4 +1,14 @@
-export { apiClient } from "./lib/apiClient";
+export {
+  apiClient,
+  ZServerInfo,
+  ZSignedObject,
+  ZSignResponseBody,
+  ZLegacyAutogramDocument,
+  ZLegacySignatureParameters,
+  ZSignRequestBody,
+  ZBatchStartResponseBody,
+  ZBatchEndResponseBody,
+} from "./lib/apiClient";
 
 export type {
   ApiClientConfiguration,
@@ -6,6 +16,11 @@ export type {
   ServerInfo,
   SignatureParameters,
   SignResponseBody,
+  XDCParameters,
+  PresentationParameters,
+  SignRequestBody,
+  LegacyAutogramDocument,
+  LegacySignatureParameters,
   BatchStartResponseBody,
   BatchEndResponseBody,
   AutogramDesktopIntegrationInterface,

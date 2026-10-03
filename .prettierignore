@@ -1,0 +1,22 @@
+# Prettier also reads the root .gitignore, but not the per-package ones or
+# the global one, so repeat what matters here.
+
+# Generated code and docs
+**/*.generated.ts
+autogram-sdk/docs/html/
+autogram-extension/CHANGELOG.md
+autogram-extension/safari/
+**/package-lock.json
+
+# Build and test output
+**/dist/
+autogram-extension/web-ext-artifacts/
+autogram-extension/test-results/
+autogram-extension/playwright-report/
+
+# Third-party portal scripts, verified against checksums.txt
+autogram-extension/tests/fixtures/portals/*.js
+
+# Local tooling state
+.claude/
+.playwright-mcp/

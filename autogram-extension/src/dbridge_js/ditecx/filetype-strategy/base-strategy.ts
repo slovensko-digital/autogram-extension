@@ -1,17 +1,17 @@
 import {
-  DesktopAutogramDocument,
-  DesktopSignatureParameters,
+  DesktopLegacyAutogramDocument,
+  DesktopLegacySignatureParameters,
 } from "autogram-sdk";
 
 export interface ObjectStrategy {
-  document: DesktopAutogramDocument;
+  document: DesktopLegacyAutogramDocument;
   objSchema: string | undefined;
   objTransformation: string | undefined;
-  identifier: DesktopSignatureParameters["identifier"];
+  identifier: DesktopLegacySignatureParameters["identifier"];
   formVersion: string;
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopLegacySignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   /**
@@ -26,7 +26,7 @@ export interface ObjectStrategy {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EmptyStrategy implements ObjectStrategy {
-  get document(): DesktopAutogramDocument {
+  get document(): DesktopLegacyAutogramDocument {
     return { content: "", filename: "" };
   }
   get objSchema(): string | undefined {

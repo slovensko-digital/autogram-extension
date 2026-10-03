@@ -1,38 +1,53 @@
-import { AvmSimpleChannel } from "./channel-avm";
-import { AutogramDesktopSimpleChannel } from "./channel-desktop";
-import { CombinedClient } from "./with-ui";
+/**
+ * @module demo
+ * Self-running demo entry: renders a file input and signs the chosen file
+ * with `createAutogramClient` (XAdES in an ASiC-E container), then offers
+ * the result for download. Choosing several files signs them together into
+ * one ASiC-E container (Autogram desktop app >= 2.8.0). Loaded by the pages in `demos/` — not part of
+ * the public API.
+ */
+import { Base64 } from "js-base64";
+import { createAutogramClient } from "./with-ui";
 
 async function main() {
-  const client = await CombinedClient.init(
-    new AvmSimpleChannel(),
-    new AutogramDesktopSimpleChannel(),
-    () => {}
-  );
+  const client = await createAutogramClient();
   const filePicker = document.createElement("input");
   filePicker.type = "file";
-  filePicker.addEventListener("change", async (e) => {
-    const file = filePicker.files?.[0];
-    if (!file) return;
+  filePicker.multiple = true;
+  filePicker.addEventListener("change", async () => {
+    const files = Array.from(filePicker.files ?? []);
+    if (files.length === 0) return;
+    const [file] = files;
 
-    const signedObject = await client.sign(
+    const signed = await client.sign(
+      await Promise.all(
+        files.map(async (f) => ({
+          // read as bytes: File.text() would corrupt binary files (PDF, …)
+          content: Base64.fromUint8Array(new Uint8Array(await f.arrayBuffer())),
+          mimeType: f.type || "application/octet-stream",
+          encoding: "base64" as const,
+          filename: f.name,
+        }))
+      ),
       {
-        content: await file.text(),
-        filename: file.name,
-      },
-      {
-        level: "XAdES_BASELINE_B",
+        form: "XAdES",
         container: "ASiC_E",
-      },
-      file.type,
-      true
+      }
     );
 
-    console.log(signedObject);
+    console.log(signed);
 
     const a = document.createElement("a");
-    const blob = new Blob([signedObject.content], {
-      type: "text/plain",
-    });
+    const blob = new Blob(
+      [
+        signed.encoding === "base64"
+          ? Base64.toUint8Array(signed.content)
+          : signed.content,
+      ],
+      {
+        type: signed.mimeType,
+      }
+    );
     const url = URL.createObjectURL(blob);
     a.href = url;
     a.download = `${file.name}.asice`;

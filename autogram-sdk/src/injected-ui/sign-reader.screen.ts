@@ -1,7 +1,6 @@
 import { html, css, type CSSResultGroup } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { closeSvg } from "./svg";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
 import type { DesktopSigningState } from "../autogram-api/index";
@@ -21,10 +20,10 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
       }
 
       .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #e0e0e0;
-        border-top-color: #126dff;
+        width: 36px;
+        height: 36px;
+        border: 3px solid var(--ag-border);
+        border-top-color: var(--ag-primary);
         border-radius: 50%;
         animation: ag-spin 0.8s linear infinite;
         margin-bottom: 20px;
@@ -35,13 +34,17 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 0;
+      }
+
+      .inline-status .spinner {
+        width: 20px;
+        height: 20px;
+        border-width: 2px;
       }
 
       .inline-status .spinner,
       .inline-status p {
-        margin-bottom: 0;
-        margin-top: 0;
+        margin: 0;
       }
 
       @keyframes ag-spin {
@@ -54,95 +57,52 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 20px;
-        padding: 30px;
+        gap: 16px;
+        padding: 28px;
         width: 100%;
         box-sizing: border-box;
       }
 
-      .not-installed-icon {
-        width: 52px;
-        height: 52px;
+      .callout {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .callout-icon {
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
-        background: #fff0f0;
+        background: var(--ag-danger-soft);
+        color: var(--ag-danger);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
       }
 
-      .not-installed-icon svg {
-        width: 28px;
-        height: 28px;
-        color: #ef4444;
+      .callout-icon.warning {
+        background: var(--ag-warning-soft);
+        color: var(--ag-warning);
+      }
+
+      .callout-icon svg {
+        width: 24px;
+        height: 24px;
       }
 
       .not-installed h2 {
         margin: 0;
-        font-size: 20px;
-        font-weight: 700;
-        color: #111;
+        font-size: 19px;
+        font-weight: 600;
+        line-height: 28px;
+        color: var(--ag-text);
       }
 
-      .not-installed p {
-        margin: 0;
-        font-size: 17px;
-        line-height: 26px;
-        color: #444;
-        text-align: left;
-      }
-
+      .not-installed p,
       .not-installed ol {
         margin: 0;
-        padding-left: 22px;
-        font-size: 17px;
-        line-height: 28px;
-        color: #444;
-      }
-
-      .not-installed ol li {
-        margin-bottom: 6px;
-      }
-
-      .not-installed ol li:last-child {
-        margin-bottom: 0;
-      }
-
-      .not-installed ol a {
-        color: #126dff;
-        text-decoration: underline;
-        font-weight: 600;
-      }
-
-      .not-installed ol a:hover {
-        color: #0d5ae0;
-      }
-
-      .download-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #126dff;
-        color: #fff;
-        text-decoration: none !important;
-        border-radius: 8px;
-        padding: 10px 22px;
-        font-family: "Source Sans 3", sans-serif;
-        font-weight: 600;
-        font-size: 17px;
-        line-height: 24px;
-        transition: background 0.15s;
-      }
-
-      .download-btn:hover {
-        background: #0d5ae0;
-        color: #fff !important;
-      }
-
-      .download-btn svg {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
+        text-align: left;
       }
     `,
   ];
@@ -158,7 +118,6 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
   render() {
     let title = "Prebieha podpisovanie Autogramom";
     let content;
-    let useFullWidthLayout = false;
 
     switch (this.state.type) {
       case "checkingApp":
@@ -186,7 +145,6 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
 
       case "appMayNotBeInstalled":
         title = "Autogram sa zatiaľ nespustil";
-        useFullWidthLayout = true;
         content = html`
           <div class="not-installed">
             <div class="inline-status">
@@ -194,10 +152,17 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               <p>Spúšťam Autogram…</p>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
-              <div class="not-installed-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#f59e0b"/>
+            <div class="callout">
+              <div class="callout-icon warning">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                    fill="currentColor"
+                  />
                 </svg>
               </div>
               <div>
@@ -213,13 +178,12 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               ďalšie pokyny na inštaláciu.
             </p>
             <a
-              class="download-btn"
+              class="button"
               href="https://autogram.slovensko.digital"
               target="_blank"
               rel="noopener noreferrer"
             >
-              ${unsafeSVG(downloadSvg)}
-              Stiahnuť Autogram
+              ${unsafeSVG(downloadSvg)} Stiahnuť Autogram
             </a>
           </div>
         `;
@@ -227,13 +191,19 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
 
       case "appNotInstalled":
         title = "Autogram nie je nainštalovaný";
-        useFullWidthLayout = true;
         content = html`
           <div class="not-installed">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
-              <div class="not-installed-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+            <div class="callout">
+              <div class="callout-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                    fill="currentColor"
+                  />
                 </svg>
               </div>
               <div>
@@ -241,7 +211,8 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               </div>
             </div>
             <p>
-              Na podpisovanie dokumentov je potrebná  aplikácia Autogram. Postupujte podľa nasledujúcich krokov:
+              Na podpisovanie dokumentov je potrebná aplikácia Autogram.
+              Postupujte podľa nasledujúcich krokov:
             </p>
             <ol>
               <li>
@@ -256,13 +227,63 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               <li>Vráťte sa na túto stránku a skúste podpisovanie znova.</li>
             </ol>
             <a
-              class="download-btn"
+              class="button"
               href="https://autogram.slovensko.digital"
               target="_blank"
               rel="noopener noreferrer"
             >
-              ${unsafeSVG(downloadSvg)}
-              Stiahnuť Autogram
+              ${unsafeSVG(downloadSvg)} Stiahnuť Autogram
+            </a>
+          </div>
+        `;
+        break;
+
+      case "appVersionTooLow":
+        title = "Autogram je potrebné aktualizovať";
+        content = html`
+          <div class="not-installed">
+            <div class="callout">
+              <div class="callout-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h2>Autogram je potrebné aktualizovať</h2>
+              </div>
+            </div>
+            <p>
+              Táto funkcia vyžaduje Autogram verzie
+              ${this.state.requiredVersion} alebo novšej. Nainštalovaná verzia:
+              ${this.state.detectedVersion}. Postupujte podľa nasledujúcich
+              krokov:
+            </p>
+            <ol>
+              <li>
+                Stiahnite a nainštalujte najnovší Autogram zo stránky
+                <a
+                  href="https://autogram.slovensko.digital"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >autogram.slovensko.digital</a
+                >.
+              </li>
+              <li>Vráťte sa na túto stránku a skúste podpisovanie znova.</li>
+            </ol>
+            <a
+              class="button"
+              href="https://autogram.slovensko.digital"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ${unsafeSVG(downloadSvg)} Stiahnuť Autogram
             </a>
           </div>
         `;
@@ -289,13 +310,8 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
     }
 
     return html`
-      <div class="heading">
-        <h1>${title}</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
-      ${useFullWidthLayout ? content : html`<div class="main">${content}</div>`}
+      ${this.renderHeading(title)}
+      <div class="main">${content}</div>
     `;
   }
 }

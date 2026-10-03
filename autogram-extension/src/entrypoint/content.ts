@@ -3,6 +3,10 @@ import browser from "webextension-polyfill";
 import packageJson from "../../package.json";
 import { ContentChannelPassthrough } from "../dbridge_js/autogram/channel/content";
 import {
+  forceDSignerSigner,
+  replaceSignerTypeSwitcher,
+} from "../dbridge_js/autogram/fixed-signer";
+import {
   supportedSites,
   ON_DOCUMENT_LOAD_INJECTION,
   DIRECT_INJECTION,
@@ -62,6 +66,7 @@ getOptions()
 
       const messagePassthrough = new ContentChannelPassthrough();
       messagePassthrough.initEventListener();
+      maybeFixSignerType(document);
       insertInjectScript(document, extensionOptions);
 
       // TODO: probably this should be conditional, based on the website
@@ -78,6 +83,25 @@ getOptions()
     // throw new Error("example");
   }, captureException)
   .catch(captureException);
+
+/**
+ * On nove.slovensko.sk's message composer, because native Autogram integration cannot be overriden,
+ * we pin the signing method to "Dsigner" — that path goes through `window.ditec`, which we replace,
+ * so the user gets Autogram desktop + AVM mobile signing — and swap the
+ * portal's signing-method switcher for an "Autogram (cez rozšírenie)" label.
+ */
+function maybeFixSignerType(doc: Document) {
+  const site = supportedSites.matchUrl(doc.location.href);
+  if (!site.fixPickerNoveSlovenskoSk) {
+    return;
+  }
+  const targetWindow = doc.defaultView;
+  if (!targetWindow) {
+    return;
+  }
+  forceDSignerSigner(targetWindow);
+  replaceSignerTypeSwitcher(doc);
+}
 
 function insertInjectScript(doc: Document, extensionOptions: ExtensionOptions) {
   const site = supportedSites.matchUrl(doc.location.href);
@@ -133,17 +157,18 @@ class BaseInjector {
     const url = browser.runtime.getURL("autogram-inject.bundle.js");
     log.debug("using script url", url);
 
-    const script = document.createElement("script");
+    const script = this.doc.createElement("script");
     script.src = url;
     script.type = "text/javascript";
 
     const extensionOptions = this.extensionOptions;
+    const targetWindow = this.doc.defaultView ?? window;
     script.onload = function () {
       log.debug("script loaded");
 
       // Pass options via a custom event to avoid CSP issues with inline scripts
       const event = createAutogramOptionsCustomEvent(extensionOptions);
-      window.dispatchEvent(event);
+      targetWindow.dispatchEvent(event);
     };
     return script;
   }
@@ -210,9 +235,9 @@ class IntervalInjector extends BaseInjector {
     );
     log.debug("using script url", url);
 
-    const script = document.createElement("script");
+    const script = this.doc.createElement("script");
     script.src = url;
-    script.type = "text/javascript";
+    script.setAttribute("type", "text/javascript");
 
     script.onload = function () {
       log.debug("detect script load");

@@ -1,18 +1,39 @@
 import {
   apiClient,
   AutogramDesktopIntegrationInterface,
-  AutogramDocument,
+  LegacyAutogramDocument,
   BatchEndResponseBody,
   BatchStartResponseBody,
   ServerInfo,
-  SignatureParameters,
+  LegacySignatureParameters,
   SignResponseBody,
+  SignRequestBody,
 } from "./autogram-api/lib/apiClient";
 import { isSafari } from "./utils";
 
-export class AutogramDesktopSimpleChannel
-  implements AutogramDesktopIntegrationInterface
-{
+/**
+ * Default direct implementation of {@link AutogramDesktopIntegrationInterface}
+ * that communicates with the Autogram desktop application running on
+ * the user's local machine.
+ *
+ * Connects to `http://localhost` by default. On Safari, where mixed
+ * content blocks plain HTTP, it falls back to
+ * `https://loopback.autogram.slovensko.digital` instead.
+ *
+ * The typical signing flow is:
+ * 1. {@link getLaunchURL} — get a deep-link URL to launch / wake the
+ *    desktop app.
+ * 2. {@link waitForStatus} — wait until the app reports it is ready.
+ * 3. {@link signV1} (Autogram >= 2.8.0) / {@link signLegacy} (older
+ *    versions, one document) — submit the document(s) and receive the
+ *    signed result.
+ *
+ * This class is the default channel used by `CombinedClient`. The
+ * browser extension replaces it with `AutogramDesktopChannel`, which
+ * routes calls through the content-script ↔ injected-script message
+ * bridge instead of calling the local HTTP server directly.
+ */
+export class AutogramDesktopSimpleChannel implements AutogramDesktopIntegrationInterface {
   private apiClient: ReturnType<typeof apiClient>;
   constructor() {
     let serverProtocol: "http" | "https" = "http";
@@ -67,19 +88,25 @@ export class AutogramDesktopSimpleChannel
   ): Promise<BatchEndResponseBody> {
     return this.apiClient.endBatch(batchId, abortController ?? null);
   }
-  sign(
-    document: AutogramDocument,
-    signatureParameters?: SignatureParameters,
+  signLegacy(
+    document: LegacyAutogramDocument,
+    signatureParameters?: LegacySignatureParameters,
     payloadMimeType?: string,
     batchId?: string,
     abortController?: AbortController
   ): Promise<SignResponseBody> {
-    return this.apiClient.sign(
+    return this.apiClient.signLegacy(
       document,
       signatureParameters,
       payloadMimeType,
       batchId ?? null,
       abortController ?? null
     );
+  }
+  signV1(
+    body: SignRequestBody,
+    abortController?: AbortController
+  ): Promise<SignResponseBody> {
+    return this.apiClient.signV1(body, abortController ?? null);
   }
 }

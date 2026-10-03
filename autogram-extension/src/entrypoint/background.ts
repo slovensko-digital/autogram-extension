@@ -1,6 +1,5 @@
 import { BackgroundWorker } from "../dbridge_js/autogram/background-worker";
 import browser from "webextension-polyfill";
-import { captureException } from "../sentry";
 import { createLogger } from "../log";
 
 const log = createLogger("ag-ext.ent.bg");
@@ -67,5 +66,14 @@ try {
   });
 } catch (e) {
   log.error("Error during background script execution", e);
-  captureException(e);
+
+  // Avoid importing browser-only telemetry at service worker startup.
+  // Lazy-load it only when we already have an error to report.
+  void import("../sentry")
+    .then(({ captureException }) => {
+      captureException(e as Error);
+    })
+    .catch((sentryImportError) => {
+      log.error("Failed to load sentry module", sentryImportError);
+    });
 }

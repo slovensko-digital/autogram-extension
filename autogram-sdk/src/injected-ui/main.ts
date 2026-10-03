@@ -8,12 +8,21 @@ import "./sign-mobile-on-mobile.screen";
 import "./signing-cancelled.screen";
 import "./restore-point-choice.screen";
 import "./error.screen";
-import { EventChoice, EventClose, EventRestorePointResult } from "./events";
+import "./suggest-pairing.screen";
+import {
+  EventChoice,
+  EventClose,
+  EventPairingStep,
+  EventRestorePointResult,
+  EventRetryMobileNotification,
+} from "./events";
 import { SigningMethod } from "./types";
 import { createLogger } from "../log";
 import { UserCancelledSigningException } from "../errors";
 import { isMobileDevice } from "../utils";
 import type { DesktopSigningState } from "../autogram-api/index";
+import type { PairedDevice } from "../avm-api/index";
+import { themeTokens } from "./theme";
 
 const log = createLogger("ag-sdk:root");
 
@@ -26,6 +35,7 @@ enum Screens {
   signMobileOnMobile,
   useRestorePoint,
   error,
+  suggestPairing,
 }
 
 @customElement("autogram-root")
@@ -33,46 +43,65 @@ export class AutogramRoot extends LitElement {
   /**
    * Styles for the component
    */
-  static styles = css`
-    :host {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #87858599;
-      padding: 10px;
-      z-index: 999999;
+  static styles = [
+    themeTokens,
+    css`
+      :host {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgb(17 24 39 / 0.55);
+        padding: 16px;
+        z-index: 999999;
 
-      /* display: flex; */
-      justify-content: center;
-      align-items: center;
+        /* display: flex; */
+        justify-content: center;
+        align-items: center;
 
-      flex-direction: column;
+        flex-direction: column;
 
-      font-family: "Source Sans 3";
-      font-style: normal;
-    }
+        font-family: var(--ag-font);
+        font-style: normal;
+      }
 
-    .dialog {
-      /* Neutral/White */
-      background: #ffffff;
-      /* Neutral/N300 */
-      border: 1px solid #e0e0e0;
-      border-radius: 10px 10px 10px 10px;
+      .dialog {
+        box-sizing: border-box;
+        padding: 0;
+        background: var(--ag-surface);
+        color: var(--ag-text);
+        border: none;
+        border-radius: var(--ag-radius-lg);
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        overflow: auto;
 
-      max-width: 800px;
-      max-height: 800px;
-      width: 100%;
-    }
-  `;
+        max-width: 800px;
+        max-height: min(800px, calc(100vh - 32px));
+        width: 100%;
+      }
+
+      /* :host already dims the page */
+      .dialog::backdrop {
+        background: transparent;
+      }
+    `,
+  ];
 
   @property()
   declare screen: Screens;
 
   @property()
   declare mobileSigningUrl: string | null;
+
+  @property()
+  declare mobilePairingUrl: string | null;
+
+  @property({ attribute: false })
+  declare pairedDevices: PairedDevice[] | null;
 
   @property({ attribute: false })
   declare desktopSigningState: DesktopSigningState;
@@ -82,6 +111,19 @@ export class AutogramRoot extends LitElement {
   errorMessage: string | null = null;
 
   hideTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  onRetryMobileNotification: (() => Promise<void>) | null = null;
+
+  /** Polls for a new pairing; resolves the devices, `null` on abort/timeout. */
+  onWaitForPairing:
+    | ((
+        signal: AbortSignal,
+        onPairingUrl: (pairingUrl: string) => void
+      ) => Promise<PairedDevice[] | null>)
+    | null = null;
+
+  /** the pairing poll of the QR screen's pairing step */
+  private pairingWatch: AbortController | null = null;
 
   /**
    * Some host pages (e.g. konto.bratislava.sk) manage focus traps by setting the
@@ -101,8 +143,11 @@ export class AutogramRoot extends LitElement {
 
   constructor() {
     super();
+    this.stopPairingWatch();
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.mobilePairingUrl = null;
+    this.pairedDevices = null;
     this.desktopSigningState = { type: "checkingApp" };
   }
 
@@ -146,6 +191,58 @@ export class AutogramRoot extends LitElement {
     }
   }
 
+  async _handleRetryMobileNotification(_event: EventRetryMobileNotification) {
+    log.debug("_handleRetryMobileNotification");
+    if (!this.onRetryMobileNotification) {
+      return;
+    }
+
+    try {
+      await this.onRetryMobileNotification();
+    } catch (error) {
+      log.warn("Retrying mobile notification failed", error);
+    }
+  }
+
+  _handlePairingStep(event: EventPairingStep) {
+    log.debug("_handlePairingStep", event.detail);
+    this.stopPairingWatch();
+    if (!event.detail.open || !this.onWaitForPairing) {
+      return;
+    }
+
+    const watch = new AbortController();
+    this.pairingWatch = watch;
+    this.onWaitForPairing(watch.signal, (pairingUrl) => {
+      this.mobilePairingUrl = pairingUrl;
+    })
+      .then((devices) => {
+        if (
+          !devices ||
+          watch.signal.aborted ||
+          this.screen !== Screens.signMobile
+        ) {
+          return;
+        }
+        // the pairing step confirms it; the request goes to the phone
+        this.pairedDevices = devices;
+        void this._handleRetryMobileNotification(
+          new EventRetryMobileNotification()
+        );
+      })
+      .catch((error) => log.warn("Waiting for pairing failed", error))
+      .finally(() => {
+        if (this.pairingWatch === watch) {
+          this.pairingWatch = null;
+        }
+      });
+  }
+
+  private stopPairingWatch() {
+    this.pairingWatch?.abort();
+    this.pairingWatch = null;
+  }
+
   render() {
     log.debug("render");
     return html`
@@ -163,7 +260,12 @@ export class AutogramRoot extends LitElement {
             : this.screen === Screens.signMobile
               ? html`<autogram-sign-mobile-screen
                   @autogram-close=${this._closeSigningScreen}
-                  url=${this.mobileSigningUrl}
+                  @autogram-retry-mobile-notification=${this
+                    ._handleRetryMobileNotification}
+                  @autogram-pairing-step=${this._handlePairingStep}
+                  .url=${this.mobileSigningUrl ?? ""}
+                  .pairingUrl=${this.mobilePairingUrl}
+                  .pairedDevices=${this.pairedDevices}
                 ></autogram-sign-mobile-screen>`
               : this.screen === Screens.signingCancelled
                 ? html`<autogram-signing-cancelled-screen
@@ -172,7 +274,7 @@ export class AutogramRoot extends LitElement {
                 : this.screen === Screens.signMobileOnMobile
                   ? html`<autogram-signing-mobile-on-mobile-screen
                       @autogram-close=${this._closeSigningScreen}
-                      url=${this.mobileSigningUrl}
+                      .url=${this.mobileSigningUrl ?? ""}
                     ></autogram-signing-mobile-on-mobile-screen>`
                   : this.screen === Screens.useRestorePoint
                     ? html`<autogram-restore-point-choice-screen
@@ -185,7 +287,13 @@ export class AutogramRoot extends LitElement {
                           @autogram-close=${this._closeNow}
                           errorMessage=${this.errorMessage}
                         ></autogram-error-screen>`
-                      : ""}
+                      : this.screen === Screens.suggestPairing
+                        ? html`<autogram-suggest-pairing-screen
+                            @autogram-close=${this._closeSigningScreen}
+                            .pairingUrl=${this.mobilePairingUrl ?? ""}
+                            .pairedDevices=${this.pairedDevices}
+                          ></autogram-suggest-pairing-screen>`
+                        : ""}
       </dialog>
     `;
   }
@@ -193,7 +301,6 @@ export class AutogramRoot extends LitElement {
   connectedCallback(): void {
     log.debug("connectedCallback");
     super.connectedCallback();
-    this.addFonts();
   }
 
   disconnectedCallback(): void {
@@ -249,10 +356,42 @@ export class AutogramRoot extends LitElement {
     }, 10000);
   }
 
-  showQRCode(url: string, abortController: AbortController) {
+  /** @param pairingUrl `null` hides the pairing link */
+  showQRCode(
+    url: string,
+    pairingUrl: string | null,
+    abortController: AbortController
+  ) {
+    this.stopPairingWatch();
     this.screen = Screens.signMobile;
     this.mobileSigningUrl = url;
+    this.mobilePairingUrl = pairingUrl;
+    this.pairedDevices = null;
     this.abortController = abortController;
+  }
+
+  /**
+   * Suggest pairing after a mobile signature. Called again with a fresh
+   * URL before the pairing JWT expires; closing aborts `abortController`.
+   */
+  suggestPairing(pairingUrl: string, abortController: AbortController) {
+    this.stopPairingWatch();
+    const visible = this.style.display === "flex";
+    if (this.screen !== Screens.suggestPairing) {
+      this.pairedDevices = null;
+    }
+    this.screen = Screens.suggestPairing;
+    this.mobilePairingUrl = pairingUrl;
+    this.abortController = abortController;
+    if (!visible) {
+      this.show();
+    }
+  }
+
+  pairingCompleted(devices: PairedDevice[]) {
+    if (this.screen === Screens.suggestPairing) {
+      this.pairedDevices = devices;
+    }
   }
 
   openMobileOnMobile(url: string, abortController: AbortController) {
@@ -316,37 +455,13 @@ export class AutogramRoot extends LitElement {
     }
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
+    this.mobilePairingUrl = null;
+    this.pairedDevices = null;
     this.desktopSigningState = { type: "checkingApp" };
     if (this.abortController) {
       this.abortController.abort();
     }
     this.abortController = null;
-  }
-
-  addFonts() {
-    // TODO - replace with local version?
-    /*
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    */
-    const link = document.createElement("link");
-    link.rel = "preconnect";
-    link.href = "https://fonts.googleapis.com";
-
-    const link2 = document.createElement("link");
-    link2.rel = "preconnect";
-    link2.href = "https://fonts.gstatic.com";
-    link2.crossOrigin = "anonymous";
-
-    const link3 = document.createElement("link");
-    link3.rel = "stylesheet";
-    link3.href =
-      "https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap";
-
-    document.head.appendChild(link);
-    document.head.appendChild(link2);
-    document.head.appendChild(link3);
   }
 }
 
@@ -357,10 +472,10 @@ function promiseWithResolvers<T>() {
 }
 function promiseWithResolversPolyfill<T>() {
   let resolve: (value: T) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     },
     reject: (reason?: unknown) => void = () => {
-      console.log("too soon");
+      log.debug("promiseWithResolvers called too soon");
     };
   const promise = new Promise<T>((_resolve, _reject) => {
     resolve = _resolve;

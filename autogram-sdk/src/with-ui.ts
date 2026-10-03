@@ -5,69 +5,184 @@
  */
 
 import type {
-  SignatureParameters as DesktopSignatureParameters,
-  AutogramDocument as DesktopAutogramDocument,
-  SignResponseBody as DesktopSignResponseBody,
+  PresentationParameters,
   SignatureParameters,
-} from "./autogram-api/index";
-
-import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
-import { AvmSimpleChannel } from "./channel-avm";
-import { Base64 } from "js-base64";
-import { AutogramRoot } from "./injected-ui/main";
-import { SigningMethod } from "./injected-ui/types";
-import type {
-  AutogramDesktopIntegrationInterface,
   DesktopSigningStateConsumer,
 } from "./autogram-api/index";
-import { AutogramDesktopSimpleChannel } from "./channel-desktop";
-import { DesktopClient, type DesktopSignOptions } from "./desktop-client";
-import { createLogger } from "./log";
-import {
-  AutogramAppNotInstalledException,
-  AutogramSdkException,
-  UserCancelledSigningException,
-} from "./errors";
-import packageJson from "../package.json";
+import type {
+  DocumentToSign,
+  SignedDocumentResult,
+  SignedObject,
+} from "./types";
 
-export type SignedObject = DesktopSignResponseBody;
+import type {
+  AutogramVMobileIntegrationInterfaceStateful,
+  DBInterface,
+} from "./avm-api/index";
+import { AvmSimpleChannel } from "./channel-avm";
+import { AutogramRoot } from "./injected-ui/main";
+import type { AutogramDesktopIntegrationInterface } from "./autogram-api/index";
+import { AutogramDesktopSimpleChannel } from "./channel-desktop";
+import { SigningFlow, SigningState } from "./flow";
+import { createLogger } from "./log";
+import { AutogramError } from "./errors";
+import { toSignRequest } from "./sign-request";
+import { isMobileDevice, waitForDocumentBody } from "./utils";
+import packageJson from "../package.json";
+import { AvmRegistrationInfo } from "./avm-api/lib/apiClient";
+
+export type { SignedObject } from "./types";
 // We have to leave this in because otherwise the custom elements are not registered
 export { AutogramRoot } from "./injected-ui/main";
 
 const log = createLogger("ag-sdk.CombinedClient");
 
+interface CombinedClientOptions extends AvmRegistrationInfo {
+  enableNotifications?: boolean;
+  pairingEnabled?: boolean;
+}
+
+const DEFAULT_OPTIONS: CombinedClientOptions = {
+  enableNotifications: true,
+  platform: "unknown",
+  displayName: "",
+  pairingEnabled: false,
+};
+
+/**
+ * Options for {@link createAutogramClient}.
+ */
+export interface AutogramClientOptions {
+  /**
+   * Autogram v Mobile channel. Provide one to route AVM calls through a
+   * different execution context (e.g. an extension background worker);
+   * defaults to direct HTTPS calls to the AVM service.
+   */
+  mobileChannel?: AutogramVMobileIntegrationInterfaceStateful;
+  /**
+   * Autogram desktop channel; defaults to direct HTTP calls to the local
+   * desktop app.
+   */
+  desktopChannel?: AutogramDesktopIntegrationInterface;
+  /**
+   * Where the default mobile channel persists the AVM integration identity
+   * (key pair + GUID; paired phones are bound to it) and restore points.
+   * Default: IndexedDB of the current origin. Ignored with a custom
+   * `mobileChannel`.
+   */
+  mobileStorage?: DBInterface;
+  /** Called when the client resets its signing state. */
+  onResetSignRequest?: () => void;
+  /**
+   * Send push notifications to paired mobile devices. Default `true`.
+   * Applies to the default mobile channel; a custom `mobileChannel`
+   * decides about notifications itself. When `false`, pairing is never
+   * offered with the default channel.
+   */
+  enableNotifications?: boolean;
+  /** Platform reported when registering the AVM integration. */
+  platform?: string;
+  /** Display name reported when registering the AVM integration. */
+  displayName?: string;
+  /**
+   * Offer pairing a phone for notifications: the link on the QR screen and
+   * the pairing suggestion after a mobile signature when no phone is
+   * paired yet. Default `false`.
+   *
+   * Only takes effect when the mobile channel implements the optional
+   * notification methods (`getPairingQrCodeUrl`, `sendNotification`,
+   * `getPairedDevices`) — the default channel does; a custom channel that
+   * omits them never shows pairing UI.
+   */
+  pairingEnabled?: boolean;
+}
+
+/** Options of the unified {@link CombinedClient.sign} form. */
+export interface ClientSignOptions {
+  /** Cancels the signing step. */
+  signal?: AbortSignal;
+  /** Desktop launch/signing progress updates. */
+  onState?: DesktopSigningStateConsumer;
+  /**
+   * How the desktop app presents the documents before signing
+   * (Autogram >= 2.8.0; mapped to `visualizationWidth` for older versions).
+   */
+  presentation?: PresentationParameters;
+}
+
+/**
+ * Creates the signing client with the built-in dialog UI.
+ * Preferred over the positional {@link CombinedClient.init}.
+ */
+export async function createAutogramClient(
+  options: AutogramClientOptions = {}
+): Promise<CombinedClient> {
+  const enableNotifications = options.enableNotifications ?? true;
+  return CombinedClient.init(
+    options.mobileChannel ??
+      new AvmSimpleChannel({
+        notifyDevices: enableNotifications,
+        storage: options.mobileStorage,
+      }),
+    options.desktopChannel ?? new AutogramDesktopSimpleChannel(),
+    options.onResetSignRequest,
+    {
+      enableNotifications,
+      platform: options.platform ?? "unknown",
+      displayName: options.displayName ?? "",
+      // pairing is pointless when the default channel never notifies
+      pairingEnabled:
+        (options.pairingEnabled ?? false) &&
+        (options.mobileChannel !== undefined || enableNotifications),
+    }
+  );
+}
+
 /**
  * CombinedClient combines desktop and mobile signing methods with UI to choose between them
  *
+ * The signing logic itself lives in the headless {@link SigningFlow};
+ * this class implements its delegate by driving the Lit dialog
+ * (`<autogram-root>`), and keeps the public API stable.
+ *
  * @class CombinedClient
  * @module with-ui
- * @param avmChannel - implementing Autogram V Mobile interface. It can be used to bind SDK to service worker.
- * @param desktopChannel - implementing Autogram Desktop interface. It can be used to bind SDK to service worker.
- * @param resetSignRequestCallback - Callback to reset sign request
  */
 export class CombinedClient {
   private signatureIndex = 1;
   private signerIdentificationListeners: (() => void)[];
-  private desktopClient: DesktopClient;
+  private flow: SigningFlow;
+  /** whether the desktop screen was already opened for the current sign() */
+  private desktopScreenActive = false;
 
-  /**
-   * @param avmChannel - Autogram V Mobile Integration channel
-   * @param resetSignRequestCallback - Callback to reset sign request
-   */
   private constructor(
     private ui: AutogramRoot,
     private clientMobileIntegration: AutogramVMobileIntegrationInterfaceStateful = new AvmSimpleChannel(),
-    private clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
-    private resetSignRequestCallback: (() => void) | undefined = undefined
+    clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
+    private resetSignRequestCallback: (() => void) | undefined = undefined,
+    options: CombinedClientOptions = DEFAULT_OPTIONS
   ) {
-    this.desktopClient = new DesktopClient(this.clientDesktopIntegration);
+    this.flow = new SigningFlow(
+      clientDesktopIntegration,
+      this.clientMobileIntegration,
+      {
+        chooseMethod: () => this.ui.startSigning(),
+        onState: (state, abortController) =>
+          this.handleFlowState(state, abortController),
+        confirmRestorePoint: () => this.ui.maybeRestoreRestorePoint(),
+      },
+      {
+        platform: options.platform,
+        displayName: options.displayName,
+        isMobileDevice,
+        notifications: options.pairingEnabled ?? false,
+      }
+    );
 
-    // this.clientDesktopIntegration = clientDesktopIntegration;
-
-    // this.clientMobileIntegration = avmChannel;
     this.clientMobileIntegration.init();
-
-    // this.resetSignRequestCallback = resetSignRequestCallback;
+    this.ui.onRetryMobileNotification = this.retryMobileNotification.bind(this);
+    this.ui.onWaitForPairing = (signal, onPairingUrl) =>
+      this.flow.waitForPairing(signal, onPairingUrl);
 
     this.resetSignRequest();
 
@@ -77,15 +192,31 @@ export class CombinedClient {
   /**
    * We have to use async factory function because we have to wait for the UI to be created
    *
+   * @deprecated Prefer {@link createAutogramClient} (options object).
    */
   public static async init(
-    clientMobileIntegration: AutogramVMobileIntegrationInterfaceStateful = new AvmSimpleChannel(),
+    clientMobileIntegration?: AutogramVMobileIntegrationInterfaceStateful,
     clientDesktopIntegration: AutogramDesktopIntegrationInterface = new AutogramDesktopSimpleChannel(),
-    resetSignRequestCallback?: () => void
+    resetSignRequestCallback?: () => void,
+    options: CombinedClientOptions = {
+      enableNotifications: true,
+      platform: "unknown",
+      displayName: "",
+    }
   ): Promise<CombinedClient> {
-    // TODO: WIP
+    const mobileIntegration =
+      clientMobileIntegration ??
+      new AvmSimpleChannel({
+        notifyDevices: options.enableNotifications ?? true,
+      });
     log.debug(`init version ${packageJson.version}`);
     async function createUI(): Promise<AutogramRoot> {
+      // The client can be constructed at document_start (the extension's
+      // inject script), before the parser has created <body>. Crashing
+      // here used to leave the whole client init rejected — on portals
+      // that meant `window.ditec` was never replaced and signing fell
+      // back to D.Launcher (autogram-extension issue #101).
+      await waitForDocumentBody();
       const root: AutogramRoot = document.createElement(
         "autogram-root"
       ) as unknown as AutogramRoot;
@@ -94,20 +225,24 @@ export class CombinedClient {
       await new Promise<void>((resolve, reject) => {
         try {
           log.debug("CombinedClient init addEventListener");
-          const resolved = false;
-          const listener = root.addEventListener(
+          let resolved = false;
+          const settle = () => {
+            if (!resolved) {
+              resolved = true;
+              resolve();
+            }
+          };
+          root.addEventListener(
             "load",
             () => {
               log.debug("CombinedClient init load event");
-              if (!resolved) {
-                resolve();
-              }
+              settle();
             },
             { once: true }
           );
           if (root.isConnected) {
             log.debug("CombinedClient init already connected", { root });
-            resolve();
+            settle();
           }
         } catch (e) {
           log.error("CombinedClient init createUI failed", e);
@@ -126,9 +261,10 @@ export class CombinedClient {
     log.debug("CombinedClient init new CombinedClient");
     return new CombinedClient(
       ui,
-      clientMobileIntegration,
+      mobileIntegration,
       clientDesktopIntegration,
-      resetSignRequestCallback
+      resetSignRequestCallback,
+      options
     );
   }
 
@@ -143,42 +279,79 @@ export class CombinedClient {
   }
 
   /**
+   * Signs one or more documents. The result keeps every signer and the
+   * MIME type of the signed artifact.
    *
-   * @param document document to sign
-   * @param signatureParameters how to sign the document
-   * @param payloadMimeType mime type of the input document
-   * @param decodeBase64 if false the content will be (stay) base64 encoded, if true we will decode it
-   * @returns
+   * Pass an array to sign multiple documents together into a single ASiC_E
+   * container with one signature ("spoločná autorizácia dokumentov"). This
+   * needs the Autogram desktop app 2.8.0 or newer, so the method chooser is
+   * skipped; on mobile devices it fails with `not-supported`.
+   *
+   * Callers holding legacy `POST /sign`-shaped input (`level`, XDC fields in
+   * the parameters, `payloadMimeType`) can convert it with
+   * `fromLegacySignArgs()` / `fromLegacySignatureParameters()`.
+   *
+   * @param documents document(s) to sign, each with its own
+   * `mimeType`/`encoding` and optional `xdcParameters`
+   * @param parameters how to sign (`form`, `profile`, `container`, …)
+   * @throws `AutogramError` — always carries a machine-readable `code`;
+   * classify with `AutogramError.is()` rather than `instanceof`. Codes
+   * that can surface here:
+   * - `user-cancelled` — the user actively cancelled the signing flow
+   * - `aborted` — the operation was aborted programmatically (dialog
+   *   closed, `AbortSignal`, page close)
+   * - `timeout` — the signing operation did not finish in time
+   * - `app-not-installed` — the Autogram desktop app could not be launched
+   * - `app-version-too-low` — the desktop app is too old for the request
+   *   (multiple documents, v1-only checks)
+   * - `not-supported` — the chosen signing method cannot fulfil the
+   *   request (multiple documents on a mobile device, v1-only checks with
+   *   Autogram v mobile)
+   * - `connection-failed` — a network request to a signing backend failed
+   * - `protocol-error` — an unexpected response shape or bridge failure
+   * - `server-error` — a signing backend reported an error
+   * - `unknown` — anything that cannot be classified more precisely
    */
   public async sign(
-    document: DesktopAutogramDocument,
-    signatureParameters: SignatureParameters,
-    payloadMimeType: string,
-    decodeBase64 = false,
-    options?: DesktopSignOptions
-  ) {
+    documents: DocumentToSign | DocumentToSign[],
+    parameters?: SignatureParameters,
+    options?: ClientSignOptions
+  ): Promise<SignedDocumentResult> {
     try {
-      const signedObject = await this.signBasedOnUserChoice(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        options?.onDesktopStateChange
+      this.desktopScreenActive = false;
+
+      const request = toSignRequest(
+        documents,
+        parameters,
+        options?.presentation
       );
-      return {
-        ...signedObject,
-        content: decodeBase64
-          ? Base64.decode(signedObject.content)
-          : signedObject.content,
-      };
+      if (request.documents.length > 1) {
+        // the method chooser is skipped, so nothing else opens the dialog
+        this.ui.show();
+      }
+      const result = await this.flow.sign(request, {
+        onDesktopStateChange: options?.onState,
+        signal: options?.signal,
+      });
+      this.afterSuccessfulSignature();
+      return result;
     } catch (e) {
-      if (e instanceof UserCancelledSigningException) {
+      if (AutogramError.is(e, "user-cancelled")) {
         log.info("User cancelled request");
         this.ui.signingCancelled();
         throw e;
-      } else if (e instanceof AutogramAppNotInstalledException) {
+      } else if (AutogramError.is(e, "aborted")) {
+        // deliberate abort (user closed the dialog, timeout) — no error dialog
+        log.info("Signing aborted");
+        throw e;
+      } else if (AutogramError.is(e, "app-not-installed")) {
         log.error("Autogram app not installed", e);
         throw e;
-      } else if (e instanceof AutogramSdkException) {
+      } else if (AutogramError.is(e, "app-version-too-low")) {
+        // the desktop screen already shows the appVersionTooLow state
+        log.error("Autogram app version too low", e);
+        throw e;
+      } else if (AutogramError.is(e)) {
         this.ui.showError(e.message);
       }
       log.error("Signing failed", e);
@@ -186,200 +359,70 @@ export class CombinedClient {
     }
   }
 
-  private async signBasedOnUserChoice(
-    document: DesktopAutogramDocument,
-    signatureParameters: SignatureParameters,
-    payloadMimeType: string,
-    onDesktopStateChange?: DesktopSigningStateConsumer
-  ) {
-    // TODO: remove
-    log.debug("sign", this.ui);
-    const signingMethod = await this.ui.startSigning();
-
-    log.debug("User chose signing method", signingMethod);
-
-    const abortController = new AbortController();
-    if (signingMethod === SigningMethod.reader) {
-      const stateConsumer: DesktopSigningStateConsumer = (state) => {
-        this.ui.updateDesktopSigningState(state);
-        onDesktopStateChange?.(state);
-      };
-
-      this.ui.desktopSigning(abortController);
-      return this.getSignatureDesktop(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        abortController,
-        stateConsumer
-      );
-    } else if (signingMethod === SigningMethod.mobile) {
-      return this.getSignatureMobile(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        abortController
-      );
-    } else if (signingMethod === SigningMethod.mobileOnMobile) {
-      return this.getSignatureMobileOnMobile(
-        document,
-        signatureParameters,
-        payloadMimeType,
-        abortController
-      );
-    } else {
-      log.debug("Invalid signing method");
-      throw new Error("Invalid signing method");
-    }
-  }
-
   public async useRestorePoint(
     restorePoint: string
   ): Promise<SignedObject | null> {
-    log.debug("useRestorePoint", restorePoint);
-
-    let restored =
-      await this.clientMobileIntegration.useRestorePoint(restorePoint);
-
-    if (restored !== null) {
-      if (await this.ui.maybeRestoreRestorePoint()) {
-        return restored;
-      }
-    }
-    return null;
+    return this.flow.useRestorePoint(restorePoint);
   }
 
-  private async getSignatureDesktop(
-    document: DesktopAutogramDocument,
-    signatureParameters: DesktopSignatureParameters,
-    payloadMimeType: string,
-    abortController: AbortController,
-    onStateChange?: DesktopSigningStateConsumer
-  ): Promise<SignedObject> {
-    log.info("getSignatureDesktop");
-    const signedObject = await this.desktopClient.sign(
-      document,
-      signatureParameters,
-      payloadMimeType,
-      {
-        abortController,
-        onStateChange,
-      }
-    );
+  /**
+   * Maps flow progress onto the Lit dialog.
+   */
+  private handleFlowState(
+    state: SigningState,
+    abortController: AbortController
+  ) {
+    log.debug("flow state", state);
+    switch (state.type) {
+      case "desktop":
+        if (!this.desktopScreenActive) {
+          this.desktopScreenActive = true;
+          this.ui.desktopSigning(abortController);
+        }
+        this.ui.updateDesktopSigningState(state.state);
+        break;
+      case "mobile":
+        if (state.state === "qr-ready") {
+          this.ui.showQRCode(
+            state.signingUrl,
+            state.pairingUrl,
+            abortController
+          );
+        } else if (state.state === "suggest-pairing") {
+          this.ui.suggestPairing(state.pairingUrl, abortController);
+        } else if (state.state === "paired") {
+          this.ui.pairingCompleted(state.devices);
+        }
+        // "preparing" has no dedicated screen today
+        break;
+      case "mobile-on-mobile":
+        this.ui.openMobileOnMobile(state.signingUrl, abortController);
+        window.open(state.signingUrl, "_blank", "noopener");
+        break;
+      case "done":
+        this.desktopScreenActive = false;
+        // with a pairing suggestion the dialog stays open for it
+        if (!state.pairingSuggestion) {
+          this.ui.hide();
+          this.ui.reset();
+        }
+        break;
+    }
+  }
 
+  /** Runs the signer-identification listeners and bumps the counter. */
+  private afterSuccessfulSignature() {
     this.signerIdentificationListeners.forEach((cb) => cb());
     this.signerIdentificationListeners = [];
     this.signatureIndex++;
-
-    this.ui.hide();
-    this.ui.reset();
-
-    return signedObject;
   }
 
-  private async getSignatureMobile(
-    document: DesktopAutogramDocument,
-    signatureParameters: DesktopSignatureParameters,
-    payloadMimeType: string,
-    abortController: AbortController
-  ): Promise<SignedObject> {
+  private async retryMobileNotification(): Promise<void> {
     try {
-      const url = await this.getSignatureMobileAvmUrl(
-        signatureParameters,
-        document,
-        payloadMimeType
-      );
-      // TODO when the user closes the UI we should abort the signing ??
-      this.ui.showQRCode(url, abortController);
-
-      return await this.getSignatureMobileSignDocument(abortController);
-    } catch (e) {
-      log.error("getSignatureMobile failed", e);
-      throw e;
+      await this.clientMobileIntegration.sendNotification?.();
+    } catch (error) {
+      log.warn("Retrying mobile notification failed", error);
     }
-  }
-
-  private async getSignatureMobileOnMobile(
-    document: DesktopAutogramDocument,
-    signatureParameters: DesktopSignatureParameters,
-    payloadMimeType: string,
-    abortController: AbortController
-  ): Promise<SignedObject> {
-    try {
-      const url = await this.getSignatureMobileAvmUrl(
-        signatureParameters,
-        document,
-        payloadMimeType
-      );
-
-      this.ui.openMobileOnMobile(url, abortController);
-      window.open(url, "_blank", "noopener");
-
-      return await this.getSignatureMobileSignDocument(abortController);
-    } catch (e) {
-      log.error("getSignatureMobileOnMobile failed", e);
-      throw e;
-    }
-  }
-
-  private async getSignatureMobileAvmUrl(
-    signatureParameters: SignatureParameters,
-    document: { filename?: string; content: string },
-    payloadMimeType: string
-    // TODO add abortController here?
-  ) {
-    const params = signatureParameters;
-    const container =
-      params.container == null
-        ? null
-        : params.container == "ASiC_E"
-          ? "ASiC-E"
-          : "ASiC-S";
-
-    await this.clientMobileIntegration.loadOrRegister();
-    await this.clientMobileIntegration.addDocument({
-      document: document,
-      parameters: {
-        ...params,
-        container: container ?? undefined,
-      },
-      payloadMimeType: payloadMimeType,
-    });
-    const url = await this.clientMobileIntegration.getQrCodeUrl();
-    log.debug({ url });
-    return url;
-  }
-
-  private async getSignatureMobileSignDocument(
-    abortController?: AbortController
-  ) {
-    const signedObject =
-      await this.clientMobileIntegration.waitForSignature(abortController);
-    log.debug({ signedObject });
-    if (signedObject === null || signedObject === undefined) {
-      throw new Error("Signing cancelled");
-    }
-
-    // const signedObject2 = {
-    //   content: signedObject.content,
-    //   signedBy:
-    //     signedObject.signers?.at(-1)?.signedBy ?? "Používateľ Autogramu",
-    //   issuedBy: signedObject.signers?.at(-1)?.issuedBy ?? "(neznámy)",
-    // };
-    this.signerIdentificationListeners.forEach((cb) => cb());
-    this.signerIdentificationListeners = [];
-    this.signatureIndex++;
-
-    this.ui.hide();
-
-    this.clientMobileIntegration.reset();
-    this.ui.reset();
-    return {
-      content: signedObject.content,
-      signedBy:
-        signedObject.signers?.at(-1)?.signedBy ?? "Používateľ Autogramu",
-      issuedBy: signedObject.signers?.at(-1)?.issuedBy ?? "(neznámy)",
-    };
   }
 
   /**

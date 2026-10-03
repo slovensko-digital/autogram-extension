@@ -4,8 +4,8 @@ import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 
 import { ObjectXadesBpTxt } from "../types";
 import {
-  DesktopAutogramDocument,
-  DesktopSignatureParameters,
+  DesktopLegacyAutogramDocument,
+  DesktopLegacySignatureParameters,
 } from "autogram-sdk";
 
 export class XadesBpTxtStrategy implements ObjectStrategy {
@@ -15,12 +15,12 @@ export class XadesBpTxtStrategy implements ObjectStrategy {
   }
   schemaIdentifier: string;
   transformationIdentifier: string;
-  transformationMediaDestinationTypeDescription: DesktopSignatureParameters["transformationMediaDestinationTypeDescription"];
+  transformationMediaDestinationTypeDescription: DesktopLegacySignatureParameters["transformationMediaDestinationTypeDescription"];
   transformationLanguage: string;
   transformationTargetEnvironment: string;
   includeRefs: boolean;
 
-  get document(): DesktopAutogramDocument {
+  get document(): DesktopLegacyAutogramDocument {
     return {
       content: Base64.encode(this.obj.sourceTxt),
       filename: this.obj.objectId,

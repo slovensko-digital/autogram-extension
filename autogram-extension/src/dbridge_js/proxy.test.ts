@@ -17,28 +17,22 @@ describe("proxy", () => {
         console.log(response);
       },
     });
-    wrapped.toString()
-    console.log(wrapped.__proxy_log);
-    expect(wrapped.__proxy_log).toBe([
-      {
-        type: "get",
-        target: { a: "x", b: null, fn: null },
-        prop: "a",
-        receiver: { a: "x", b: null, fn: null },
-      },
-      {
-        type: "get",
-        target: { a: "x", b: null, fn: null },
-        prop: "fn",
-        receiver: { a: "x", b: null, fn: null },
-      },
-      {
-        type: "apply",
-        target: null,
-        thisArg: { a: "x", b: null, fn: null },
+    wrapped.toString();
+    // property gets are only logged for functions; the wrapped onSuccess
+    // callback and the apply trap add their own entries
+    expect(wrapped.__proxy_log).toEqual([
+      expect.objectContaining({ type: "get", name: "root.fn", prop: "fn" }),
+      expect.objectContaining({ type: "apply", name: "root.fn" }),
+      expect.objectContaining({
+        type: "callback.onSuccess",
         name: "root.fn",
-        argumentList: [],
-      },
+        onSuccessArgs: ["success"],
+      }),
+      expect.objectContaining({
+        type: "get",
+        name: "root.toString",
+        prop: "toString",
+      }),
     ]);
   });
 });
