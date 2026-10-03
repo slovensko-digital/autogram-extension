@@ -1,4 +1,4 @@
-name: Deploy example-avm-integration to GitHub Pages
+name: Deploy GitHub Pages
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     paths:
       - "example-avm-integration/**"
       - "autogram-sdk/**"
-      - ".github/workflows/deploy-example-avm-integration.yml"
+      - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -30,11 +30,19 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      # typedoc-umlclass renders class diagrams with PlantUML (Java, preinstalled) + Graphviz
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build autogram-sdk
         run: npm run build
+        working-directory: autogram-sdk
+
+      - name: Build autogram-sdk docs
+        run: npx typedoc --out ../.pages/autogram-sdk
         working-directory: autogram-sdk
 
       - name: Build example-avm-integration
@@ -50,11 +58,19 @@ jobs:
           <html lang="en">
             <head>
               <meta charset="UTF-8" />
-              <meta http-equiv="refresh" content="0; url=/autogram-extension/example-avm-integration/" />
-              <title>Redirecting...</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <title>Autogram Extension</title>
+              <style>
+                body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; }
+              </style>
             </head>
             <body>
-              Redirecting to <a href="/autogram-extension/example-avm-integration/">example-avm-integration</a>...
+              <h1>Autogram Extension</h1>
+              <ul>
+                <li><a href="autogram-sdk/">autogram-sdk API documentation</a></li>
+                <li><a href="example-avm-integration/">example-avm-integration</a> &ndash; Autogram v mobile integration demo</li>
+                <li><a href="https://github.com/slovensko-digital/autogram-extension">Source on GitHub</a></li>
+              </ul>
             </body>
           </html>
           EOF

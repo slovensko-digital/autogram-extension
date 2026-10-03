@@ -161,6 +161,8 @@ try {
 See [docs/API.md](./docs/API.md) for the full API reference,
 [docs/MIGRATION.md](./docs/MIGRATION.md) for upgrade notes, and
 [docs/API-PROPOSAL.md](./docs/API-PROPOSAL.md) for the redesign roadmap.
+Generated TypeDoc reference is published at
+https://slovensko-digital.github.io/autogram-extension/autogram-sdk/.
 
 ## Advanced usage — channels
 
@@ -221,6 +223,8 @@ Autogram Desktop types are generated from local app running on default port. AVM
 ```bash
 npm run generate-docs
 ```
+
+The [`deploy-pages`](../.github/workflows/deploy-pages.yml) workflow regenerates the docs on every push to `master` and publishes them to https://slovensko-digital.github.io/autogram-extension/autogram-sdk/.
 
 ### Using with npm link
 
