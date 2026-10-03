@@ -19,6 +19,8 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "clean": "turbo run clean",
     "start": "echo 'Please specify which extension manifest version to start: npm run watch:mv2 or npm run watch:mv3'",
     "build:sdk": "turbo run build --filter=autogram-sdk",
