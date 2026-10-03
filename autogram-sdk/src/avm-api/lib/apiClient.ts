@@ -210,6 +210,19 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
   }
 
   /**
+   * Unpair a mobile device from this integration. It stops receiving push
+   * notifications from this integration. Idempotent: a device that is not
+   * paired (any more) is not an error.
+   * Pre-condition: `loadOrRegister()` completed.
+   */
+  public async unpairDevice(deviceId: string): Promise<void> {
+    await this.apiClient.deleteIntegrationDevice(
+      deviceId,
+      await this.getIntegrationBearerToken()
+    );
+  }
+
+  /**
    * Send a push notification to all paired devices to prompt them to sign the document.
    * Call after `addDocument()` when you want paired mobile devices to be notified.
    * Pre-condition: `addDocument()` completed. Errors are logged but do not propagate.
@@ -577,6 +590,31 @@ export class AutogramVMobileIntegrationApiClient {
     })
       .then((res) => res.json())
       .then((json) => GetIntegrationDevicesResponseBody.parse(json));
+  }
+
+  _deleteIntegrationDevice = "/integration-devices/{device_id}" as const;
+  async deleteIntegrationDevice(
+    deviceId: paths[typeof this._deleteIntegrationDevice]["delete"]["parameters"]["path"]["device_id"],
+    bearerToken: string
+  ): Promise<void> {
+    const res = await fetch(
+      this.baseUrl +
+        this._deleteIntegrationDevice.replace(
+          "{device_id}",
+          encodeURIComponent(deviceId)
+        ),
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${bearerToken}`,
+        },
+      }
+    );
+
+    // 404: the pairing is already gone (e.g. removed from the device side)
+    if (!res.ok && res.status !== 404) {
+      throw new Error(`API Error: ${res.status} ${res.statusText}`);
+    }
   }
 
   _documents = "/documents" as const;

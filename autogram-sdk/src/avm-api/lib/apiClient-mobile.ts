@@ -139,6 +139,31 @@ export class AutogramVMobileClientApiClient {
     }
   }
 
+  _deleteDeviceIntegration = "/device-integrations/{integration_id}" as const;
+  /** Device-side unpairing: removes the integration from this device. */
+  async deleteDeviceIntegration(
+    integrationId: paths[typeof this._deleteDeviceIntegration]["delete"]["parameters"]["path"]["integration_id"],
+    bearerToken: string
+  ) {
+    const response = await fetch(
+      this.baseUrl +
+        this._deleteDeviceIntegration.replace(
+          "{integration_id}",
+          encodeURIComponent(integrationId)
+        ),
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + bearerToken,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await this.readErrorText(response));
+    }
+  }
+
   _getDocumentVisualization = "/documents/{guid}/visualization" as const;
   /** Called by mobile app after scanning QR code to display document to user for preview. */
   async getDocumentVisualization(

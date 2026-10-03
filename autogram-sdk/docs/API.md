@@ -231,6 +231,9 @@ const signed = await request.waitForSignature({ signal: abortSignal });
   (idempotent).
 - `pairedDevices()` — devices that can be reached by push notification.
 - `pairingQrCodeUrl()` — QR that pairs a device without signing anything.
+- `unpairDevice(deviceId)` — remove a pairing; the device stops receiving
+  notifications from this integration. Idempotent (an already removed
+  pairing is not an error).
 - `requestSignature(documentToSign, { notifyDevices? })` — upload a
   document; notifies paired devices by default.
 - `resumeRequest(token)` — recreate a `SignatureRequest` from a persisted
@@ -274,7 +277,7 @@ is how the browser extension bridges calls to its background worker).
 Key methods: `loadOrRegister`, `addDocument`, `getQrCodeUrl(docRef,
 enableIntegration?)`, `getPairingQrCodeUrl`, `sendNotification(docRef)`,
 `checkDocumentStatus(docRef)`, `waitForSignature(docRef, abortController)`,
-`getDevices`, `setBaseUrl`/`getBaseUrl`, `getIntegrationGuid`.
+`getDevices`, `unpairDevice(deviceId)`, `setBaseUrl`/`getBaseUrl`, `getIntegrationGuid`.
 
 ## Types
 

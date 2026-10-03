@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { toSVG as bwipToSvg } from "@bwip-js/generic";
 import { get, set } from "idb-keyval";
-import { AutogramVMobileIntegration } from "autogram-sdk";
+import { AutogramVMobileIntegration, type PairedDevice } from "autogram-sdk";
 import { getOptions } from "../options/content";
 import { createLogger } from "../log";
 import { getAvmIntegrationRegistrationInfo } from "../util-extension";
@@ -209,12 +209,59 @@ async function loadPairedDevices() {
       platform.className = "device-platform";
       platform.textContent = device.platform;
 
-      li.append(name, platform);
+      const unpair = document.createElement("button");
+      unpair.type = "button";
+      unpair.className = "secondary device-unpair";
+      unpair.textContent = "Zrušiť párovanie";
+      unpair.setAttribute(
+        "aria-label",
+        `Zrušiť párovanie zariadenia ${device.displayName}`
+      );
+      unpair.addEventListener(
+        "click",
+        () => void unpairDevice(device, unpair, status)
+      );
+
+      li.append(name, platform, unpair);
       container.appendChild(li);
     }
   } catch (error) {
     log.error("Failed to load paired devices", error);
     status.textContent = "Nepodarilo sa načítať zariadenia.";
+  }
+}
+
+async function unpairDevice(
+  device: PairedDevice,
+  button: HTMLButtonElement,
+  status: HTMLElement
+) {
+  if (
+    !window.confirm(
+      `Naozaj chcete zrušiť párovanie zariadenia ${device.displayName}? ` +
+        "Upozornenia na podpisovanie mu prestanú chodiť."
+    )
+  ) {
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = "Ruším párovanie...";
+
+  try {
+    await avmIntegration.loadOrRegister(
+      await getAvmIntegrationRegistrationInfo()
+    );
+    await avmIntegration.unpairDevice(device.deviceId);
+    await loadPairedDevices();
+    // keep the confirmation unless the list itself reports something
+    if (!status.textContent) {
+      status.textContent = `Párovanie zariadenia ${device.displayName} bolo zrušené.`;
+    }
+  } catch (error) {
+    log.error("Failed to unpair device", error);
+    button.disabled = false;
+    status.textContent = "Nepodarilo sa zrušiť párovanie. Skúste to znova.";
   }
 }
 

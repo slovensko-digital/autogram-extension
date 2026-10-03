@@ -151,8 +151,15 @@ to pair a phone.
   this screen.
 - New: `AvmSimpleChannel` is exported and takes
   `{ notifyDevices?, storage? }`. `createAutogramClient({ mobileStorage })`
-  passes `storage` through. Use it to keep the integration identity, which paired phones are
-  bound to, somewhere other than the page origin's IndexedDB.
+  passes `storage` through. Use it to keep the integration identity, which
+  paired phones are bound to, somewhere other than the page origin's
+  IndexedDB.
+- New: `MobileClient.unpairDevice(deviceId)` and
+  `AutogramVMobileIntegration.unpairDevice(deviceId)` (integration side,
+  `DELETE /integration-devices/{device_id}`). `MobileIntegrationBackend`
+  gains a required `unpairDevice`, so custom backends must add it.
+  `AutogramVMobileClientApiClient.deleteDeviceIntegration` covers the device
+  side.
 
 ## 0.5.0 → 0.6.0
 

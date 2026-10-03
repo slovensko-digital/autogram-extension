@@ -67,6 +67,7 @@ export interface MobileIntegrationBackend {
     abortController: AbortController
   ): Promise<SignedDocument>;
   getDevices(): Promise<PairedDevice[]>;
+  unpairDevice(deviceId: string): Promise<void>;
 }
 
 /**
@@ -167,6 +168,14 @@ export class MobileClient {
    */
   pairedDevices(): Promise<PairedDevice[]> {
     return this.backend.getDevices();
+  }
+
+  /**
+   * Unpair a device; it stops receiving push notifications from this
+   * integration. Idempotent.
+   */
+  unpairDevice(deviceId: string): Promise<void> {
+    return this.backend.unpairDevice(deviceId);
   }
 
   /** URL of a QR code that pairs a device without signing anything. */

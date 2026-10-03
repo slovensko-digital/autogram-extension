@@ -50,6 +50,7 @@ function fakeBackend(
     } as GetDocumentResult),
     waitForSignature: record("waitForSignature", SIGNED_DOCUMENT),
     getDevices: record("getDevices", []),
+    unpairDevice: record("unpairDevice", undefined),
     ...overrides,
   };
 }
@@ -87,6 +88,14 @@ describe("MobileClient.requestSignature", () => {
     const client = new MobileClient(backend);
     await client.requestSignature(documentToSign, { notifyDevices: false });
     expect(backend.calls.map(([name]) => name)).toEqual(["addDocument"]);
+  });
+});
+
+describe("MobileClient.unpairDevice", () => {
+  test("delegates to the backend", async () => {
+    const backend = fakeBackend();
+    await new MobileClient(backend).unpairDevice("device-1");
+    expect(backend.calls).toContainEqual(["unpairDevice", ["device-1"]]);
   });
 });
 
