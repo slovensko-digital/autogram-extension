@@ -397,8 +397,8 @@ signature working unchanged and mark it `@deprecated`. Do the same for
 - `CombinedClientOptions.enableNotifications` is accepted but never read
   (`with-ui.ts`). Either wire it (skip `notifyDevices` in the mobile
   path) or document it as ignored — decide during phase 5.
-- Surfacing `pairedDevices()` in the dialog ("check your phone" vs QR)
-  needs a new `avmService` method (`pairedDevices: {args: z.null(),
+- (DONE — see API-PROPOSAL.md follow-ups) Surfacing `pairedDevices()`
+  in the dialog ("check your phone" vs QR) needs a new `avmService` method (`pairedDevices: {args: z.null(),
   result: ZDevices}`), an `AvmExecutor.impl` entry calling
   `this.client.pairedDevices()`, an `AvmChannelWeb` passthrough, and a
   `SigningState` extension — natural follow-up after phase 5; agreed

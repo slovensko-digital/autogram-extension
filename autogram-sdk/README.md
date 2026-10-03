@@ -181,6 +181,20 @@ const client = await createAutogramClient({
 });
 ```
 
+## Phone pairing and notifications
+
+A user who pairs a phone with your integration gets later signing requests as push notifications in Autogram v mobile, with no QR scan. Turn it on with `pairingEnabled`:
+
+```typescript
+const client = await createAutogramClient({ pairingEnabled: true });
+```
+
+The dialog then shows a pairing link on the QR screen. After a successful mobile signature with no paired phone, it also shows a pairing QR code. `sign()` has already resolved by then.
+
+Notifications are an **optional capability** of the mobile channel. The default channel supports them. A custom `mobileChannel` supports them only if it implements `getPairingQrCodeUrl()`, `sendNotification()` and `getPairedDevices()`. If it leaves them out, users sign by scanning the per-document QR code and are never asked to pair.
+
+Pairings are bound to the integration identity (key pair + GUID). By default it is kept in the page origin's IndexedDB. Pass `mobileStorage` (any `{ get, set }` store) to keep it elsewhere. See [docs/API.md](docs/API.md#notifications) for details.
+
 ## Development
 
 ### Build

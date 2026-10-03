@@ -301,6 +301,8 @@ Each phase must ship with an updated [API.md](./API.md) and a
   `client.sign(document, parameters)` returning `SignedDocumentResult`
   (keeping all signers), doing the `decodeBase64` transform itself. The
   fixed `dSigXades*` method signatures are unchanged.
-- Wire `MobileClient.pairedDevices()` into the dialog (notify-vs-scan)
-  — needs a new `avmService.pairedDevices` bridge method and a
-  `SigningState` variant.
+- DONE: `pairedDevices()` is wired into the dialog as an optional
+  channel capability (`getPairedDevices`, with `avmService.getPairedDevices`
+  in the extension). After a mobile signature with no paired phone, the
+  flow emits `suggest-pairing` / `paired` states (see `docs/API.md`
+  § Notifications).

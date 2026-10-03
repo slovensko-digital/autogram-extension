@@ -1,5 +1,159 @@
 # Migration guide
 
+## 0.6.x → 0.7.0
+
+**Breaking.** The SDK now speaks the Autogram desktop `POST /api/v1/sign`
+model everywhere, which can sign several documents into one ASiC-E container.
+Every legacy call shape is removed: one call form, one parameters shape.
+Older Autogram versions (< 2.8.0) and Autogram v mobile still work. The SDK
+converts to the legacy `POST /sign` internally.
+
+### `sign()` has one form
+
+`CombinedClient.sign` and `DesktopClient.sign` both take
+`sign(documents, parameters?, options?)`:
+
+- `documents` is a `DocumentToSign` or an array of them. An array means one
+  shared ASiC-E container (Autogram desktop >= 2.8.0 only).
+- `parameters` are the v1 `SignatureParameters` (see the table below).
+- Both return a `SignedDocumentResult`.
+
+**Before (0.6.x legacy positional form, removed):**
+
+```typescript
+const { content, signedBy, issuedBy } = await client.sign(
+  { content, filename },
+  { level: "XAdES_BASELINE_B", container: "ASiC_E", autoLoadEform: true },
+  "application/xml;base64",
+  true // decodeBase64
+);
+```
+
+**After, mechanically (one-line migration helper):**
+
+```typescript
+import { fromLegacySignArgs, toLegacySignedObject } from "autogram-sdk";
+
+const { documents, parameters, presentation } = fromLegacySignArgs(
+  { content, filename },
+  { level: "XAdES_BASELINE_B", container: "ASiC_E", autoLoadEform: true },
+  "application/xml;base64"
+);
+const result = await client.sign(documents, parameters, { presentation });
+const { content, signedBy, issuedBy } = toLegacySignedObject(result);
+// decodeBase64 is gone: Base64.decode(content) yourself if you need it
+```
+
+`fromLegacySignArgs` applies the old defaults when `parameters` or
+`payloadMimeType` are omitted (`XAdES_BASELINE_B` with the PDF/A check,
+`application/xml`). If you already have a `DocumentToSign` and only the
+parameters are legacy-shaped, use `fromLegacySignatureParameters(legacy)`.
+It returns `{ parameters, xdcParameters, presentation }`.
+
+**After, idiomatically:**
+
+```typescript
+const { content, mimeType, signatures } = await client.sign(
+  {
+    content,
+    filename,
+    mimeType: "application/xml",
+    encoding: "base64",
+    xdcParameters: { autoLoadEform: true },
+  },
+  { form: "XAdES", container: "ASiC_E" }
+);
+```
+
+### Parameter mapping
+
+| 0.6.x (legacy `SignatureParameters`)                                                                                 | 0.7.0                                                                                               |
+| -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `level: "XAdES_BASELINE_B"`                                                                                          | `form: "XAdES"` (profile `BASELINE_B` is the default)                                               |
+| `level: "PAdES_BASELINE_T"`                                                                                          | `form: "PAdES", profile: "BASELINE_T"`                                                              |
+| `level: "BASELINE_B"` (already signed documents)                                                                     | `profile: "BASELINE_B"`                                                                             |
+| `autoLoadEform`, `identifier`, `containerXmlns`, `embedUsedSchemas`, `schema`, `schemaIdentifier`, `transformation*` | same names, on the **document**: `document.xdcParameters`                                           |
+| `fsFormId`                                                                                                           | `document.xdcParameters.fsFormIdentifier`                                                           |
+| `visualizationWidth`                                                                                                 | `options.presentation.visualizationWidth`                                                           |
+| `container`, `packaging`, `digestAlgorithm`, `en319132`, `*Canonicalization`, `checkPDFACompliance`                  | unchanged                                                                                           |
+| —                                                                                                                    | new: `requireQualifiedCertificate`, `checkPDFEmbeddedAttachments` (Autogram >= 2.8.0, desktop only) |
+| `payloadMimeType: "application/pdf;base64"`                                                                          | `document.mimeType: "application/pdf"`, `document.encoding: "base64"`                               |
+
+Passing legacy-only keys (`level`, `fsFormId`, `visualizationWidth`, XDC
+fields) in `parameters` throws. Every v1 parameter is optional, so
+TypeScript accepts a legacy-shaped variable there. Without the throw,
+Autogram would silently ignore those keys.
+
+### `DesktopClient.sign`
+
+The `(document, parameters, payloadMimeType, options)` overload is removed.
+`DesktopClient.sign` now takes `DocumentToSign`s like `CombinedClient` and
+returns a `SignedDocumentResult` (use `toLegacySignedObject()` for the old
+`{ content, signedBy, issuedBy }`). `batchId` stays in `options` and only
+works with a single document. `options.presentation` is new. `launch()` now
+resolves with the server info and accepts `{ minimumAppVersion }`.
+
+### Renamed types
+
+| 0.6.x                                       | 0.7.0                                                                                                                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DesktopSignatureParameters` (legacy shape) | `DesktopLegacySignatureParameters`                                                                                                                                               |
+| `DesktopAutogramDocument` (legacy shape)    | `DesktopLegacyAutogramDocument`                                                                                                                                                  |
+| —                                           | `DesktopSignatureParameters`, `DesktopAutogramDocument` now name the `/api/v1/sign` types; new `DesktopXDCParameters`, `DesktopPresentationParameters`, `DesktopSignRequestBody` |
+
+In `autogram-sdk/autogram-api` the unprefixed `AutogramDocument` and
+`SignatureParameters` are now the v1 types. The legacy ones are
+`LegacyAutogramDocument` and `LegacySignatureParameters`.
+
+### Desktop API client and custom desktop channels
+
+The low-level `POST /sign` method is renamed `sign` → **`signLegacy`**. This
+affects `apiClient()` (`desktopApiClient`), `AutogramDesktopSimpleChannel`
+and `AutogramDesktopIntegrationInterface`. The arguments are unchanged.
+Custom channels must rename the method.
+
+`AutogramDesktopIntegrationInterface` gains an **optional** `signV1(body)`
+(`POST /api/v1/sign`). Channels that implement only `signLegacy` keep
+working for single documents. Multi-document requests then fail with
+`not-supported`. `DesktopSignResponseBody` gains optional `mimeType` and
+`filename` (Autogram >= 2.8.0). `fromDesktopResponse` prefers them over the
+inferred MIME type.
+
+### New error codes and state
+
+- `app-version-too-low` (`AutogramAppVersionTooLowException`, with
+  `requiredVersion`/`detectedVersion`): the desktop app is older than
+  2.8.0 and the request needs it.
+- `not-supported` (`MultiDocumentSigningOnMobileException` and others):
+  the signing method cannot fulfil the request, for example multiple
+  documents on a mobile device, or v1-only checks with Autogram v mobile.
+- `DesktopSigningState` gains `{ type: "appVersionTooLow", requiredVersion,
+detectedVersion }`. Exhaustive `switch`es over it need a new case.
+
+### Notifications are an optional channel capability
+
+`AutogramVMobileIntegrationInterfaceStateful` now treats notifications as
+an optional capability. `getPairingQrCodeUrl()` and `sendNotification()`
+are **optional**, and a new optional `getPairedDevices()` is added. A
+channel that implements all three gets the pairing UI. A channel that omits
+them signs by per-document QR scan only, and the dialog never asks the user
+to pair a phone.
+
+- Custom channels that implemented `getPairingQrCodeUrl` and
+  `sendNotification` keep compiling. To keep the pairing UI, add
+  `getPairedDevices()`. `MobileClient.pairedDevices()` does the work.
+- Code that _calls_ these methods on a channel must handle `undefined`
+  (`channel.sendNotification?.()`).
+- `pairingEnabled` still gates the pairing UI (default `false`). With the
+  default channel and `enableNotifications: false`, pairing is never offered.
+- New: after a successful mobile signature, if no phone is paired, the
+  dialog shows a pairing QR. `sign()` resolves first and does not wait for
+  this screen.
+- New: `AvmSimpleChannel` is exported and takes
+  `{ notifyDevices?, storage? }`. `createAutogramClient({ mobileStorage })`
+  passes `storage` through. Use it to keep the integration identity, which paired phones are
+  bound to, somewhere other than the page origin's IndexedDB.
+
 ## 0.5.0 → 0.6.0
 
 No breaking changes. A unified document/result model is introduced; the
@@ -13,8 +167,8 @@ old positional `sign` form still works and returns the old shape.
 const { content, signedBy, issuedBy } = await client.sign(
   { content, filename },
   parameters,
-  "application/pdf;base64",   // MIME type + encoding as a suffix
-  true                        // decodeBase64
+  "application/pdf;base64", // MIME type + encoding as a suffix
+  true // decodeBase64
 );
 ```
 
@@ -185,19 +339,19 @@ the caller but no error screen is shown.
 ## 0.1.x → 0.2.0
 
 0.2.0 hardens error handling and untangles internal module dependencies.
-No call sites *must* change — all 0.1.x exports keep working — but error
-classification code *should* move to the new `AutogramError` API.
+No call sites _must_ change — all 0.1.x exports keep working — but error
+classification code _should_ move to the new `AutogramError` API.
 
 ### Errors now carry machine-readable codes
 
 Every SDK error extends the new `AutogramError` base class and carries a
 `code` (`AutogramErrorCode`):
 
-| Class (unchanged) | `code` |
-| --- | --- |
-| `UserCancelledSigningException` | `user-cancelled` |
-| `AutogramAppNotInstalledException` | `app-not-installed` |
-| `AutogramSdkException` | `unknown` (or the code passed to its new optional second constructor argument) |
+| Class (unchanged)                  | `code`                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------ |
+| `UserCancelledSigningException`    | `user-cancelled`                                                               |
+| `AutogramAppNotInstalledException` | `app-not-installed`                                                            |
+| `AutogramSdkException`             | `unknown` (or the code passed to its new optional second constructor argument) |
 
 **Before (0.1.x):**
 
@@ -239,7 +393,10 @@ ad-hoc `JSON.stringify` + name matching:
 
 ```typescript
 // sending side
-port.postMessage({ id, error: AutogramError.is(e) ? e.toJSON() : { message: String(e) } });
+port.postMessage({
+  id,
+  error: AutogramError.is(e) ? e.toJSON() : { message: String(e) },
+});
 
 // receiving side
 reject(AutogramError.fromJSON(data.error));

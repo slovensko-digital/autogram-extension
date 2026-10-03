@@ -1,4 +1,4 @@
-# Autogram SDK — public API (0.6.x)
+# Autogram SDK — public API (0.7.x)
 
 This documents the supported public surface of `autogram-sdk`. Anything not
 listed here (internal channels, injected-ui internals, generated API types
@@ -6,12 +6,12 @@ beyond those re-exported) may change without notice.
 
 ## Entry points
 
-| Import | Contents |
-| --- | --- |
-| `autogram-sdk` | Types, errors, low-level clients (`DesktopClient`, `AutogramVMobileIntegration`, `MobileClient`), generated API clients. Safe to import anywhere (no DOM side effects). |
+| Import                                           | Contents                                                                                                                                                                                     |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `autogram-sdk`                                   | Types, errors, low-level clients (`DesktopClient`, `AutogramVMobileIntegration`, `MobileClient`), generated API clients. Safe to import anywhere (no DOM side effects).                      |
 | `autogram-sdk/ui` (alias `autogram-sdk/with-ui`) | `createAutogramClient` / `CombinedClient` — the full signing flow with the built-in dialog UI. Importing this module registers custom elements, so import it only in a browser page context. |
-| `autogram-sdk/autogram-api` | Low-level Autogram desktop HTTP API client (generated from OpenAPI). |
-| `autogram-sdk/avm-api` | Low-level Autogram v Mobile (AVM) server API client (generated from OpenAPI) and device-side client used for simulations. |
+| `autogram-sdk/autogram-api`                      | Low-level Autogram desktop HTTP API client (generated from OpenAPI).                                                                                                                         |
+| `autogram-sdk/avm-api`                           | Low-level Autogram v Mobile (AVM) server API client (generated from OpenAPI) and device-side client used for simulations.                                                                    |
 
 ## Signing with UI: `createAutogramClient` (`autogram-sdk/with-ui`)
 
@@ -26,7 +26,7 @@ const client = await createAutogramClient();
 
 const { content, mimeType, signatures } = await client.sign(
   { content: "hello world", mimeType: "text/plain", filename: "hello.txt" },
-  { level: "XAdES_BASELINE_B", container: "ASiC_E" }
+  { form: "XAdES", container: "ASiC_E" }
 );
 ```
 
@@ -40,9 +40,18 @@ Async factory (waits for the dialog UI element to attach). Returns a
 - `desktopChannel` — implementation of `AutogramDesktopIntegrationInterface`;
   defaults to `AutogramDesktopSimpleChannel` (direct HTTP calls to the local
   desktop app, with a Safari loopback fallback).
+- `mobileStorage` — `AVMStorage` (`{ get, set }`) where the default mobile
+  channel keeps the AVM integration identity (key pair + GUID) and restore
+  points. Default: IndexedDB of the page origin. Paired phones are bound to
+  this identity, so it must survive reloads.
 - `onResetSignRequest` — called when the client resets its state.
 - `enableNotifications` — send push notifications to paired mobile
   devices (default `true`).
+- `pairingEnabled` — offer pairing a phone for notifications (default
+  `false`): a link on the QR screen, and after a successful mobile signature
+  with no paired phone, a pairing QR screen (`sign()` has already resolved
+  by then). Has effect only when the mobile channel supports notifications
+  (see [Notifications](#notifications)).
 - `platform` / `displayName` — how this integration identifies itself
   when registering with the AVM server.
 
@@ -50,58 +59,93 @@ Channels only need to be provided when network calls must happen in a
 different execution context (the browser extension routes them through its
 background worker; see the repository README).
 
+### Notifications
+
+Pairing a phone lets later signing requests reach it as push notifications
+instead of a QR scan. It is an **optional capability** of the mobile
+channel. The pairing UI is shown only when the channel implements all
+three methods:
+
+```typescript
+getPairingQrCodeUrl(): Promise<string>;   // MobileClient.pairingQrCodeUrl()
+sendNotification(): Promise<void>;        // SignatureRequest.notifyDevices()
+getPairedDevices(): Promise<PairedDevice[]>; // MobileClient.pairedDevices()
+```
+
+The default channel (`AvmSimpleChannel`) implements all three, so the
+simplest setup is `createAutogramClient({ pairingEnabled: true })`. A
+custom channel that leaves them out keeps working: users sign by scanning
+the per-document QR code and are never asked to pair.
+
+To support notifications, the integration also needs a **stable identity**.
+The key pair and integration GUID must persist, because pairings are bound
+to them. `AvmSimpleChannel` keeps them in the page origin's IndexedDB.
+Pass `mobileStorage` (or `new AvmSimpleChannel({ storage })`) to keep them
+somewhere else.
+
 The positional factory `CombinedClient.init(mobileChannel?,
 desktopChannel?, resetSignRequestCallback?, options?)` is **deprecated**
 but keeps working; it is equivalent to the options form above.
 
-### `client.sign(document, parameters?, options?)`
+### `client.sign(documents, parameters?, options?)`
 
 Returns `Promise<SignedDocumentResult>`. Throws `AutogramError` (see
 [Errors](#errors)); user cancellation is an error with code `user-cancelled`.
 
-- `document` — `DocumentToSign`:
+- `documents` — a `DocumentToSign` or an array of them:
   - `content` — the document bytes/text
   - `mimeType` — MIME type of `content`, **without** any `";base64"` suffix
   - `encoding` — `"utf-8"` (default) or `"base64"`
-  - `filename` — optional
-- `parameters` — see `SignatureParameters` (generated from the desktop
-  OpenAPI spec); notable fields: `level`, `container`, `packaging`,
-  `digestAlgorithm`, XML/XSD/XSLT fields for XAdES.
+  - `filename` — optional; names the file inside an ASiC container
+  - `xdcParameters` — optional XML Datacontainer / eForm parameters of
+    this document (`autoLoadEform`, `identifier`, `containerXmlns`,
+    `schema`, `transformation`, `fsFormIdentifier`, …)
+
+  An array signs all documents together into **one** ASiC-E container with
+  one signature ("spoločná autorizácia dokumentov"). This needs the Autogram
+  desktop app 2.8.0 or newer. The method chooser is skipped, and on mobile
+  devices the call fails with `not-supported`.
+
+- `parameters` — `SignatureParameters` (desktop `POST /api/v1/sign`):
+  `form` (`XAdES` | `PAdES` | `CAdES`), `profile` (`BASELINE_B` default |
+  `BASELINE_T`), `container`, `packaging`, `digestAlgorithm`,
+  canonicalization, `checkPDFACompliance`, and, for Autogram >= 2.8.0 on
+  desktop only, `requireQualifiedCertificate` and
+  `checkPDFEmbeddedAttachments`.
 - `options.signal` — an `AbortSignal` that cancels the signing step.
 - `options.onState` — receives `DesktopSigningState` updates when the
   desktop path is used.
+- `options.presentation` — `{ visualizationWidth }` for the desktop app's
+  document preview.
+
+The running Autogram version picks the endpoint. 2.8.0 and newer uses
+`POST /api/v1/sign`. Older versions use the legacy `POST /sign`, and
+requests they cannot fulfil fail with `app-version-too-low`; the dialog
+asks the user to update. Autogram v mobile receives the legacy shape, and
+v1-only checks fail there with `not-supported`.
 
 `SignedDocumentResult`:
 
 ```typescript
 interface SignedDocumentResult {
-  content: string;                 // Base64
-  mimeType: string;                // MIME type of the signed artifact
+  content: string; // Base64
+  mimeType: string; // MIME type of the signed artifact
   encoding: "utf-8" | "base64";
   filename?: string;
   signatures: Array<{ signedBy?: string; issuedBy?: string }>; // all signers
 }
 ```
 
-#### Deprecated positional form
+#### Legacy input
 
-The previous signature is still available and behaves exactly as before,
-returning the legacy `SignedObject` (`{ content, signedBy, issuedBy }`,
-last signer only):
-
-```typescript
-client.sign(document, signatureParameters, payloadMimeType, decodeBase64?, options?)
-```
-
-- `document` — `{ content: string; filename?: string }`
-- `payloadMimeType` — MIME type of `document.content`; append `;base64`
-  for Base64-encoded binary.
-- `decodeBase64` — when `true`, the returned `content` is Base64-decoded.
-- `options.onDesktopStateChange` — desktop state updates.
-
-Prefer the unified form; convert between shapes with `toLegacySignedObject`,
-`fromDesktopResponse`, `fromAvmSignedDocument` and `toPayloadMimeType`
-(all exported from `autogram-sdk`).
+The positional form `sign(document, parameters, payloadMimeType,
+decodeBase64?)` was removed in 0.7.0. Convert legacy-shaped input with
+`fromLegacySignArgs(document, legacyParameters?, payloadMimeType?)` →
+`{ documents, parameters, presentation }`, or
+`fromLegacySignatureParameters(legacyParameters)` →
+`{ parameters, xdcParameters, presentation }`. Convert the result back to
+the old `{ content, signedBy, issuedBy }` with `toLegacySignedObject`. See
+[MIGRATION.md](MIGRATION.md#06x--070).
 
 ### `client.useRestorePoint(restorePoint)`
 
@@ -121,19 +165,27 @@ app, readiness polling, and mapping cancellations.
 import { DesktopClient } from "autogram-sdk";
 
 const desktop = new DesktopClient();
-const signed = await desktop.sign(document, parameters, payloadMimeType, {
-  abortController,
-  onStateChange: (state) => console.log(state.type),
-});
+const signed = await desktop.sign(
+  { content, mimeType: "application/pdf", encoding: "base64", filename },
+  { form: "PAdES" },
+  {
+    abortController,
+    onStateChange: (state) => console.log(state.type),
+  }
+);
 ```
 
-- `desktop.sign(document, parameters?, payloadMimeType?, options?)` — sign a
-  single document. `options`: `onStateChange`, `abortController`, `batchId`.
+- `desktop.sign(documents, parameters?, options?)` — same `documents` and
+  `parameters` as `CombinedClient.sign`, returns `SignedDocumentResult`.
+  `options`: `onStateChange`, `abortController`, `batchId` (single document
+  only), `presentation`.
 - `desktop.startBatch(totalNumberOfDocuments, options?)` — start a batch
   signing session; resolves with the `batchId` to pass to `sign`.
 - `desktop.endBatch(batchId, abortController?)` — close the batch.
-- `desktop.launch(abortController?, onStateChange?)` — ensure the app is
-  running (called automatically by `sign`/`startBatch`).
+- `desktop.launch(abortController?, onStateChange?, { minimumAppVersion }?)`
+  — ensure the app is running (called automatically by `sign`/`startBatch`);
+  resolves with the server info (`version`, `features`, …). With
+  `minimumAppVersion`, an older app fails with `app-version-too-low`.
 
 `DesktopSigningState` (reported via `onStateChange` and shown by the
 `CombinedClient` UI):
@@ -141,7 +193,7 @@ const signed = await desktop.sign(document, parameters, payloadMimeType, {
 ```
 checkingApp → launchingApp → (appMayNotBeInstalled) → waitingForSignature
                                    ↘ appNotInstalled
-signingCancelled | error
+appVersionTooLow (requiredVersion, detectedVersion) | signingCancelled | error
 ```
 
 ## Mobile-only signing: `MobileClient` (`autogram-sdk`)
@@ -250,9 +302,9 @@ positional `sign` form:
 
 ```typescript
 interface SignedObject {
-  content: string;   // signed document, Base64 (unless decodeBase64 was used)
-  signedBy: string;  // DN of the signing certificate (last signer)
-  issuedBy: string;  // DN of the certificate issuer
+  content: string; // signed document, Base64 (unless decodeBase64 was used)
+  signedBy: string; // DN of the signing certificate (last signer)
+  issuedBy: string; // DN of the certificate issuer
 }
 ```
 
@@ -260,7 +312,9 @@ interface SignedObject {
 
 Backend-specific generated types are re-exported with `Desktop`/`AVM`
 prefixes, e.g. `DesktopSignatureParameters`, `DesktopAutogramDocument`,
-`DesktopServerInfo`, `AVMDocumentToSign`, `AVMSignedDocument`,
+`DesktopXDCParameters`, `DesktopPresentationParameters` (`POST /api/v1/sign`),
+`DesktopLegacySignatureParameters`, `DesktopLegacyAutogramDocument`
+(`POST /sign`), `DesktopServerInfo`, `AVMDocumentToSign`, `AVMSignedDocument`,
 `AVMIntegrationDocument`. Use these when you talk to one backend directly.
 
 ## Errors
@@ -286,16 +340,18 @@ try {
 
 ### `AutogramErrorCode`
 
-| Code | Meaning |
-| --- | --- |
-| `user-cancelled` | User actively cancelled the signing flow |
-| `aborted` | Operation aborted programmatically (AbortSignal, page close) |
-| `timeout` | Operation did not finish in time |
-| `app-not-installed` | Desktop app could not be launched |
-| `connection-failed` | Network request to a signing backend failed |
-| `protocol-error` | Unexpected response shape or bridge failure |
-| `server-error` | Signing backend reported an error |
-| `unknown` | Unclassified |
+| Code                  | Meaning                                                                                                                     |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `user-cancelled`      | User actively cancelled the signing flow                                                                                    |
+| `aborted`             | Operation aborted programmatically (AbortSignal, page close)                                                                |
+| `timeout`             | Operation did not finish in time                                                                                            |
+| `app-not-installed`   | Desktop app could not be launched                                                                                           |
+| `app-version-too-low` | Desktop app is too old for the request (multiple documents, v1-only checks need 2.8.0)                                      |
+| `not-supported`       | The signing method cannot fulfil the request (multiple documents on a mobile device, v1-only checks with Autogram v mobile) |
+| `connection-failed`   | Network request to a signing backend failed                                                                                 |
+| `protocol-error`      | Unexpected response shape or bridge failure                                                                                 |
+| `server-error`        | Signing backend reported an error                                                                                           |
+| `unknown`             | Unclassified                                                                                                                |
 
 ### `AutogramError`
 
@@ -324,7 +380,11 @@ table — zod args/result schemas plus timeout policy — and both sides are
 generated from it:
 
 ```typescript
-import { defineRpcService, createRpcClient, createRpcHandler } from "autogram-sdk";
+import {
+  defineRpcService,
+  createRpcClient,
+  createRpcHandler,
+} from "autogram-sdk";
 import { z } from "zod";
 
 const service = defineRpcService("my-service", {
@@ -338,7 +398,7 @@ const service = defineRpcService("my-service", {
 
 // caller side — transport moves plain JSON frames (postMessage/CustomEvent/Port)
 const client = createRpcClient(service, transport);
-await client.greet({ name: "svet" }, { signal });   // typed, abortable
+await client.greet({ name: "svet" }, { signal }); // typed, abortable
 
 // handler side
 const handler = createRpcHandler(service, {

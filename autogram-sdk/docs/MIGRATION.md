@@ -149,9 +149,9 @@ to pair a phone.
 - New: after a successful mobile signature, if no phone is paired, the
   dialog shows a pairing QR. `sign()` resolves first and does not wait for
   this screen.
-- New: `AvmSimpleChannel` is exported and takes `{ notifyDevices?,
-storage? }`. `createAutogramClient({ mobileStorage })` passes `storage`
-  through. Use it to keep the integration identity, which paired phones are
+- New: `AvmSimpleChannel` is exported and takes
+  `{ notifyDevices?, storage? }`. `createAutogramClient({ mobileStorage })`
+  passes `storage` through. Use it to keep the integration identity, which paired phones are
   bound to, somewhere other than the page origin's IndexedDB.
 
 ## 0.5.0 → 0.6.0

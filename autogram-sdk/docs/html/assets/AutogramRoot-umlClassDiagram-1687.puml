@@ -17,7 +17,7 @@ class "AutogramRoot" {
     +<b>mobilePairingUrl</b> : null | string
     +<b>mobileSigningUrl</b> : null | string
     +<b>onRetryMobileNotification</b> : null | () => Promise<void>
-    +<b>pairingEnabled</b> : boolean
+    +<b>pairedDevices</b> : null | { deviceId: string; displayName: string; platform: string }[]
     +<b>screen</b> : Screens
     {static} +<b>styles</b> : CSSResult
     +addFonts() : void
@@ -27,13 +27,15 @@ class "AutogramRoot" {
     +hide() : void
     +maybeRestoreRestorePoint() : Promise<boolean>
     +openMobileOnMobile(url: string, abortController: AbortController) : void
+    +pairingCompleted(devices: { deviceId: string; displayName: string; platform: string }[]) : void
     +render() : TemplateResult<1>
     +reset() : void
     +show() : void
     +showError(message: string) : void
-    +showQRCode(url: string, pairingUrl: string, abortController: AbortController, pairingEnabled: boolean) : void
+    +showQRCode(url: string, pairingUrl: null | string, abortController: AbortController) : void
     +signingCancelled() : void
     +startSigning() : Promise<SigningMethod>
+    +suggestPairing(pairingUrl: string, abortController: AbortController) : void
     +updateDesktopSigningState(state: DesktopSigningState) : void
     +_closeChoiceScreen(event: EventClose) : void
     +_closeNow(_event: Event) : void
