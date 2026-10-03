@@ -5,6 +5,14 @@
 /* Autogram Desktop */
 export {
   apiClient as desktopApiClient,
+  ZServerInfo as ZDesktopServerInfo,
+  ZSignedObject,
+  ZSignResponseBody as ZDesktopSignResponseBody,
+  ZLegacyAutogramDocument as ZDesktopLegacyAutogramDocument,
+  ZLegacySignatureParameters as ZDesktopLegacySignatureParameters,
+  ZSignRequestBody as ZDesktopSignRequestBody,
+  ZBatchStartResponseBody as ZDesktopBatchStartResponseBody,
+  ZBatchEndResponseBody as ZDesktopBatchEndResponseBody,
 } from "./autogram-api/index";
 
 export type {
@@ -30,6 +38,7 @@ export {
   AutogramVMobileClientApiClient,
   randomUUID,
   GetDocumentsResponse as AVMGetDocumentsResponse,
+  ZDocumentToSign as ZAVMDocumentToSign,
   createDeviceJwt,
 } from "./avm-api/index";
 

@@ -5,6 +5,7 @@ import { paths } from "./avm-api.generated";
 import { Base64 } from "js-base64";
 import { createLogger } from "../../log";
 import { SignedObject } from "../../types";
+import type { ZodKeysOf, ZodShapeOf } from "../../zod-shape";
 
 const log = createLogger("ag-sdk:AvmIntegration");
 
@@ -728,6 +729,46 @@ export const GetDocumentsResponse = z.object({
     )
     .optional(),
 });
+
+/**
+ * {@link DocumentToSign} (`POST /documents` body). Parameters are checked by
+ * key only and accept `null` – callers have historically sent nulls and the
+ * AVM server validates the values.
+ */
+export const ZDocumentToSign = z.object({
+  document: z.object({
+    content: z.string(),
+    filename: z.string().optional(),
+  } satisfies ZodShapeOf<DocumentToSign["document"]>),
+  parameters: z
+    .object({
+      checkPDFACompliance: z.boolean().optional().nullable(),
+      autoLoadEform: z.boolean().optional().nullable(),
+      level: z.string().optional().nullable(),
+      container: z.string().optional().nullable(),
+      containerXmlns: z.string().optional().nullable(),
+      embedUsedSchemas: z.boolean().optional().nullable(),
+      identifier: z.string().optional().nullable(),
+      packaging: z.string().optional().nullable(),
+      digestAlgorithm: z.string().optional().nullable(),
+      en319132: z.boolean().optional().nullable(),
+      infoCanonicalization: z.string().optional().nullable(),
+      propertiesCanonicalization: z.string().optional().nullable(),
+      keyInfoCanonicalization: z.string().optional().nullable(),
+      schema: z.string().optional().nullable(),
+      schemaIdentifier: z.string().optional().nullable(),
+      transformation: z.string().optional().nullable(),
+      transformationIdentifier: z.string().optional().nullable(),
+      transformationLanguage: z.string().optional().nullable(),
+      transformationMediaDestinationTypeDescription: z
+        .string()
+        .optional()
+        .nullable(),
+      transformationTargetEnvironment: z.string().optional().nullable(),
+    } satisfies ZodKeysOf<NonNullable<DocumentToSign["parameters"]>>)
+    .optional(),
+  payloadMimeType: z.string().optional(),
+} satisfies ZodKeysOf<DocumentToSign>);
 
 // Types
 

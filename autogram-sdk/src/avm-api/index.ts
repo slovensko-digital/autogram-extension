@@ -2,6 +2,7 @@ export {
   AutogramVMobileIntegration,
   randomUUID,
   GetDocumentsResponse,
+  ZDocumentToSign,
 } from "./lib/apiClient";
 
 export type {

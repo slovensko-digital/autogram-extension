@@ -1,9 +1,12 @@
 import fetch from "cross-fetch";
+import { z } from "zod";
 
 import { getRandomBytes, toHex, toUint32 } from "./crypto/random";
 
 import { components } from "./autogram-api.generated";
 import { AutogramError, UserCancelledSigningException } from "../../errors";
+import type { SignedObject } from "../../types";
+import type { ZodKeysOf, ZodShapeOf } from "../../zod-shape";
 
 /**
  * Autogram reports a cancelled single signature with `204` and a cancelled
@@ -521,3 +524,114 @@ export type DesktopSigningState =
 export type DesktopSigningStateConsumer = (
   state: DesktopSigningState
 ) => void;
+
+// Zod schemas
+//
+// Runtime mirrors of the types above, for validating data crossing a trust
+// boundary (e.g. the extension's injected-script ↔ background RPC). The
+// `satisfies` clauses make drift from the generated types a compile error.
+
+const ZServerStatus = z.literal("READY");
+
+/** Subset of {@link ServerInfo} the integrations rely on. */
+export const ZServerInfo = z.object({
+  status: ZServerStatus.optional(),
+  version: z.string().optional(),
+} satisfies ZodShapeOf<Pick<ServerInfo, "status" | "version">>);
+
+/** Legacy result shape; missing signer fields default to `""`. */
+export const ZSignedObject = z.object({
+  content: z.string(),
+  signedBy: z.string().default(""),
+  issuedBy: z.string().default(""),
+} satisfies ZodShapeOf<SignedObject>);
+
+/** {@link SignResponseBody}; `mimeType`/`filename` only from Autogram >= 2.8.0. */
+export const ZSignResponseBody = z.object({
+  ...ZSignedObject.shape,
+  mimeType: z.string().optional(),
+  filename: z.string().optional(),
+} satisfies ZodShapeOf<SignResponseBody>);
+
+export const ZLegacyAutogramDocument = z.object({
+  content: z.string(),
+  filename: z.string().optional(),
+} satisfies ZodShapeOf<LegacyAutogramDocument>);
+
+const ZCanonicalization = z.enum([
+  "INCLUSIVE",
+  "EXCLUSIVE",
+  "INCLUSIVE_WITH_COMMENTS",
+  "EXCLUSIVE_WITH_COMMENTS",
+  "INCLUSIVE_11",
+  "INCLUSIVE_11_WITH_COMMENTS",
+]);
+
+export const ZLegacySignatureParameters = z.object({
+  checkPDFACompliance: z.boolean().optional(),
+  autoLoadEform: z.boolean().optional(),
+  level: z
+    .enum([
+      "XAdES_BASELINE_B",
+      "PAdES_BASELINE_B",
+      "CAdES_BASELINE_B",
+      "XAdES_BASELINE_T",
+      "PAdES_BASELINE_T",
+      "CAdES_BASELINE_T",
+      "BASELINE_B",
+      "BASELINE_T",
+    ])
+    .optional(),
+  container: z.enum(["ASiC_E"]).optional(),
+  containerXmlns: z
+    .enum(["http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"])
+    .optional(),
+  embedUsedSchemas: z.boolean().optional(),
+  identifier: z.string().optional(),
+  packaging: z.enum(["ENVELOPED", "ENVELOPING"]).optional(),
+  digestAlgorithm: z.enum(["SHA256", "SHA384", "SHA512"]).optional(),
+  en319132: z.boolean().optional(),
+  infoCanonicalization: ZCanonicalization.optional(),
+  propertiesCanonicalization: ZCanonicalization.optional(),
+  keyInfoCanonicalization: ZCanonicalization.optional(),
+  schema: z.string().optional(),
+  schemaIdentifier: z.string().optional(),
+  transformation: z.string().optional(),
+  transformationIdentifier: z.string().optional(),
+  transformationLanguage: z.string().optional(),
+  transformationMediaDestinationTypeDescription: z
+    .enum(["XHTML", "HTML", "TXT"])
+    .optional(),
+  transformationTargetEnvironment: z.string().optional(),
+  visualizationWidth: z.enum(["sm", "md", "lg", "xl", "xxl"]).optional(),
+  fsFormId: z.string().optional(),
+} satisfies ZodShapeOf<LegacySignatureParameters>);
+
+/**
+ * {@link SignRequestBody} (`POST /api/v1/sign`). Deliberately loose – only
+ * the keys are checked against the type, the desktop app validates the
+ * details.
+ */
+export const ZSignRequestBody = z.object({
+  batchId: z.string().optional(),
+  documents: z
+    .array(
+      z.object({
+        filename: z.string().optional(),
+        content: z.string(),
+        mimeType: z.string(),
+        xdcParameters: z.record(z.unknown()).optional(),
+      } satisfies ZodKeysOf<AutogramDocument>)
+    )
+    .min(1),
+  parameters: z.record(z.unknown()).optional(),
+  presentation: z.record(z.unknown()).optional(),
+} satisfies ZodKeysOf<SignRequestBody>);
+
+export const ZBatchStartResponseBody = z.object({
+  batchId: z.string().optional(),
+} satisfies ZodShapeOf<BatchStartResponseBody>);
+
+export const ZBatchEndResponseBody = z.object({
+  status: z.enum(["FINISHED", "NOT_FINISHED"]).optional(),
+} satisfies ZodShapeOf<BatchEndResponseBody>);
