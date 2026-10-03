@@ -29,7 +29,7 @@ Turborepo resolves package task dependencies, so running extension build tasks f
 
 ### Prerequisites
 
-- Node.js 20+ (see `.nvmrc`)
+- Node.js 24 LTS (pinned in `.nvmrc`, also used by CI; run `nvm use`). Node 22.12+ also works, older versions are not supported by Vite.
 - npm (comes with Node.js)
 
 ### Installation
@@ -38,7 +38,7 @@ Turborepo resolves package task dependencies, so running extension build tasks f
 npm install
 ```
 
-This will install dependencies for all packages and build the SDK.
+This will install dependencies for all packages. It does not build the SDK: root `npm run build*` tasks build it first automatically (via Turborepo), but if you consume `autogram-sdk/dist` directly, run `npm run build:sdk` first.
 
 ### Common tasks
 
@@ -53,6 +53,13 @@ npm run lint               # lint code
 npm run typecheck          # type checking
 npm run clean              # clean build artifacts
 ```
+
+### Development workflow (VS Code)
+
+1. Run `npm run watch:mv3`. It builds the SDK, then rebuilds the MV3 extension into `autogram-extension/dist` on every change.
+2. In VS Code, start the **Launch Chrome against example-extension-usage** debug configuration (F5). It serves the example page on http://localhost:49675/ and opens Chrome with the extension from `autogram-extension/dist` loaded.
+
+After a rebuild, reload the extension in `chrome://extensions` (or restart the debug session) to pick up changes.
 
 ### Example apps
 

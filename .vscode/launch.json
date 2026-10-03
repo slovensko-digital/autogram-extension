@@ -9,8 +9,8 @@
       "request": "launch",
       "name": "Launch Chrome against example-extension-usage",
       "url": "http://localhost:49675/",
-      "webRoot": "${workspaceFolder}/dist",
-      "runtimeArgs": ["--load-extension=${workspaceFolder}/dist", "--auto-open-devtools-for-tabs"],
+      "webRoot": "${workspaceFolder}/autogram-extension/dist",
+      "runtimeArgs": ["--load-extension=${workspaceFolder}/autogram-extension/dist", "--auto-open-devtools-for-tabs"],
       "timeout": 100000,
       "includeDefaultArgs": true,
       "trace": true,
@@ -24,8 +24,8 @@
       "request": "launch",
       "name": "Launch Chrome against slovensko.sk",
       "url": "https://slovensko.sk/",
-      "webRoot": "${workspaceFolder}/dist",
-      "runtimeArgs": ["--load-extension=${workspaceFolder}/dist"],
+      "webRoot": "${workspaceFolder}/autogram-extension/dist",
+      "runtimeArgs": ["--load-extension=${workspaceFolder}/autogram-extension/dist"],
       "timeout": 100000,
       "includeDefaultArgs": true,
       "trace": true,
@@ -38,7 +38,7 @@
       "request": "launch",
       "name": "Launch Firefox against slovensko.sk",
       "url": "https://schranka.slovensko.sk/",
-      "addonPath": "${workspaceFolder}/dist/",
+      "addonPath": "${workspaceFolder}/autogram-extension/dist/",
       "log": {
         "consoleLevel": {
           "PathConversion": "Debug",
@@ -51,12 +51,12 @@
       "request": "launch",
       "name": "Launch Firefox against example-extension-usage",
       "url": "http://localhost:49675/",
-      "addonPath": "${workspaceFolder}/dist/",
+      "addonPath": "${workspaceFolder}/autogram-extension/dist/",
       "reAttach": true,
       "internalConsoleOptions": "openOnSessionStart",
 
       // "reloadOnChange": {
-      //   "watch": "${workspaceFolder}/dist/*",
+      //   "watch": "${workspaceFolder}/autogram-extension/dist/*",
       //   "ignore": "**/node_modules/**"
       // },
       "log": {
