@@ -351,7 +351,8 @@ describe("SigningFlow notifications", () => {
     const delegate = fakeDelegate(SigningMethod.mobile);
     let deliverSignature: () => void = () => {};
     const signed = new Promise<void>((resolve) => (deliverSignature = resolve));
-    const mobile = notifyingMobile([[], [PHONE]]);
+    // signing setup, pairing-wait snapshot, then the phone pairs
+    const mobile = notifyingMobile([[], [], [PHONE]]);
     mobile.waitForSignature = async () => {
       await signed;
       return { content: "bW9iaWxl", signedBy: "s", issuedBy: "i" } as never;
@@ -369,6 +370,63 @@ describe("SigningFlow notifications", () => {
     await new Promise((r) => setTimeout(r, 20));
     expect(delegate.states.at(-1)).toEqual({ type: "done" });
     expect(delegate.states.some(isState("suggest-pairing"))).toBe(false);
+  });
+
+  test("waitForPairing waits for a new device, not an already paired one", async () => {
+    const TABLET = { deviceId: "d2", platform: "ios", displayName: "iPad" };
+    let release: () => void = () => {};
+    const signed = new Promise<void>((resolve) => (release = resolve));
+    // setup and snapshot see the phone; it stays alone a while, then a tablet pairs
+    const mobile = notifyingMobile([
+      [PHONE],
+      [PHONE],
+      [PHONE],
+      [PHONE],
+      [PHONE, TABLET],
+    ]);
+    mobile.waitForSignature = async () => {
+      await signed;
+      return null as never;
+    };
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      FAST
+    );
+    const pending = flow.sign(REQUEST).catch(() => undefined);
+    await new Promise((r) => setTimeout(r, 5));
+
+    const devices = await flow.waitForPairing(new AbortController().signal);
+    expect(devices).toEqual([PHONE, TABLET]);
+
+    release();
+    await pending;
+  });
+
+  test("waitForPairing does not resolve while only an already paired device is listed", async () => {
+    let release: () => void = () => {};
+    const signed = new Promise<void>((resolve) => (release = resolve));
+    const mobile = notifyingMobile([[PHONE]]);
+    mobile.waitForSignature = async () => {
+      await signed;
+      return null as never;
+    };
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      { ...FAST, pairingTimeoutMs: 30 }
+    );
+    const pending = flow.sign(REQUEST).catch(() => undefined);
+    await new Promise((r) => setTimeout(r, 5));
+
+    await expect(
+      flow.waitForPairing(new AbortController().signal)
+    ).resolves.toBeNull();
+
+    release();
+    await pending;
   });
 
   test("waitForPairing resolves null when aborted or outside a mobile signing", async () => {
