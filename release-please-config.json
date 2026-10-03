@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "ec7755480fee0c5cd353a4254866de6edf574dd3",
+  "include-component-in-tag": false,
+  "pull-request-title-pattern": "chore: release ${version}",
+  "packages": {
+    "autogram-extension": {
+      "release-type": "node",
+      "package-name": "autogram-extension",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "/package-lock.json",
+          "jsonpath": "$.packages['autogram-extension'].version"
+        }
+      ]
+    }
+  }
+}

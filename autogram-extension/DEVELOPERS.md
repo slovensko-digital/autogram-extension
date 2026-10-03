@@ -20,12 +20,17 @@ and changes output manifest.json file version.
 
 ## Release
 
-```sh
-npm run release
-```
+Releases are made by [release-please](https://github.com/googleapis/release-please) in GitHub Actions (`.github/workflows/release.yml`). There is no local release script.
 
-- have GH_TOKEN set in `.env` file (with `repo` scope)
-- version is computed from last tag and commits since last tag
+1. PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/) (`fix: …`, `feat: …`, `feat!: …`), because the squash commit uses the PR title. The `PR title` workflow checks this.
+2. On each push to `master`, release-please opens or updates a `chore: release X.Y.Z` PR. It bumps `package.json`, the root `package-lock.json` and `CHANGELOG.md`.
+   - Only commits that touch `autogram-extension/` count. SDK and example changes don't bump the extension.
+   - `fix` → patch, `feat` → minor, `!` / `BREAKING CHANGE` → major.
+3. Merging that PR creates the `vX.Y.Z` tag and GitHub release. The workflow then runs typecheck, lint and tests, builds the mv2 and mv3 zips and attaches them to the release.
+4. Upload the zips to the browser stores by hand.
+5. Safari: set `MARKETING_VERSION` (and increase `CURRENT_PROJECT_VERSION`) in Xcode by hand, then build and submit from Xcode.
+
+The current version is stored in `/.release-please-manifest.json`; the config is in `/release-please-config.json`. To force a specific version, add `"release-as": "X.Y.Z"` to the package in the config, and remove it after the release.
 
 ## Developing
 
