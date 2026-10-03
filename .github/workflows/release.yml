@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs['autogram-extension--release_created'] }}
+      tag_name: ${{ steps.release.outputs['autogram-extension--tag_name'] }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          # PRs opened with the default GITHUB_TOKEN don't trigger CI. Set
+          # RELEASE_PLEASE_TOKEN (fine-grained PAT: contents + pull requests
+          # write) if the release PR needs to pass required checks.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck, lint and test
+        run: npx turbo run typecheck lint test --filter=autogram-extension...
+
+      - name: Build release zips
+        run: |
+          npm run clean --workspace=autogram-extension
+          npm run build:prod --workspace=autogram-extension
+
+      - name: Upload zips to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" autogram-extension/web-ext-artifacts/autogram-extension-mv*.zip --clobber
