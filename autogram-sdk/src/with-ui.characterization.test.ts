@@ -39,11 +39,14 @@ import { Base64 } from "js-base64";
 import type { CombinedClient } from "./with-ui";
 
 // QR rendering is irrelevant here and the package does not resolve under jsdom
-jest.mock("@bwip-js/generic", () => ({ toSVG: () => "<svg></svg>" }), { virtual: true });
+jest.mock("@bwip-js/generic", () => ({ toSVG: () => "<svg></svg>" }), {
+  virtual: true,
+});
 
 // with-ui registers custom elements at import time, after the polyfills above
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { createAutogramClient } = require("./with-ui") as typeof import("./with-ui");
+const { createAutogramClient } =
+  require("./with-ui") as typeof import("./with-ui");
 
 const READY: ServerInfo = { status: "READY", version: "2.7.6" };
 const DESKTOP_RESPONSE: SignResponseBody = {
@@ -77,7 +80,9 @@ function recorder<T extends object>(
   return fake as T & { calls: Calls };
 }
 
-function fakeDesktop(signLegacy: () => Promise<SignResponseBody> = async () => DESKTOP_RESPONSE) {
+function fakeDesktop(
+  signLegacy: () => Promise<SignResponseBody> = async () => DESKTOP_RESPONSE
+) {
   return recorder<AutogramDesktopIntegrationInterface>({
     getLaunchURL: async () => "autogram://listen",
     info: async () => READY,
@@ -103,7 +108,10 @@ function fakeMobile() {
 }
 
 type Root = HTMLElement & {
-  choiceResult: { resolve(m: SigningMethod): void; reject(e: unknown): void } | null;
+  choiceResult: {
+    resolve(m: SigningMethod): void;
+    reject(e: unknown): void;
+  } | null;
   errorMessage: string;
 };
 
@@ -118,7 +126,8 @@ async function choose(method: SigningMethod) {
   root().choiceResult!.resolve(method);
 }
 
-const argsOf = (calls: Calls, name: string) => calls.find(([n]) => n === name)?.[1];
+const argsOf = (calls: Calls, name: string) =>
+  calls.find(([n]) => n === name)?.[1];
 
 let desktop: ReturnType<typeof fakeDesktop>;
 let mobile: ReturnType<typeof fakeMobile>;
@@ -137,7 +146,9 @@ async function signLegacy(
       presentation: migrated.presentation,
     })
   );
-  return decodeBase64 ? { ...signed, content: Base64.decode(signed.content) } : signed;
+  return decodeBase64
+    ? { ...signed, content: Base64.decode(signed.content) }
+    : signed;
 }
 
 afterAll(() => {
@@ -148,7 +159,10 @@ async function setup(desktopChannel = fakeDesktop()) {
   document.body.innerHTML = "";
   desktop = desktopChannel;
   mobile = fakeMobile();
-  client = await createAutogramClient({ desktopChannel: desktop, mobileChannel: mobile });
+  client = await createAutogramClient({
+    desktopChannel: desktop,
+    mobileChannel: mobile,
+  });
 }
 
 describe("CombinedClient.sign with migrated legacy input", () => {
@@ -163,9 +177,14 @@ describe("CombinedClient.sign with migrated legacy input", () => {
     await choose(SigningMethod.reader);
 
     await expect(pending).resolves.toEqual(DESKTOP_RESPONSE);
-    const [document, parameters, payloadMimeType, batchId, abortController] = argsOf(desktop.calls, "signLegacy")!;
+    const [document, parameters, payloadMimeType, batchId, abortController] =
+      argsOf(desktop.calls, "signLegacy")!;
     expect(document).toEqual({ content: "PGEvPg==", filename: "a.xml" });
-    expect(parameters).toEqual({ level: "XAdES_BASELINE_B", container: "ASiC_E", autoLoadEform: true });
+    expect(parameters).toEqual({
+      level: "XAdES_BASELINE_B",
+      container: "ASiC_E",
+      autoLoadEform: true,
+    });
     expect(payloadMimeType).toBe("application/xml;base64");
     expect(batchId).toBeUndefined();
     expect(abortController).toBeInstanceOf(AbortController);
@@ -173,9 +192,17 @@ describe("CombinedClient.sign with migrated legacy input", () => {
   });
 
   test("desktop: decodeBase64 decodes the content", async () => {
-    const pending = signLegacy({ content: "x" }, { level: "XAdES_BASELINE_B" }, "text/plain", true);
+    const pending = signLegacy(
+      { content: "x" },
+      { level: "XAdES_BASELINE_B" },
+      "text/plain",
+      true
+    );
     await choose(SigningMethod.reader);
-    await expect(pending).resolves.toEqual({ ...DESKTOP_RESPONSE, content: "hello signed" });
+    await expect(pending).resolves.toEqual({
+      ...DESKTOP_RESPONSE,
+      content: "hello signed",
+    });
   });
 
   test("mobile: uploads the legacy shape to AVM and returns the last signer", async () => {
@@ -213,7 +240,12 @@ describe("CombinedClient.sign", () => {
 
   test("desktop: encodes the wire mime type and returns a SignedDocumentResult", async () => {
     const pending = client.sign(
-      { content: "JVBERg==", mimeType: "application/pdf", encoding: "base64", filename: "a.pdf" },
+      {
+        content: "JVBERg==",
+        mimeType: "application/pdf",
+        encoding: "base64",
+        filename: "a.pdf",
+      },
       { form: "PAdES" } // legacy level "PAdES_BASELINE_B"
     );
     await choose(SigningMethod.reader);
@@ -224,34 +256,56 @@ describe("CombinedClient.sign", () => {
       encoding: "base64",
       signatures: [{ signedBy: "CN=John Smith", issuedBy: "CN=SVK eID ACA2" }],
     });
-    const [document, parameters, payloadMimeType] = argsOf(desktop.calls, "signLegacy")!;
+    const [document, parameters, payloadMimeType] = argsOf(
+      desktop.calls,
+      "signLegacy"
+    )!;
     expect(document).toEqual({ content: "JVBERg==", filename: "a.pdf" });
     expect(parameters).toEqual({ level: "PAdES_BASELINE_B" });
     expect(payloadMimeType).toBe("application/pdf;base64");
   });
 
   test("desktop: missing parameters are sent as an empty object", async () => {
-    const pending = client.sign({ content: "<a/>", mimeType: "application/xml" });
+    const pending = client.sign({
+      content: "<a/>",
+      mimeType: "application/xml",
+    });
     await choose(SigningMethod.reader);
     await pending;
-    const [, parameters, payloadMimeType] = argsOf(desktop.calls, "signLegacy")!;
+    const [, parameters, payloadMimeType] = argsOf(
+      desktop.calls,
+      "signLegacy"
+    )!;
     expect(parameters).toEqual({});
     expect(payloadMimeType).toBe("application/xml");
   });
 
   test("desktop: reports progress through onState", async () => {
     const states: string[] = [];
-    const pending = client.sign({ content: "<a/>", mimeType: "application/xml" }, undefined, {
-      onState: (s) => states.push(s.type),
-    });
+    const pending = client.sign(
+      { content: "<a/>", mimeType: "application/xml" },
+      undefined,
+      {
+        onState: (s) => states.push(s.type),
+      }
+    );
     await choose(SigningMethod.reader);
     await pending;
-    expect(states).toEqual(["checkingApp", "checkingApp", "waitingForSignature"]);
+    expect(states).toEqual([
+      "checkingApp",
+      "checkingApp",
+      "waitingForSignature",
+    ]);
   });
 
   test("mobile: keeps every signer and the AVM MIME type", async () => {
     const pending = client.sign(
-      { content: "PGEvPg==", mimeType: "application/xml", encoding: "base64", filename: "a.xml" },
+      {
+        content: "PGEvPg==",
+        mimeType: "application/xml",
+        encoding: "base64",
+        filename: "a.xml",
+      },
       { form: "XAdES", container: "ASiC_E" } // legacy level "XAdES_BASELINE_B"
     );
     await choose(SigningMethod.mobile);
@@ -274,8 +328,12 @@ describe("CombinedClient.sign", () => {
 describe("CombinedClient.sign errors", () => {
   test("closing the method chooser rejects with user-cancelled", async () => {
     await setup();
-    const pending = client.sign({ content: "<a/>", mimeType: "application/xml" });
-    for (let i = 0; i < 100 && !root().choiceResult; i++) await new Promise((r) => setTimeout(r, 0));
+    const pending = client.sign({
+      content: "<a/>",
+      mimeType: "application/xml",
+    });
+    for (let i = 0; i < 100 && !root().choiceResult; i++)
+      await new Promise((r) => setTimeout(r, 0));
     root().choiceResult!.reject(new UserCancelledSigningException());
 
     const error = await pending.catch((e) => e);
@@ -284,16 +342,32 @@ describe("CombinedClient.sign errors", () => {
   });
 
   test("cancelling in the desktop app rejects with user-cancelled", async () => {
-    await setup(fakeDesktop(async () => Promise.reject(new UserCancelledSigningException())));
-    const pending = client.sign({ content: "<a/>", mimeType: "application/xml" });
+    await setup(
+      fakeDesktop(async () =>
+        Promise.reject(new UserCancelledSigningException())
+      )
+    );
+    const pending = client.sign({
+      content: "<a/>",
+      mimeType: "application/xml",
+    });
     await choose(SigningMethod.reader);
     const error = await pending.catch((e) => e);
     expect(AutogramError.is(error, "user-cancelled")).toBe(true);
   });
 
   test("other SDK errors are shown in the error screen and rethrown", async () => {
-    await setup(fakeDesktop(async () => Promise.reject(new AutogramError("server-error", "Signing failed badly"))));
-    const pending = client.sign({ content: "<a/>", mimeType: "application/xml" });
+    await setup(
+      fakeDesktop(async () =>
+        Promise.reject(
+          new AutogramError("server-error", "Signing failed badly")
+        )
+      )
+    );
+    const pending = client.sign({
+      content: "<a/>",
+      mimeType: "application/xml",
+    });
     await choose(SigningMethod.reader);
     const error = await pending.catch((e) => e);
     expect(AutogramError.is(error, "server-error")).toBe(true);

@@ -24,10 +24,7 @@
  */
 
 import { z } from "zod";
-import {
-  AutogramError,
-  SerializedAutogramError,
-} from "./errors";
+import { AutogramError, SerializedAutogramError } from "./errors";
 import { createLogger } from "./log";
 
 const log = createLogger("ag-sdk:rpc");
@@ -149,7 +146,10 @@ export function createRpcClient<M extends RpcMethods>(
   const client = {} as RpcClient<M>;
   for (const methodName of Object.keys(service.methods) as Array<keyof M>) {
     const def = service.methods[methodName];
-    client[methodName] = ((args: unknown, callOptions?: { signal?: AbortSignal }) => {
+    client[methodName] = ((
+      args: unknown,
+      callOptions?: { signal?: AbortSignal }
+    ) => {
       const id = generateId();
       const signal = callOptions?.signal;
 

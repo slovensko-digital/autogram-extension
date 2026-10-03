@@ -192,9 +192,9 @@ describe("rpc timeouts", () => {
   test("dynamic timeout derives from the call arguments", async () => {
     const handler = createRpcHandler(testService, makeImpl());
     const client = createRpcClient(testService, connect(handler));
-    await expect(client.dynamicTimeout({ timeout: 10 })).rejects.toMatchObject(
-      { code: "timeout" }
-    );
+    await expect(client.dynamicTimeout({ timeout: 10 })).rejects.toMatchObject({
+      code: "timeout",
+    });
   });
 
   test("timeout also aborts the far side", async () => {

@@ -112,9 +112,7 @@ export function fromDesktopResponse(
     mimeType: response.mimeType || inferDesktopMimeType(parameters),
     encoding: "base64",
     ...(response.filename ? { filename: response.filename } : {}),
-    signatures: [
-      { signedBy: response.signedBy, issuedBy: response.issuedBy },
-    ],
+    signatures: [{ signedBy: response.signedBy, issuedBy: response.issuedBy }],
   };
 }
 

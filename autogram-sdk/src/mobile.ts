@@ -216,10 +216,8 @@ export class MobileClient {
 export function toSignedObject(document: SignedDocument): SignedObject {
   return {
     content: document.content,
-    signedBy:
-      document.signers?.map((s) => s.signedBy || "").join(", ") || "",
-    issuedBy:
-      document.signers?.map((s) => s.issuedBy || "").join(", ") || "",
+    signedBy: document.signers?.map((s) => s.signedBy || "").join(", ") || "",
+    issuedBy: document.signers?.map((s) => s.issuedBy || "").join(", ") || "",
   };
 }
 

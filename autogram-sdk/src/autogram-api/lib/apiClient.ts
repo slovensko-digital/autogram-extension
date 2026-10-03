@@ -125,7 +125,9 @@ export function apiClient(options?: ApiClientConfiguration) {
         }
       }
 
-      return Promise.resolve(`${configuration.customProtocol}://${command}?${params}`);
+      return Promise.resolve(
+        `${configuration.customProtocol}://${command}?${params}`
+      );
     },
 
     /**
@@ -239,10 +241,13 @@ export function apiClient(options?: ApiClientConfiguration) {
         // _eslint-disable-next-line functional/no-loop-statement
         while (!finished) {
           requestAbortController = new AbortController();
-          const requestTimeout = setTimeout(() => {
-            if (!requestAbortController.signal.aborted)
-              requestAbortController.abort();
-          }, (delay + 1) * 1000);
+          const requestTimeout = setTimeout(
+            () => {
+              if (!requestAbortController.signal.aborted)
+                requestAbortController.abort();
+            },
+            (delay + 1) * 1000
+          );
 
           try {
             lastResponse = await (
@@ -261,7 +266,8 @@ export function apiClient(options?: ApiClientConfiguration) {
           } catch (error) {
             clearTimeout(requestTimeout);
 
-            const normalizedError = error instanceof Error ? error : new Error(String(error));
+            const normalizedError =
+              error instanceof Error ? error : new Error(String(error));
             if (normalizedError.name !== "AbortError") {
               lastError = normalizedError;
             }
@@ -377,9 +383,11 @@ export type AutogramDesktopIntegrationInterface = Omit<
   Partial<Pick<DesktopApiClient, "signV1">>;
 
 type BatchStartRequestBody = components["schemas"]["BatchStartRequestBody"];
-export type BatchStartResponseBody = components["schemas"]["BatchStartResponseBody"];
+export type BatchStartResponseBody =
+  components["schemas"]["BatchStartResponseBody"];
 type BatchEndRequestBody = components["schemas"]["BatchEndRequestBody"];
-export type BatchEndResponseBody = components["schemas"]["BatchEndResponseBody"];
+export type BatchEndResponseBody =
+  components["schemas"]["BatchEndResponseBody"];
 
 /**
  * Client configuration options.
@@ -521,9 +529,7 @@ export type DesktopSigningState =
     }
   | { type: "error"; message: string };
 
-export type DesktopSigningStateConsumer = (
-  state: DesktopSigningState
-) => void;
+export type DesktopSigningStateConsumer = (state: DesktopSigningState) => void;
 
 // Zod schemas
 //

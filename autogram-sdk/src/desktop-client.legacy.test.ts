@@ -153,7 +153,8 @@ describe("DesktopClient.sign (legacy call shape, Autogram < 2.8.0)", () => {
 
   test("reports user cancellation", async () => {
     const desktop = fakeDesktop({
-      signLegacy: async () => Promise.reject(new UserCancelledSigningException()),
+      signLegacy: async () =>
+        Promise.reject(new UserCancelledSigningException()),
     });
     const states: string[] = [];
     const error = await signLegacy(
@@ -169,7 +170,9 @@ describe("DesktopClient.sign (legacy call shape, Autogram < 2.8.0)", () => {
 
   test("reports other failures as an error state and rethrows them", async () => {
     const failure = new Error("boom");
-    const desktop = fakeDesktop({ signLegacy: async () => Promise.reject(failure) });
+    const desktop = fakeDesktop({
+      signLegacy: async () => Promise.reject(failure),
+    });
     const states: unknown[] = [];
     await expect(
       signLegacy(

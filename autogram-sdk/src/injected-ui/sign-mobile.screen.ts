@@ -41,8 +41,8 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
     return this.step === Steps.showQRCode
       ? this.renderQR()
       : this.step === Steps.showPairing
-      ? this.renderPairing()
-      : html``;
+        ? this.renderPairing()
+        : html``;
   }
 
   renderQR() {
@@ -86,14 +86,19 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
             <p>
               ${this.pairingEnabled
                 ? html`<a href="" @click="${this.openPairing}">
-                    Chcete dostávať upozornenia do mobilu? Spárujte si tento počítač.
+                    Chcete dostávať upozornenia do mobilu? Spárujte si tento
+                    počítač.
                   </a>`
                 : html``}
             </p>
           </div>
           <div class="col">
             <a href="${this.url}" target="_blank" rel="noopener">
-              <figure role="img" aria-label="QR kód" style="width: 250px; height: 250px;">
+              <figure
+                role="img"
+                aria-label="QR kód"
+                style="width: 250px; height: 250px;"
+              >
                 ${unsafeSVG(qrCode)}
               </figure>
             </a>

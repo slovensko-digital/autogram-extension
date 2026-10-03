@@ -206,7 +206,8 @@ export class SigningFlow {
         { type: "mobile", state: "preparing" },
         abortController
       );
-      const { signingUrl, pairingUrl } = await this.prepareMobileSigning(request);
+      const { signingUrl, pairingUrl } =
+        await this.prepareMobileSigning(request);
       this.delegate.onState(
         { type: "mobile", state: "qr-ready", signingUrl, pairingUrl },
         abortController
@@ -260,7 +261,9 @@ export class SigningFlow {
     // AVM does not support the form-less BASELINE_B / BASELINE_T levels accepted by the desktop app
     let level = params.level;
     if (level === "BASELINE_B" || level === "BASELINE_T") {
-      log.warn(`Signature level ${level} is not supported by AVM, using AVM default`);
+      log.warn(
+        `Signature level ${level} is not supported by AVM, using AVM default`
+      );
       level = undefined;
     }
 

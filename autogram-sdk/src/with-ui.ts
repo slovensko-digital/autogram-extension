@@ -355,7 +355,12 @@ export class CombinedClient {
         break;
       case "mobile":
         if (state.state === "qr-ready") {
-          this.ui.showQRCode(state.signingUrl, state.pairingUrl, abortController, this.ui.pairingEnabled);
+          this.ui.showQRCode(
+            state.signingUrl,
+            state.pairingUrl,
+            abortController,
+            this.ui.pairingEnabled
+          );
         }
         // "preparing" has no dedicated screen today
         break;

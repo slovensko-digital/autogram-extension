@@ -101,7 +101,11 @@ describe("MobileClient.resumeRequest", () => {
     expect(client.resumeRequest(null)).toBeNull();
     expect(client.resumeRequest(undefined)).toBeNull();
     expect(
-      client.resumeRequest({ guid: null, encryptionKey: null, lastModified: null })
+      client.resumeRequest({
+        guid: null,
+        encryptionKey: null,
+        lastModified: null,
+      })
     ).toBeNull();
   });
 });
@@ -180,9 +184,11 @@ describe("toSignedObject", () => {
   });
 
   test("tolerates missing signers", () => {
-    expect(
-      toSignedObject({ ...SIGNED_DOCUMENT, signers: undefined })
-    ).toEqual({ content: "c2lnbmVk", signedBy: "", issuedBy: "" });
+    expect(toSignedObject({ ...SIGNED_DOCUMENT, signers: undefined })).toEqual({
+      content: "c2lnbmVk",
+      signedBy: "",
+      issuedBy: "",
+    });
   });
 });
 
@@ -256,7 +262,10 @@ describe("RestorePointStore", () => {
     // Extension background workers < 0.3 stored a pointer to the db key
     // holding the document reference instead of the token itself.
     const db = memoryDb();
-    await db.set("autogram:avm:restorePoint:rp-1", "autogram:avm:documentRef:42|0");
+    await db.set(
+      "autogram:avm:restorePoint:rp-1",
+      "autogram:avm:documentRef:42|0"
+    );
     await db.set("autogram:avm:documentRef:42|0", TOKEN);
     const store = new RestorePointStore(
       db,

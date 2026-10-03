@@ -248,7 +248,11 @@ export class DesktopClient {
         throw new Error("Wait for server");
       }
       log.info(`Autogram ${info.version} is ready`);
-      this.assertMinimumAppVersion(info, options?.minimumAppVersion, onStateChange);
+      this.assertMinimumAppVersion(
+        info,
+        options?.minimumAppVersion,
+        onStateChange
+      );
       return info;
     } catch (error) {
       if (error instanceof AutogramAppVersionTooLowException) {
@@ -296,7 +300,11 @@ export class DesktopClient {
     }
 
     // outside the try/catch so that an old version is not reported as "not installed"
-    this.assertMinimumAppVersion(info, options?.minimumAppVersion, onStateChange);
+    this.assertMinimumAppVersion(
+      info,
+      options?.minimumAppVersion,
+      onStateChange
+    );
     return info;
   }
 

@@ -194,10 +194,19 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               <p>Spúšťam Autogram…</p>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+            <div
+              style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;"
+            >
               <div class="not-installed-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#f59e0b"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                    fill="#f59e0b"
+                  />
                 </svg>
               </div>
               <div>
@@ -218,8 +227,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               target="_blank"
               rel="noopener noreferrer"
             >
-              ${unsafeSVG(downloadSvg)}
-              Stiahnuť Autogram
+              ${unsafeSVG(downloadSvg)} Stiahnuť Autogram
             </a>
           </div>
         `;
@@ -230,10 +238,19 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         useFullWidthLayout = true;
         content = html`
           <div class="not-installed">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+            <div
+              style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;"
+            >
               <div class="not-installed-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                    fill="#ef4444"
+                  />
                 </svg>
               </div>
               <div>
@@ -241,7 +258,8 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               </div>
             </div>
             <p>
-              Na podpisovanie dokumentov je potrebná  aplikácia Autogram. Postupujte podľa nasledujúcich krokov:
+              Na podpisovanie dokumentov je potrebná aplikácia Autogram.
+              Postupujte podľa nasledujúcich krokov:
             </p>
             <ol>
               <li>
@@ -261,8 +279,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               target="_blank"
               rel="noopener noreferrer"
             >
-              ${unsafeSVG(downloadSvg)}
-              Stiahnuť Autogram
+              ${unsafeSVG(downloadSvg)} Stiahnuť Autogram
             </a>
           </div>
         `;
@@ -273,10 +290,19 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
         useFullWidthLayout = true;
         content = html`
           <div class="not-installed">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+            <div
+              style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;"
+            >
               <div class="not-installed-icon">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                    fill="#ef4444"
+                  />
                 </svg>
               </div>
               <div>
@@ -284,8 +310,10 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               </div>
             </div>
             <p>
-              Táto funkcia vyžaduje Autogram verzie ${this.state.requiredVersion} alebo novšej.
-              Nainštalovaná verzia: ${this.state.detectedVersion}. Postupujte podľa nasledujúcich krokov:
+              Táto funkcia vyžaduje Autogram verzie
+              ${this.state.requiredVersion} alebo novšej. Nainštalovaná verzia:
+              ${this.state.detectedVersion}. Postupujte podľa nasledujúcich
+              krokov:
             </p>
             <ol>
               <li>
@@ -305,8 +333,7 @@ export class AutogramSignReaderScreen extends AutogramBaseScreen {
               target="_blank"
               rel="noopener noreferrer"
             >
-              ${unsafeSVG(downloadSvg)}
-              Stiahnuť Autogram
+              ${unsafeSVG(downloadSvg)} Stiahnuť Autogram
             </a>
           </div>
         `;

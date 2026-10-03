@@ -48,13 +48,24 @@ function fakeDesktop(
 
 const callNames = (desktop: { calls: Array<[string, unknown[]]> }) =>
   desktop.calls.map(([name]) => name);
-const callArgs = (desktop: { calls: Array<[string, unknown[]]> }, name: string) =>
-  desktop.calls.find(([n]) => n === name)?.[1];
+const callArgs = (
+  desktop: { calls: Array<[string, unknown[]]> },
+  name: string
+) => desktop.calls.find(([n]) => n === name)?.[1];
 
 const XML = { content: "<a/>", mimeType: "application/xml", filename: "a.xml" };
-const PDF = { content: "JVBERg==", mimeType: "application/pdf", encoding: "base64" as const, filename: "b.pdf" };
+const PDF = {
+  content: "JVBERg==",
+  mimeType: "application/pdf",
+  encoding: "base64" as const,
+  filename: "b.pdf",
+};
 // wire shape of PDF
-const PDF_WIRE = { content: "JVBERg==", mimeType: "application/pdf;base64", filename: "b.pdf" };
+const PDF_WIRE = {
+  content: "JVBERg==",
+  mimeType: "application/pdf;base64",
+  filename: "b.pdf",
+};
 
 describe("DesktopClient.sign with Autogram >= 2.8.0", () => {
   test("signs multiple documents into one container via /api/v1/sign", async () => {
@@ -87,10 +98,14 @@ describe("DesktopClient.sign with Autogram >= 2.8.0", () => {
       { level: "PAdES_BASELINE_B", visualizationWidth: "md" },
       "application/pdf;base64"
     );
-    await new DesktopClient(desktop).sign(documents, parameters, { presentation });
+    await new DesktopClient(desktop).sign(documents, parameters, {
+      presentation,
+    });
 
     expect(callArgs(desktop, "signV1")?.[0]).toEqual({
-      documents: [{ content: "x", filename: "x.pdf", mimeType: "application/pdf;base64" }],
+      documents: [
+        { content: "x", filename: "x.pdf", mimeType: "application/pdf;base64" },
+      ],
       parameters: { form: "PAdES", profile: "BASELINE_B" },
       presentation: { visualizationWidth: "md" },
     });
@@ -98,14 +113,20 @@ describe("DesktopClient.sign with Autogram >= 2.8.0", () => {
 
   test("passes batchId for a single document", async () => {
     const desktop = fakeDesktop("2.8.0");
-    await new DesktopClient(desktop).sign(XML, undefined, { batchId: "batch-1" });
-    expect(callArgs(desktop, "signV1")?.[0]).toMatchObject({ batchId: "batch-1" });
+    await new DesktopClient(desktop).sign(XML, undefined, {
+      batchId: "batch-1",
+    });
+    expect(callArgs(desktop, "signV1")?.[0]).toMatchObject({
+      batchId: "batch-1",
+    });
   });
 
   test("rejects batchId with multiple documents before contacting the app", async () => {
     const desktop = fakeDesktop("2.8.0");
     await expect(
-      new DesktopClient(desktop).sign([XML, PDF], undefined, { batchId: "batch-1" })
+      new DesktopClient(desktop).sign([XML, PDF], undefined, {
+        batchId: "batch-1",
+      })
     ).rejects.toBeInstanceOf(AutogramError);
     expect(callNames(desktop)).toEqual([]);
   });
@@ -134,9 +155,16 @@ describe("DesktopClient.sign with Autogram < 2.8.0", () => {
       signatures: [{ signedBy: "CN=Legacy", issuedBy: "CN=CA" }],
     });
     expect(callNames(desktop)).not.toContain("signV1");
-    const [document, parameters, payloadMimeType, batchId] = callArgs(desktop, "signLegacy")!;
+    const [document, parameters, payloadMimeType, batchId] = callArgs(
+      desktop,
+      "signLegacy"
+    )!;
     expect(document).toEqual({ content: "<a/>", filename: "a.xml" });
-    expect(parameters).toEqual({ level: "XAdES_BASELINE_B", container: "ASiC_E", autoLoadEform: true });
+    expect(parameters).toEqual({
+      level: "XAdES_BASELINE_B",
+      container: "ASiC_E",
+      autoLoadEform: true,
+    });
     expect(payloadMimeType).toBe("application/xml");
     expect(batchId).toBe("batch-1");
   });
@@ -162,7 +190,10 @@ describe("DesktopClient.sign with Autogram < 2.8.0", () => {
   test("reports appVersionTooLow for v1-only safety checks", async () => {
     const desktop = fakeDesktop("2.7.6");
     await expect(
-      new DesktopClient(desktop).sign(PDF, { form: "PAdES", requireQualifiedCertificate: true })
+      new DesktopClient(desktop).sign(PDF, {
+        form: "PAdES",
+        requireQualifiedCertificate: true,
+      })
     ).rejects.toMatchObject({ code: "app-version-too-low" });
     expect(callNames(desktop)).not.toContain("signLegacy");
   });
@@ -175,7 +206,9 @@ describe("DesktopClient.sign errors", () => {
     });
     const states: string[] = [];
     await expect(
-      new DesktopClient(desktop).sign(XML, undefined, { onStateChange: (s) => states.push(s.type) })
+      new DesktopClient(desktop).sign(XML, undefined, {
+        onStateChange: (s) => states.push(s.type),
+      })
     ).rejects.toMatchObject({ code: "user-cancelled" });
     expect(states.at(-1)).toBe("signingCancelled");
   });
@@ -183,7 +216,9 @@ describe("DesktopClient.sign errors", () => {
 
 describe("DesktopClient.launch", () => {
   test("returns the server info", async () => {
-    await expect(new DesktopClient(fakeDesktop("2.8.0")).launch()).resolves.toEqual({
+    await expect(
+      new DesktopClient(fakeDesktop("2.8.0")).launch()
+    ).resolves.toEqual({
       status: "READY",
       version: "2.8.0",
     });
@@ -192,14 +227,20 @@ describe("DesktopClient.launch", () => {
   test("enforces minimumAppVersion", async () => {
     const states: string[] = [];
     await expect(
-      new DesktopClient(fakeDesktop("2.7.6")).launch(undefined, (s) => states.push(s.type), {
-        minimumAppVersion: "2.8.0",
-      })
+      new DesktopClient(fakeDesktop("2.7.6")).launch(
+        undefined,
+        (s) => states.push(s.type),
+        {
+          minimumAppVersion: "2.8.0",
+        }
+      )
     ).rejects.toMatchObject({ code: "app-version-too-low" });
     expect(states).toContain("appVersionTooLow");
 
     await expect(
-      new DesktopClient(fakeDesktop("dev")).launch(undefined, undefined, { minimumAppVersion: "2.8.0" })
+      new DesktopClient(fakeDesktop("dev")).launch(undefined, undefined, {
+        minimumAppVersion: "2.8.0",
+      })
     ).resolves.toMatchObject({ version: "dev" });
   });
 });
@@ -215,7 +256,9 @@ describe("DesktopClient.sign with a channel written before Autogram 2.8.0", () =
   test("rejects multiple documents as not-supported", async () => {
     const desktop = fakeDesktop("2.8.0");
     delete (desktop as Partial<typeof desktop>).signV1;
-    await expect(new DesktopClient(desktop).sign([XML, PDF])).rejects.toMatchObject({
+    await expect(
+      new DesktopClient(desktop).sign([XML, PDF])
+    ).rejects.toMatchObject({
       code: "not-supported",
     });
     expect(callNames(desktop)).not.toContain("signLegacy");

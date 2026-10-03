@@ -21,17 +21,39 @@ function legacyToSignRequest(
   payloadMimeType?: string
 ): SignRequest {
   const migrated = fromLegacySignArgs(document, parameters, payloadMimeType);
-  return toSignRequest(migrated.documents, migrated.parameters, migrated.presentation);
+  return toSignRequest(
+    migrated.documents,
+    migrated.parameters,
+    migrated.presentation
+  );
 }
 
 describe("parseLegacyLevel", () => {
   test("splits form-prefixed levels", () => {
-    expect(parseLegacyLevel("XAdES_BASELINE_B")).toEqual({ form: "XAdES", profile: "BASELINE_B" });
-    expect(parseLegacyLevel("PAdES_BASELINE_B")).toEqual({ form: "PAdES", profile: "BASELINE_B" });
-    expect(parseLegacyLevel("CAdES_BASELINE_B")).toEqual({ form: "CAdES", profile: "BASELINE_B" });
-    expect(parseLegacyLevel("XAdES_BASELINE_T")).toEqual({ form: "XAdES", profile: "BASELINE_T" });
-    expect(parseLegacyLevel("PAdES_BASELINE_T")).toEqual({ form: "PAdES", profile: "BASELINE_T" });
-    expect(parseLegacyLevel("CAdES_BASELINE_T")).toEqual({ form: "CAdES", profile: "BASELINE_T" });
+    expect(parseLegacyLevel("XAdES_BASELINE_B")).toEqual({
+      form: "XAdES",
+      profile: "BASELINE_B",
+    });
+    expect(parseLegacyLevel("PAdES_BASELINE_B")).toEqual({
+      form: "PAdES",
+      profile: "BASELINE_B",
+    });
+    expect(parseLegacyLevel("CAdES_BASELINE_B")).toEqual({
+      form: "CAdES",
+      profile: "BASELINE_B",
+    });
+    expect(parseLegacyLevel("XAdES_BASELINE_T")).toEqual({
+      form: "XAdES",
+      profile: "BASELINE_T",
+    });
+    expect(parseLegacyLevel("PAdES_BASELINE_T")).toEqual({
+      form: "PAdES",
+      profile: "BASELINE_T",
+    });
+    expect(parseLegacyLevel("CAdES_BASELINE_T")).toEqual({
+      form: "CAdES",
+      profile: "BASELINE_T",
+    });
   });
 
   test("keeps bare profiles without a form", () => {
@@ -41,7 +63,9 @@ describe("parseLegacyLevel", () => {
 
   test("returns nothing for undefined and throws on unknown values", () => {
     expect(parseLegacyLevel(undefined)).toEqual({});
-    expect(() => parseLegacyLevel("XAdES_BASELINE_LTA" as never)).toThrow(AutogramError);
+    expect(() => parseLegacyLevel("XAdES_BASELINE_LTA" as never)).toThrow(
+      AutogramError
+    );
   });
 });
 
@@ -80,7 +104,8 @@ const fullLegacyParameters: LegacySignatureParameters = {
   schema: "<xs:schema/>",
   schemaIdentifier: "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd",
   transformation: "<xsl:stylesheet/>",
-  transformationIdentifier: "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt",
+  transformationIdentifier:
+    "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt",
   transformationLanguage: "sk",
   transformationMediaDestinationTypeDescription: "HTML",
   transformationTargetEnvironment: "web",
@@ -96,7 +121,8 @@ const fullXdcParameters = {
   schema: "<xs:schema/>",
   schemaIdentifier: "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd",
   transformation: "<xsl:stylesheet/>",
-  transformationIdentifier: "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt",
+  transformationIdentifier:
+    "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt",
   transformationLanguage: "sk",
   transformationMediaDestinationTypeDescription: "HTML",
   transformationTargetEnvironment: "web",
@@ -120,7 +146,11 @@ describe("fromLegacySignArgs → wire request", () => {
   test("applies the legacy defaults", () => {
     expect(legacyToSignRequest({ content: "<a/>" })).toEqual({
       documents: [{ content: "<a/>", mimeType: "application/xml" }],
-      parameters: { form: "XAdES", profile: "BASELINE_B", checkPDFACompliance: true },
+      parameters: {
+        form: "XAdES",
+        profile: "BASELINE_B",
+        checkPDFACompliance: true,
+      },
     });
   });
 
@@ -155,7 +185,11 @@ describe("fromLegacySignArgs → wire request", () => {
       )
     ).toEqual({
       documents: [{ content: "x", mimeType: "application/pdf;base64" }],
-      parameters: { form: "PAdES", profile: "BASELINE_B", checkPDFACompliance: false },
+      parameters: {
+        form: "PAdES",
+        profile: "BASELINE_B",
+        checkPDFACompliance: false,
+      },
     });
   });
 });
@@ -164,7 +198,13 @@ describe("signRequestToLegacy", () => {
   test("round-trips a fully populated legacy request", () => {
     const document = { content: "PGEvPg==", filename: "a.xml" };
     expect(
-      signRequestToLegacy(legacyToSignRequest(document, fullLegacyParameters, "application/xml;base64"))
+      signRequestToLegacy(
+        legacyToSignRequest(
+          document,
+          fullLegacyParameters,
+          "application/xml;base64"
+        )
+      )
     ).toEqual({
       document,
       parameters: fullLegacyParameters,
@@ -174,8 +214,12 @@ describe("signRequestToLegacy", () => {
 
   test("round-trips bare and missing levels", () => {
     for (const level of ["BASELINE_B", "BASELINE_T", undefined] as const) {
-      const parameters: LegacySignatureParameters = level ? { level, container: "ASiC_E" } : { container: "ASiC_E" };
-      const legacy = signRequestToLegacy(legacyToSignRequest({ content: "x" }, parameters, "text/plain"));
+      const parameters: LegacySignatureParameters = level
+        ? { level, container: "ASiC_E" }
+        : { container: "ASiC_E" };
+      const legacy = signRequestToLegacy(
+        legacyToSignRequest({ content: "x" }, parameters, "text/plain")
+      );
       expect(legacy.parameters).toEqual(parameters);
     }
   });
@@ -187,7 +231,10 @@ describe("signRequestToLegacy", () => {
           {
             content: "x",
             mimeType: "application/pdf;base64",
-            xdcParameters: { schemaMimeType: "application/xml;base64", identifier: null as unknown as undefined },
+            xdcParameters: {
+              schemaMimeType: "application/xml;base64",
+              identifier: null as unknown as undefined,
+            },
           },
         ],
         parameters: {
@@ -205,9 +252,15 @@ describe("signRequestToLegacy", () => {
   });
 
   test("refuses to silently skip opt-in safety checks", () => {
-    for (const parameters of [{ requireQualifiedCertificate: true }, { checkPDFEmbeddedAttachments: true }]) {
+    for (const parameters of [
+      { requireQualifiedCertificate: true },
+      { checkPDFEmbeddedAttachments: true },
+    ]) {
       expect(() =>
-        signRequestToLegacy({ documents: [{ content: "x", mimeType: "text/plain" }], parameters })
+        signRequestToLegacy({
+          documents: [{ content: "x", mimeType: "text/plain" }],
+          parameters,
+        })
       ).toThrow(expect.objectContaining({ code: "not-supported" }));
     }
   });
@@ -228,9 +281,20 @@ describe("signRequestToLegacy", () => {
 describe("fromLegacySignArgs", () => {
   test("splits the payload mime type into mimeType + encoding", () => {
     expect(
-      fromLegacySignArgs({ content: "JVBERg==", filename: "a.pdf" }, { level: "PAdES_BASELINE_B" }, "application/pdf;base64")
+      fromLegacySignArgs(
+        { content: "JVBERg==", filename: "a.pdf" },
+        { level: "PAdES_BASELINE_B" },
+        "application/pdf;base64"
+      )
     ).toEqual({
-      documents: [{ content: "JVBERg==", filename: "a.pdf", mimeType: "application/pdf", encoding: "base64" }],
+      documents: [
+        {
+          content: "JVBERg==",
+          filename: "a.pdf",
+          mimeType: "application/pdf",
+          encoding: "base64",
+        },
+      ],
       parameters: { form: "PAdES", profile: "BASELINE_B" },
     });
   });
@@ -238,13 +302,29 @@ describe("fromLegacySignArgs", () => {
   test("applies the legacy defaults", () => {
     expect(fromLegacySignArgs({ content: "<a/>" })).toEqual({
       documents: [{ content: "<a/>", mimeType: "application/xml" }],
-      parameters: { form: "XAdES", profile: "BASELINE_B", checkPDFACompliance: true },
+      parameters: {
+        form: "XAdES",
+        profile: "BASELINE_B",
+        checkPDFACompliance: true,
+      },
     });
   });
 
   test("moves XDC parameters onto the document and visualizationWidth to presentation", () => {
-    expect(fromLegacySignArgs({ content: "<a/>" }, fullLegacyParameters, "application/xml")).toEqual({
-      documents: [{ content: "<a/>", mimeType: "application/xml", xdcParameters: fullXdcParameters }],
+    expect(
+      fromLegacySignArgs(
+        { content: "<a/>" },
+        fullLegacyParameters,
+        "application/xml"
+      )
+    ).toEqual({
+      documents: [
+        {
+          content: "<a/>",
+          mimeType: "application/xml",
+          xdcParameters: fullXdcParameters,
+        },
+      ],
       parameters: fullV1Parameters,
       presentation: { visualizationWidth: "lg" },
     });
@@ -269,9 +349,17 @@ describe("fromLegacySignatureParameters", () => {
 
 describe("fromPayloadMimeType", () => {
   test("is the inverse of toPayloadMimeType", () => {
-    expect(fromPayloadMimeType("application/pdf;base64")).toEqual({ mimeType: "application/pdf", encoding: "base64" });
-    expect(fromPayloadMimeType("application/xml; base64")).toEqual({ mimeType: "application/xml", encoding: "base64" });
-    expect(fromPayloadMimeType("text/plain")).toEqual({ mimeType: "text/plain" });
+    expect(fromPayloadMimeType("application/pdf;base64")).toEqual({
+      mimeType: "application/pdf",
+      encoding: "base64",
+    });
+    expect(fromPayloadMimeType("application/xml; base64")).toEqual({
+      mimeType: "application/xml",
+      encoding: "base64",
+    });
+    expect(fromPayloadMimeType("text/plain")).toEqual({
+      mimeType: "text/plain",
+    });
   });
 });
 
@@ -280,16 +368,35 @@ describe("toSignRequest", () => {
     expect(
       toSignRequest(
         [
-          { content: "<a/>", mimeType: "application/xml", filename: "a.xml", xdcParameters: { autoLoadEform: true } },
-          { content: "JVBERg==", mimeType: "application/pdf", encoding: "base64", filename: "b.pdf" },
+          {
+            content: "<a/>",
+            mimeType: "application/xml",
+            filename: "a.xml",
+            xdcParameters: { autoLoadEform: true },
+          },
+          {
+            content: "JVBERg==",
+            mimeType: "application/pdf",
+            encoding: "base64",
+            filename: "b.pdf",
+          },
         ],
         { form: "XAdES", container: "ASiC_E" },
         { visualizationWidth: "xl" }
       )
     ).toEqual({
       documents: [
-        { content: "<a/>", mimeType: "application/xml", filename: "a.xml", xdcParameters: { autoLoadEform: true } },
-        { content: "JVBERg==", mimeType: "application/pdf;base64", filename: "b.pdf" },
+        {
+          content: "<a/>",
+          mimeType: "application/xml",
+          filename: "a.xml",
+          xdcParameters: { autoLoadEform: true },
+        },
+        {
+          content: "JVBERg==",
+          mimeType: "application/pdf;base64",
+          filename: "b.pdf",
+        },
       ],
       parameters: { form: "XAdES", container: "ASiC_E" },
       presentation: { visualizationWidth: "xl" },
@@ -297,10 +404,14 @@ describe("toSignRequest", () => {
   });
 
   test("rejects legacy-shaped parameters instead of silently ignoring them", () => {
-    const legacy: object = { level: "PAdES_BASELINE_B", container: "ASiC_E", fsFormId: "1" };
-    expect(() => toSignRequest({ content: "x", mimeType: "application/pdf" }, legacy)).toThrow(
-      /level, fsFormId.*fromLegacySignatureParameters/
-    );
+    const legacy: object = {
+      level: "PAdES_BASELINE_B",
+      container: "ASiC_E",
+      fsFormId: "1",
+    };
+    expect(() =>
+      toSignRequest({ content: "x", mimeType: "application/pdf" }, legacy)
+    ).toThrow(/level, fsFormId.*fromLegacySignatureParameters/);
   });
 
   test("accepts a single document and rejects an empty list", () => {
@@ -342,13 +453,19 @@ describe("unsupportedLegacyParameters", () => {
     expect(unsupportedLegacyParameters(undefined)).toEqual([]);
     expect(unsupportedLegacyParameters({ form: "XAdES" })).toEqual([]);
     expect(
-      unsupportedLegacyParameters({ requireQualifiedCertificate: false, checkPDFEmbeddedAttachments: false })
+      unsupportedLegacyParameters({
+        requireQualifiedCertificate: false,
+        checkPDFEmbeddedAttachments: false,
+      })
     ).toEqual([]);
-    expect(unsupportedLegacyParameters({ requireQualifiedCertificate: true })).toEqual([
-      "requireQualifiedCertificate",
-    ]);
     expect(
-      unsupportedLegacyParameters({ requireQualifiedCertificate: true, checkPDFEmbeddedAttachments: true })
+      unsupportedLegacyParameters({ requireQualifiedCertificate: true })
+    ).toEqual(["requireQualifiedCertificate"]);
+    expect(
+      unsupportedLegacyParameters({
+        requireQualifiedCertificate: true,
+        checkPDFEmbeddedAttachments: true,
+      })
     ).toEqual(["requireQualifiedCertificate", "checkPDFEmbeddedAttachments"]);
   });
 });

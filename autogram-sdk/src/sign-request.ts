@@ -210,7 +210,12 @@ export function fromPayloadMimeType(payloadMimeType: string): {
 // are optional, so TypeScript accepts a legacy-shaped *variable* where v1
 // parameters are expected – catch that at runtime instead of silently
 // signing without `level`/XDC parameters.
-const LEGACY_ONLY_KEYS = ["level", "fsFormId", "visualizationWidth", ...SHARED_XDC_KEYS];
+const LEGACY_ONLY_KEYS = [
+  "level",
+  "fsFormId",
+  "visualizationWidth",
+  ...SHARED_XDC_KEYS,
+];
 
 function assertNotLegacyParameters(parameters: object | undefined): void {
   if (!parameters) return;
@@ -298,7 +303,10 @@ export function signRequestToLegacy(request: SignRequest): LegacySignRequest {
   });
 
   return {
-    document: omitUndefined({ filename: document.filename, content: document.content }),
+    document: omitUndefined({
+      filename: document.filename,
+      content: document.content,
+    }),
     parameters,
     payloadMimeType: document.mimeType,
   };
@@ -315,14 +323,20 @@ export function unsupportedLegacyParameters(
   parameters: SignatureParameters | undefined
 ): string[] {
   const unsupported: string[] = [];
-  if (parameters?.requireQualifiedCertificate) unsupported.push("requireQualifiedCertificate");
-  if (parameters?.checkPDFEmbeddedAttachments) unsupported.push("checkPDFEmbeddedAttachments");
+  if (parameters?.requireQualifiedCertificate)
+    unsupported.push("requireQualifiedCertificate");
+  if (parameters?.checkPDFEmbeddedAttachments)
+    unsupported.push("checkPDFEmbeddedAttachments");
   return unsupported;
 }
 
 /** Compares dotted numeric versions; missing or non-numeric segments (e.g. "0-beta") count as their numeric prefix or 0. */
-export function versionSatisfies(version: string, requiredVersion: string): boolean {
-  const toSegments = (v: string) => v.split(".").map((part) => parseInt(part, 10) || 0);
+export function versionSatisfies(
+  version: string,
+  requiredVersion: string
+): boolean {
+  const toSegments = (v: string) =>
+    v.split(".").map((part) => parseInt(part, 10) || 0);
   const actual = toSegments(version);
   const required = toSegments(requiredVersion);
   for (let i = 0; i < Math.max(actual.length, required.length); i++) {
@@ -344,7 +358,10 @@ function isBase64MimeType(mimeType: string): boolean {
   return mimeType.toLowerCase().includes("base64");
 }
 
-function pick<T extends object, K extends keyof T>(obj: T, keys: readonly K[]): Pick<T, K> {
+function pick<T extends object, K extends keyof T>(
+  obj: T,
+  keys: readonly K[]
+): Pick<T, K> {
   const out = {} as Pick<T, K>;
   for (const key of keys) if (key in obj) out[key] = obj[key];
   return out;
@@ -356,9 +373,14 @@ function omitUndefined<T extends object>(obj: T): T {
   ) as T;
 }
 
-function nullToUndefined<T extends object>(obj: T): { [K in keyof T]: Exclude<T[K], null> } {
+function nullToUndefined<T extends object>(
+  obj: T
+): { [K in keyof T]: Exclude<T[K], null> } {
   return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => [key, value === null ? undefined : value])
+    Object.entries(obj).map(([key, value]) => [
+      key,
+      value === null ? undefined : value,
+    ])
   ) as { [K in keyof T]: Exclude<T[K], null> };
 }
 

@@ -27,14 +27,18 @@ export class AutogramChoiceScreen extends AutogramBaseScreen {
           <button class="tile" @click="${this.signUsingReader}">
             ${unsafeSVG(computerSvg)}
             <h2>Podpísať v tomto počítači</h2>
-            <div>Podpíšte občianskym preukazom v čítačke pomocou aplikácie <b>Autogram</b> vo vašom počítači.</div>
+            <div>
+              Podpíšte občianskym preukazom v čítačke pomocou aplikácie
+              <b>Autogram</b> vo vašom počítači.
+            </div>
           </button>
 
           <button class="tile" @click="${this.signUsingMobile}">
             ${unsafeSVG(mobileSvg)}
             <h2>Podpísať v mobile</h2>
             <div>
-              Podpíšte priložením občianskeho preukazu k mobilu v aplikácii <b>Autogram v mobile</b>.
+              Podpíšte priložením občianskeho preukazu k mobilu v aplikácii
+              <b>Autogram v mobile</b>.
             </div>
           </button>
         </div>

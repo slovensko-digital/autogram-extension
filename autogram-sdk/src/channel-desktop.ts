@@ -33,9 +33,7 @@ import { isSafari } from "./utils";
  * routes calls through the content-script ↔ injected-script message
  * bridge instead of calling the local HTTP server directly.
  */
-export class AutogramDesktopSimpleChannel
-  implements AutogramDesktopIntegrationInterface
-{
+export class AutogramDesktopSimpleChannel implements AutogramDesktopIntegrationInterface {
   private apiClient: ReturnType<typeof apiClient>;
   constructor() {
     let serverProtocol: "http" | "https" = "http";

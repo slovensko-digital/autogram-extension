@@ -20,7 +20,8 @@ export class AutogramSigningMobileOnMobileScreen extends AutogramBaseScreen {
       <div class="main">
         <div class="mobile-on-mobile-content">
           <p>
-            Ak sa aplikácia Autogram v mobile neotvorila automaticky, použite tlačidlo nižšie.
+            Ak sa aplikácia Autogram v mobile neotvorila automaticky, použite
+            tlačidlo nižšie.
           </p>
           <div class="button-wrapper">
             <a href="${this.url}" target="_blank" rel="noopener" class="button"

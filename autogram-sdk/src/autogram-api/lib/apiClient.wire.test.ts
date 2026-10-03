@@ -31,8 +31,7 @@ function lastRequest() {
   };
 }
 
-const client = () =>
-  apiClient({ disableSecurity: true, requestsOrigin: "*" });
+const client = () => apiClient({ disableSecurity: true, requestsOrigin: "*" });
 
 beforeEach(() => fetchMock.mockReset());
 
@@ -90,7 +89,9 @@ describe("signLegacy: POST /sign", () => {
 
   test("maps 204 to user cancellation", async () => {
     respond(204);
-    await expect(client().signLegacy({ content: "<a/>" })).rejects.toMatchObject({
+    await expect(
+      client().signLegacy({ content: "<a/>" })
+    ).rejects.toMatchObject({
       code: "user-cancelled",
     });
   });
@@ -98,7 +99,9 @@ describe("signLegacy: POST /sign", () => {
   test("returns error bodies as-is (no status check besides 204)", async () => {
     const errorBody = { code: "SIGNING_FAILED", message: "boom" };
     respond(400, errorBody);
-    await expect(client().signLegacy({ content: "<a/>" })).resolves.toEqual(errorBody);
+    await expect(client().signLegacy({ content: "<a/>" })).resolves.toEqual(
+      errorBody
+    );
   });
 });
 
@@ -114,13 +117,17 @@ describe("batch endpoints", () => {
 
   test("POST /batch maps 204 to user cancellation", async () => {
     respond(204);
-    const error = await client().startBatch(3).catch((e) => e);
+    const error = await client()
+      .startBatch(3)
+      .catch((e) => e);
     expect(AutogramError.is(error, "user-cancelled")).toBe(true);
   });
 
   test("DELETE /batch ends a batch", async () => {
     respond(200, { status: "FINISHED" });
-    await expect(client().endBatch("b1")).resolves.toEqual({ status: "FINISHED" });
+    await expect(client().endBatch("b1")).resolves.toEqual({
+      status: "FINISHED",
+    });
     const { url, init, body } = lastRequest();
     expect(url).toBe("http://localhost:37200/batch");
     expect(init.method).toBe("DELETE");
@@ -131,7 +138,10 @@ describe("batch endpoints", () => {
 describe("GET /info and launch URL", () => {
   test("info reads /info without caching", async () => {
     respond(200, { status: "READY", version: "2.7.6" });
-    await expect(client().info()).resolves.toEqual({ status: "READY", version: "2.7.6" });
+    await expect(client().info()).resolves.toEqual({
+      status: "READY",
+      version: "2.7.6",
+    });
     expect(lastRequest().url).toBe("http://localhost:37200/info");
     expect(lastRequest().init).toEqual({ cache: "no-store" });
   });

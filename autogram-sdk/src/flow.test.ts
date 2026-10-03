@@ -1,8 +1,4 @@
-import {
-  SigningFlow,
-  SigningFlowDelegate,
-  SigningState,
-} from "./flow";
+import { SigningFlow, SigningFlowDelegate, SigningState } from "./flow";
 import { SigningMethod } from "./types";
 import { AutogramError, UserCancelledSigningException } from "./errors";
 import { fromLegacySignArgs, toSignRequest } from "./sign-request";
@@ -110,7 +106,12 @@ describe("SigningFlow desktop path", () => {
   test("signs and reports desktop states ending in done", async () => {
     const delegate = fakeDelegate(SigningMethod.reader);
     const desktopStates: string[] = [];
-    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      fakeMobile(),
+      delegate,
+      OPTIONS
+    );
 
     const result = await flow.sign(REQUEST, {
       onDesktopStateChange: (s) => desktopStates.push(s.type),
@@ -209,7 +210,12 @@ describe("SigningFlow mobile path", () => {
 describe("SigningFlow mobile-on-mobile path", () => {
   test("reports the signing URL instead of opening it (no window access)", async () => {
     const delegate = fakeDelegate(SigningMethod.mobileOnMobile);
-    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      fakeMobile(),
+      delegate,
+      OPTIONS
+    );
 
     const result = await flow.sign(REQUEST);
 
@@ -231,11 +237,18 @@ describe("SigningFlow cancellation", () => {
     const delegate = fakeDelegate(
       Promise.reject(new UserCancelledSigningException())
     );
-    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      fakeMobile(),
+      delegate,
+      OPTIONS
+    );
 
     const pending = flow.sign(REQUEST);
     await expect(pending).rejects.toMatchObject({ code: "user-cancelled" });
-    await pending.catch((e) => expect(AutogramError.is(e, "user-cancelled")).toBe(true));
+    await pending.catch((e) =>
+      expect(AutogramError.is(e, "user-cancelled")).toBe(true)
+    );
     expect(delegate.states).toEqual([]);
   });
 });
@@ -263,7 +276,12 @@ describe("SigningFlow.useRestorePoint", () => {
       ...fakeDelegate(SigningMethod.mobile),
       confirmRestorePoint,
     };
-    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), delegate, OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      fakeMobile(),
+      delegate,
+      OPTIONS
+    );
     await expect(flow.useRestorePoint("rp")).resolves.toBeNull();
     expect(confirmRestorePoint).not.toHaveBeenCalled();
   });
@@ -273,7 +291,11 @@ describe("SigningFlow multiple documents", () => {
   const MULTI = {
     documents: [
       { content: "<a/>", mimeType: "application/xml", filename: "a.xml" },
-      { content: "JVBERg==", mimeType: "application/pdf;base64", filename: "b.pdf" },
+      {
+        content: "JVBERg==",
+        mimeType: "application/pdf;base64",
+        filename: "b.pdf",
+      },
     ],
     parameters: { form: "XAdES", container: "ASiC_E" },
   } as const;
@@ -283,7 +305,12 @@ describe("SigningFlow multiple documents", () => {
     const chooseMethod = jest.fn(async () => SigningMethod.mobile);
     const delegate = { ...fakeDelegate(), chooseMethod };
     const signV1 = jest.fn(async () => DESKTOP_V1_RESPONSE);
-    const flow = new SigningFlow(fakeDesktop(V2_8, { signV1 }), fakeMobile(), delegate, OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(V2_8, { signV1 }),
+      fakeMobile(),
+      delegate,
+      OPTIONS
+    );
 
     const result = await flow.sign({
       documents: [...MULTI.documents],
@@ -304,7 +331,10 @@ describe("SigningFlow multiple documents", () => {
       filename: "documents.asice",
       signatures: [{ signedBy: "CN=John Smith", issuedBy: "CN=SVK eID ACA2" }],
     });
-    expect(delegate.states[0]).toEqual({ type: "desktop", state: { type: "checkingApp" } });
+    expect(delegate.states[0]).toEqual({
+      type: "desktop",
+      state: { type: "checkingApp" },
+    });
     expect(delegate.states.at(-1)).toEqual({ type: "done" });
   });
 
@@ -316,41 +346,76 @@ describe("SigningFlow multiple documents", () => {
     });
 
     await expect(
-      flow.sign({ documents: [...MULTI.documents], parameters: MULTI.parameters })
+      flow.sign({
+        documents: [...MULTI.documents],
+        parameters: MULTI.parameters,
+      })
     ).rejects.toMatchObject({ code: "not-supported" });
     expect(delegate.states).toEqual([]);
   });
 
   test("asks for an Autogram update when the app is too old", async () => {
     const delegate = fakeDelegate();
-    const flow = new SigningFlow(fakeDesktop(READY), fakeMobile(), delegate, OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(READY),
+      fakeMobile(),
+      delegate,
+      OPTIONS
+    );
 
     await expect(
-      flow.sign({ documents: [...MULTI.documents], parameters: MULTI.parameters })
+      flow.sign({
+        documents: [...MULTI.documents],
+        parameters: MULTI.parameters,
+      })
     ).rejects.toMatchObject({ code: "app-version-too-low" });
     expect(delegate.states).toContainEqual({
       type: "desktop",
-      state: { type: "appVersionTooLow", requiredVersion: "2.8.0", detectedVersion: "1.0.0" },
+      state: {
+        type: "appVersionTooLow",
+        requiredVersion: "2.8.0",
+        detectedVersion: "1.0.0",
+      },
     });
   });
 
   test("rejects an empty document list", async () => {
-    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), fakeDelegate(), OPTIONS);
-    await expect(flow.sign({ documents: [] })).rejects.toBeInstanceOf(AutogramError);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      fakeMobile(),
+      fakeDelegate(),
+      OPTIONS
+    );
+    await expect(flow.sign({ documents: [] })).rejects.toBeInstanceOf(
+      AutogramError
+    );
   });
 });
 
 describe("SigningFlow mobile path with v1 parameters", () => {
   test("sends the legacy shape to AVM and drops form-less levels it does not know", async () => {
     const mobile = fakeMobile();
-    const flow = new SigningFlow(fakeDesktop(), mobile, fakeDelegate(SigningMethod.mobile), OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      OPTIONS
+    );
 
     await flow.sign({
-      documents: [{ content: "JVBERg==", mimeType: "application/pdf;base64", filename: "a.pdf" }],
+      documents: [
+        {
+          content: "JVBERg==",
+          mimeType: "application/pdf;base64",
+          filename: "a.pdf",
+        },
+      ],
       parameters: { profile: "BASELINE_T" },
     });
 
-    const [, addDocumentArgs] = mobile.calls.find(([name]) => name === "addDocument")!;
+    const [, addDocumentArgs] = mobile.calls.find(
+      ([name]) => name === "addDocument"
+    )!;
     expect(addDocumentArgs[0]).toEqual({
       document: { content: "JVBERg==", filename: "a.pdf" },
       parameters: {},
@@ -359,7 +424,12 @@ describe("SigningFlow mobile path with v1 parameters", () => {
   });
 
   test("refuses v1-only safety checks instead of silently skipping them", async () => {
-    const flow = new SigningFlow(fakeDesktop(), fakeMobile(), fakeDelegate(SigningMethod.mobile), OPTIONS);
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      fakeMobile(),
+      fakeDelegate(SigningMethod.mobile),
+      OPTIONS
+    );
     await expect(
       flow.sign({
         documents: [{ content: "x", mimeType: "application/pdf;base64" }],

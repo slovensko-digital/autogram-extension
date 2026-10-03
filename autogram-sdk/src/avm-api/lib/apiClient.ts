@@ -15,11 +15,10 @@ export interface AvmIntegrationDocument {
   lastModified: string | null;
 }
 
-
 export interface AvmRegistrationInfo {
-    platform: string;
-    displayName?: string;
-  }
+  platform: string;
+  displayName?: string;
+}
 
 // TODO what does this do? Is this just integration client? Why does it have different API than the channel part?
 /**
@@ -59,7 +58,7 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
    */
   public async loadOrRegister({
     platform = "integration",
-    displayName = "Integration"
+    displayName = "Integration",
   }: AvmRegistrationInfo) {
     this.loadSubtleCrypto();
     // load
@@ -158,7 +157,7 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
 
     const publicKey = await this.getPublicKeyStr();
 
-    log.info("Registering integration", { displayName, platform, publicKey});
+    log.info("Registering integration", { displayName, platform, publicKey });
 
     const res = await this.apiClient.registerIntegration({
       platform,

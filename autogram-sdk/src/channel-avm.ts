@@ -30,9 +30,7 @@ const WAIT_FOR_SIGNATURE_TIMEOUT_MS = 1000 * 60 * 60 * 2; // 2 hours
  * calls through the content-script ↔ injected-script message bridge
  * instead of talking to the AVM API directly.
  */
-export class AvmSimpleChannel
-  implements AutogramVMobileIntegrationInterfaceStateful
-{
+export class AvmSimpleChannel implements AutogramVMobileIntegrationInterfaceStateful {
   private client = new MobileClient(
     new AutogramVMobileIntegration({ get, set })
   );

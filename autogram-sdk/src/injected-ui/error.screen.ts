@@ -1,7 +1,6 @@
 import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-
 import { closeSvg } from "./svg";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";

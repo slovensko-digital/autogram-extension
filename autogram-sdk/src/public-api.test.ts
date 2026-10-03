@@ -79,18 +79,28 @@ describe("runtime exports", () => {
 
   test("autogram-sdk script-tag bundle (index-all)", () => {
     expect(exportsOf("./index-all")).toEqual(
-      expect.arrayContaining([...INDEX, "CombinedClient", "createAutogramClient"])
+      expect.arrayContaining([
+        ...INDEX,
+        "CombinedClient",
+        "createAutogramClient",
+      ])
     );
   });
 
   test("autogram-sdk/with-ui", () => {
     expect(exportsOf("./with-ui")).toEqual(
-      expect.arrayContaining(["AutogramRoot", "CombinedClient", "createAutogramClient"])
+      expect.arrayContaining([
+        "AutogramRoot",
+        "CombinedClient",
+        "createAutogramClient",
+      ])
     );
   });
 
   test("autogram-sdk/autogram-api", () => {
-    expect(exportsOf("./autogram-api/index")).toEqual(expect.arrayContaining(["apiClient"]));
+    expect(exportsOf("./autogram-api/index")).toEqual(
+      expect.arrayContaining(["apiClient"])
+    );
   });
 
   test("autogram-sdk/avm-api", () => {
@@ -115,7 +125,10 @@ function expectType<T>(value: T): T {
 describe("public types (compile-time)", () => {
   test("legacy desktop document and parameters (renamed in 0.7.0) accept the same shapes", () => {
     expectType<DesktopLegacyAutogramDocument>({ content: "x" });
-    expectType<DesktopLegacyAutogramDocument>({ content: "x", filename: "a.xml" });
+    expectType<DesktopLegacyAutogramDocument>({
+      content: "x",
+      filename: "a.xml",
+    });
 
     expectType<DesktopLegacySignatureParameters>({});
     expectType<DesktopLegacySignatureParameters>({
@@ -130,7 +143,8 @@ describe("public types (compile-time)", () => {
       checkPDFACompliance: true,
       autoLoadEform: false,
       identifier: "id",
-      containerXmlns: "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+      containerXmlns:
+        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
       embedUsedSchemas: false,
       schema: "<xs:schema/>",
       schemaIdentifier: "s",
@@ -147,7 +161,10 @@ describe("public types (compile-time)", () => {
   });
 
   test("desktop document, parameters and response", () => {
-    expectType<DesktopAutogramDocument>({ content: "x", mimeType: "application/pdf;base64" });
+    expectType<DesktopAutogramDocument>({
+      content: "x",
+      mimeType: "application/pdf;base64",
+    });
     expectType<DesktopSignatureParameters>({});
     expectType<DesktopSignatureParameters>({
       form: "PAdES",
@@ -194,7 +211,11 @@ describe("public types (compile-time)", () => {
   test("DesktopClient.sign", () => {
     const call = (client: DesktopClient, options: DesktopSignOptions) => [
       expectType<Promise<SignedDocumentResult>>(
-        client.sign({ content: "x", mimeType: "application/xml" }, { form: "XAdES" }, options)
+        client.sign(
+          { content: "x", mimeType: "application/xml" },
+          { form: "XAdES" },
+          options
+        )
       ),
       expectType<Promise<SignedDocumentResult>>(
         client.sign([
@@ -231,7 +252,14 @@ describe("public types (compile-time)", () => {
       ),
       expectType<Promise<SignedDocumentResult>>(
         client.sign(
-          [document, { content: "<a/>", mimeType: "application/xml", xdcParameters: { autoLoadEform: true } }],
+          [
+            document,
+            {
+              content: "<a/>",
+              mimeType: "application/xml",
+              xdcParameters: { autoLoadEform: true },
+            },
+          ],
           { form: "XAdES", container: "ASiC_E" },
           { presentation: { visualizationWidth: "xl" } }
         )
@@ -245,7 +273,9 @@ describe("public types (compile-time)", () => {
         "application/xml"
       );
       return expectType<SignedObject>(
-        toLegacySignedObject(await client.sign(documents, parameters, { presentation }))
+        toLegacySignedObject(
+          await client.sign(documents, parameters, { presentation })
+        )
       );
     };
     expect([unified, legacy]).toHaveLength(2);
