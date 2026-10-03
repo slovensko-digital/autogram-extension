@@ -1,4 +1,17 @@
-# v3.0.1 (Thu Oct 23 2025)
+# Changelog
+
+## [4.0.0](https://github.com/slovensko-digital/autogram-extension/compare/v3.4.0...v4.0.0) (2026-10-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* sign(documents, parameters?, options?) is the only form of CombinedClient.sign / DesktopClient.sign; the old positional forms are gone. Signature parameters use the /api/v1/sign shape (form/profile). XDC parameters move to DocumentToSign.xdcParameters and visualizationWidth moves to options.presentation. The desktop channel method sign is renamed to signLegacy. DesktopSignatureParameters and DesktopAutogramDocument now name the /api/v1/sign types. See autogram-sdk/docs/MIGRATION.md.
+
+### Features
+
+* Vite + Turborepo build, redesigned SDK API (0.7.0), phone pairing and portal fixes ([#204](https://github.com/slovensko-digital/autogram-extension/issues/204)) ([354ef16](https://github.com/slovensko-digital/autogram-extension/commit/354ef16ef270b1d99d5d271b78507039e23a5e74))
+
+## v3.0.1 (Thu Oct 23 2025)
 
 #### 🐛 Bug Fix
 
@@ -14,7 +27,7 @@
 
 ---
 
-# v2.0.4 (Fri Oct 10 2025)
+## v2.0.4 (Fri Oct 10 2025)
 
 #### 🐛 Bug Fix
 
@@ -62,7 +75,7 @@
 
 ---
 
-# v2.0.3 (Thu Jun 27 2024)
+## v2.0.3 (Thu Jun 27 2024)
 
 #### 🐛 Bug Fix
 
@@ -77,7 +90,7 @@
 
 ---
 
-# v2.0.2 (Mon Jun 17 2024)
+## v2.0.2 (Mon Jun 17 2024)
 
 #### 🐛 Bug Fix
 
@@ -89,7 +102,7 @@
 
 ---
 
-# v2.0.1 (Mon Jun 17 2024)
+## v2.0.1 (Mon Jun 17 2024)
 
 #### 🐛 Bug Fix
 
@@ -105,7 +118,7 @@
 
 ---
 
-# v2.0.0 (Mon Jun 17 2024)
+## v2.0.0 (Mon Jun 17 2024)
 
 #### 💥 Breaking Change
 
@@ -129,7 +142,7 @@
 
 ---
 
-# v1.6.0 (Fri Dec 08 2023)
+## v1.6.0 (Fri Dec 08 2023)
 
 #### 🚀 Enhancement
 
@@ -152,7 +165,7 @@
 
 ---
 
-# v1.5.8 (Sat May 13 2023)
+## v1.5.8 (Sat May 13 2023)
 
 #### 🐛 Bug Fix
 
@@ -168,7 +181,7 @@
 
 ---
 
-# v1.5.7 (Thu May 04 2023)
+## v1.5.7 (Thu May 04 2023)
 
 #### 🐛 Bug Fix
 
@@ -185,7 +198,7 @@
 
 ---
 
-# v1.5.6 (Tue May 02 2023)
+## v1.5.6 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
 
@@ -202,7 +215,7 @@
 
 ---
 
-# v1.5.5 (Tue May 02 2023)
+## v1.5.5 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
 
@@ -214,7 +227,7 @@
 
 ---
 
-# v1.5.4 (Tue May 02 2023)
+## v1.5.4 (Tue May 02 2023)
 
 #### ⚠️ Pushed to `master`
 
@@ -227,7 +240,7 @@
 
 ---
 
-# v1.5.3 (Tue May 02 2023)
+## v1.5.3 (Tue May 02 2023)
 
 #### 🐛 Bug Fix
 
@@ -243,7 +256,7 @@
 
 ---
 
-# v1.5.2 (Fri Apr 28 2023)
+## v1.5.2 (Fri Apr 28 2023)
 
 #### 🐛 Bug Fix
 
@@ -255,7 +268,7 @@
 
 ---
 
-# v1.5.1 (Fri Apr 28 2023)
+## v1.5.1 (Fri Apr 28 2023)
 
 #### 🐛 Bug Fix
 
@@ -267,7 +280,7 @@
 
 ---
 
-# v1.5.0 (Fri Apr 28 2023)
+## v1.5.0 (Fri Apr 28 2023)
 
 #### 🚀 Enhancement
 
@@ -434,7 +447,7 @@
 
 ---
 
-# v1.4.2 (Wed Apr 26 2023)
+## v1.4.2 (Wed Apr 26 2023)
 
 #### 🐛 Bug Fix
 
@@ -446,7 +459,7 @@
 
 ---
 
-# v1.4.1 (Thu Apr 20 2023)
+## v1.4.1 (Thu Apr 20 2023)
 
 #### 🐛 Bug Fix
 
@@ -462,7 +475,7 @@
 
 ---
 
-# v1.4.0 (Thu Apr 20 2023)
+## v1.4.0 (Thu Apr 20 2023)
 
 #### 🚀 Enhancement
 
@@ -493,7 +506,7 @@
 
 ---
 
-# v1.3.5 (Sat Feb 25 2023)
+## v1.3.5 (Sat Feb 25 2023)
 
 #### 🐛 Bug Fix
 
@@ -510,7 +523,7 @@
 
 ---
 
-# v1.3.3 (Sat Feb 25 2023)
+## v1.3.3 (Sat Feb 25 2023)
 
 #### 🐛 Bug Fix
 
@@ -526,7 +539,7 @@
 
 ---
 
-# v1.3.1 (Sat Feb 25 2023)
+## v1.3.1 (Sat Feb 25 2023)
 
 #### 🐛 Bug Fix
 
@@ -544,7 +557,7 @@
 
 ---
 
-# v1.3.0 (Sat Feb 25 2023)
+## v1.3.0 (Sat Feb 25 2023)
 
 #### 🚀 Enhancement
 
@@ -556,6 +569,4 @@
 
 ---
 
-# v1.2.2 (Sat Feb 25 2023)
-
-
+## v1.2.2 (Sat Feb 25 2023)
