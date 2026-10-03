@@ -39,7 +39,11 @@ function createImpl() {
 describe("DBridgeAutogramImpl.getSignature", () => {
   test("converts the legacy D.Bridge parameters for CombinedClient.sign", async () => {
     const { impl, client } = createImpl();
-    await impl.sign("sig-1", "http://www.w3.org/2001/04/xmlenc#sha256", "policy");
+    await impl.sign(
+      "sig-1",
+      "http://www.w3.org/2001/04/xmlenc#sha256",
+      "policy"
+    );
     impl.addObject(TXT);
 
     await expect(impl.getSignature({})).resolves.toBe(SIGNED.content);
@@ -49,7 +53,8 @@ describe("DBridgeAutogramImpl.getSignature", () => {
     reference.addObject(TXT);
     const legacy = reference.signatureParameters({});
 
-    const [document, parameters, options] = client.sign.mock.calls[0] as unknown as [
+    const [document, parameters, options] = client.sign.mock
+      .calls[0] as unknown as [
       Record<string, unknown> & { xdcParameters?: Record<string, unknown> },
       Record<string, unknown>,
       Record<string, unknown>,

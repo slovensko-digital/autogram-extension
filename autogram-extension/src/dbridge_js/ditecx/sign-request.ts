@@ -1,7 +1,5 @@
 import { DesktopLegacySignatureParameters, DocumentToSign } from "autogram-sdk";
-import {
-  ObjectStrategy,
-} from "./filetype-strategy/base-strategy";
+import { ObjectStrategy } from "./filetype-strategy/base-strategy";
 import {
   XadesBpPngStrategy,
   XadesBpTxtStrategy,

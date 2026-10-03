@@ -6,10 +6,7 @@ import { DSigXadesAdapter } from "./dsig-xades-adapter";
 import { DBridgeAutogramImpl } from "../autogram/autogram-implementation";
 import { ImplementationInterface } from "./implementation";
 import { createLogger } from "../../log";
-import {
-  defaultOptionsStorage,
-  ExtensionOptions,
-} from "../../options/default";
+import { defaultOptionsStorage, ExtensionOptions } from "../../options/default";
 import { DitecErrorCodes, isDitecError } from "./types";
 
 const log = createLogger("ag-ext.ditecx");

@@ -33,7 +33,9 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
     function lastLoginCard(container: Element) {
       const lastId = localStorage.getItem("age-lastLoginCardId");
       if (lastId) {
-        const lastCard = document.querySelector(`#${lastId}`)?.closest(".column-one-half");
+        const lastCard = document
+          .querySelector(`#${lastId}`)
+          ?.closest(".column-one-half");
         if (lastCard && container.contains(lastCard)) {
           container.prepend(lastCard);
         }
@@ -45,7 +47,9 @@ export function maybeInsertUpvsJsFixes(theWindow: Window) {
         const button = box.querySelector("button.button--wider");
 
         if (button && form) {
-          button.addEventListener("click", () => localStorage.setItem("age-lastLoginCardId", form.id));
+          button.addEventListener("click", () =>
+            localStorage.setItem("age-lastLoginCardId", form.id)
+          );
         }
       });
     }

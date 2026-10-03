@@ -26,9 +26,9 @@ describe("forceDSignerSigner", () => {
     });
     forceDSignerSigner(target);
     expect(target.data.get("signer-type")).toBe("Dsigner");
-    expect(
-      target.data.has("autogram-extension.signer-type-preselected")
-    ).toBe(false);
+    expect(target.data.has("autogram-extension.signer-type-preselected")).toBe(
+      false
+    );
   });
 
   it("does not throw when localStorage is unavailable", () => {

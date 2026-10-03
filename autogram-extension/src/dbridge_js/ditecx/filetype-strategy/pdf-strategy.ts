@@ -1,6 +1,9 @@
 import { ObjectStrategy, PayloadMimeTypeStr } from "./base-strategy";
 import { ObjectXadesPdf } from "../types";
-import { DesktopLegacyAutogramDocument, DesktopLegacySignatureParameters } from "autogram-sdk";
+import {
+  DesktopLegacyAutogramDocument,
+  DesktopLegacySignatureParameters,
+} from "autogram-sdk";
 
 export class XadesPdfStrategy implements ObjectStrategy {
   obj: ObjectXadesPdf;

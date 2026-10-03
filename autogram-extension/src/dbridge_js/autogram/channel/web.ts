@@ -30,9 +30,7 @@ const log = createLogger("ag-ext.channel.web");
 /**
  * Class used on side of injected content script
  */
-export class AutogramDesktopChannel
-  implements AutogramDesktopIntegrationInterface
-{
+export class AutogramDesktopChannel implements AutogramDesktopIntegrationInterface {
   private rpc: RpcClient<typeof autogramService.methods>;
 
   constructor(channel: WebChannelCaller) {
@@ -101,9 +99,7 @@ export class AutogramDesktopChannel
 /**
  * Class used on side of injected content script
  */
-export class AvmChannelWeb
-  implements AutogramVMobileIntegrationInterfaceStateful
-{
+export class AvmChannelWeb implements AutogramVMobileIntegrationInterfaceStateful {
   private rpc: RpcClient<typeof avmService.methods>;
 
   constructor(channel: WebChannelCaller) {

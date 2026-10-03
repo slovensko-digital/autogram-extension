@@ -140,44 +140,50 @@ describeWithFixture("justice.sk PDF signing (dSigXadesBpJs, ASiC)", () => {
   // multiple-documents guard in SignRequest.addObject and the user can
   // never sign. Flip to a plain `test` once the shim resets the request
   // on a failed/cancelled attempt.
-  test.failing("retrying after the user cancelled signs the document", async () => {
-    const { fake, shell } = setup();
-    fake.nextSignError = {
-      name: "AutogramError",
-      code: "user-cancelled",
-      message: "User cancelled signing",
-    };
+  test.failing(
+    "retrying after the user cancelled signs the document",
+    async () => {
+      const { fake, shell } = setup();
+      fake.nextSignError = {
+        name: "AutogramError",
+        code: "user-cancelled",
+        message: "User cancelled signing",
+      };
 
-    shell.clickSign();
-    await settle();
-    expect(shell.submits).toEqual([]);
+      shell.clickSign();
+      await settle();
+      expect(shell.submits).toEqual([]);
 
-    shell.clickSign();
-    await settle();
+      shell.clickSign();
+      await settle();
 
-    expect(shell.submits).toEqual([fake.signatureContent]);
-    expect(
-      shell.errors.filter((e) => e.includes("viacerých dokumentov"))
-    ).toEqual([]);
-  });
+      expect(shell.submits).toEqual([fake.signatureContent]);
+      expect(
+        shell.errors.filter((e) => e.includes("viacerých dokumentov"))
+      ).toEqual([]);
+    }
+  );
 
   // Same stuck-request bug as above, for a non-cancel signing failure.
-  test.failing("retrying after a signing failure signs the document", async () => {
-    const { fake, shell } = setup();
-    fake.nextSignError = new Error("podpisovanie zlyhalo");
+  test.failing(
+    "retrying after a signing failure signs the document",
+    async () => {
+      const { fake, shell } = setup();
+      fake.nextSignError = new Error("podpisovanie zlyhalo");
 
-    shell.clickSign();
-    await settle();
-    expect(shell.submits).toEqual([]);
+      shell.clickSign();
+      await settle();
+      expect(shell.submits).toEqual([]);
 
-    shell.clickSign();
-    await settle();
+      shell.clickSign();
+      await settle();
 
-    expect(shell.submits).toEqual([fake.signatureContent]);
-    expect(
-      shell.errors.filter((e) => e.includes("viacerých dokumentov"))
-    ).toEqual([]);
-  });
+      expect(shell.submits).toEqual([fake.signatureContent]);
+      expect(
+        shell.errors.filter((e) => e.includes("viacerých dokumentov"))
+      ).toEqual([]);
+    }
+  );
 
   // Currently broken: the driver passes an onError handler to sign() but
   // only onSuccess to getSignatureWithASiCEnvelopeBase64 (with the real
@@ -188,17 +194,20 @@ describeWithFixture("justice.sk PDF signing (dSigXadesBpJs, ASiC)", () => {
   // request covered by the retry tests above. Signing must fail at the
   // sign() step (or the getter's error must be routed to the page) for the
   // message to reach the error box.
-  test.failing("a signing failure reaches the page's error box with our message", async () => {
-    const { fake, shell } = setup();
-    fake.nextSignError = new Error("podpisovanie zlyhalo");
+  test.failing(
+    "a signing failure reaches the page's error box with our message",
+    async () => {
+      const { fake, shell } = setup();
+      fake.nextSignError = new Error("podpisovanie zlyhalo");
 
-    shell.clickSign();
-    await settle();
+      shell.clickSign();
+      await settle();
 
-    // showError branches on ditec.utils.isDitecError: our adapter edge must
-    // emit name === "DitecError", otherwise the page shows the generic
-    // "Nastala neočakávaná chyba." instead of the real message
-    expect(shell.errors).toEqual(["podpisovanie zlyhalo"]);
-    expect(shell.submits).toEqual([]);
-  });
+      // showError branches on ditec.utils.isDitecError: our adapter edge must
+      // emit name === "DitecError", otherwise the page shows the generic
+      // "Nastala neočakávaná chyba." instead of the real message
+      expect(shell.errors).toEqual(["podpisovanie zlyhalo"]);
+      expect(shell.submits).toEqual([]);
+    }
+  );
 });

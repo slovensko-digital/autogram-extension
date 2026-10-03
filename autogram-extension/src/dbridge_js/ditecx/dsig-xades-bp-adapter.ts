@@ -162,18 +162,19 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     );
   }
 
-  setWindowSize(
-    width,
-    height,
-    callback
-  ) {
+  setWindowSize(width, height, callback) {
     this.stub("setWindowSize", arguments);
     callback.onSuccess();
   }
 
   /* Revocation checking and mobile-signing policy are Autogram's own
    * concern; acknowledge the portal's configuration and continue. */
-  setRevocationChecking(ocspCheck, crlCheck, ocspCertIdHashAlgorithm, callback) {
+  setRevocationChecking(
+    ocspCheck,
+    crlCheck,
+    ocspCertIdHashAlgorithm,
+    callback
+  ) {
     this.log("setRevocationChecking", arguments);
     callback?.onSuccess?.();
   }
@@ -246,9 +247,6 @@ export class DSigXadesBpAdapter extends DSigAdapter {
     tsCertB64,
     callback
   ) {
-    this.unsupported(
-      "submitIndividualDataObjectsTimeStampResponse",
-      callback
-    );
+    this.unsupported("submitIndividualDataObjectsTimeStampResponse", callback);
   }
 }

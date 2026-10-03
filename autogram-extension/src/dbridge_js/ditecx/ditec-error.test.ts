@@ -23,9 +23,7 @@ describe("toDitecError", () => {
     expect(error).toBeInstanceOf(Error);
     expect(error.name).toBe("DitecError");
     expect(isDitecError(error)).toBe(true);
-    expect(error.toString()).toBe(
-      `DitecError(${error.code}) ${error.message}`
-    );
+    expect(error.toString()).toBe(`DitecError(${error.code}) ${error.message}`);
   });
 
   test("passes through an existing DitecError without re-wrapping", () => {

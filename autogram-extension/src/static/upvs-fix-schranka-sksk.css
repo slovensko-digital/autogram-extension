@@ -66,8 +66,8 @@
   /** layout **/
 
   .app-layout__pane {
-    padding-left: .75em;
-    padding-right: .75em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
   }
 
   /* sidebar */

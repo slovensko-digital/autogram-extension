@@ -28,9 +28,7 @@ import {
 
 // The portal script is fetched on demand, not vendored (licensing) —
 // without it these suites skip visibly instead of failing.
-const describeWithFixture = hasDSignerMultiFixture()
-  ? describe
-  : describe.skip;
+const describeWithFixture = hasDSignerMultiFixture() ? describe : describe.skip;
 if (!hasDSignerMultiFixture()) {
   console.warn(`portal-schranka.test.ts: ${FETCH_FIXTURES_HINT}`);
 }
@@ -229,46 +227,49 @@ describeWithFixture("schranka ASiC flow (dSigXadesBpJs)", () => {
   });
 });
 
-describeWithFixture("schranka XAdES flow (dSigXadesJs, legacy XAdES_ZEP)", () => {
-  test("envelope version 1.0 completes deploy → setSigningTimeProcessing → sign", async () => {
-    const { fake, signer, shell } = setup();
+describeWithFixture(
+  "schranka XAdES flow (dSigXadesJs, legacy XAdES_ZEP)",
+  () => {
+    test("envelope version 1.0 completes deploy → setSigningTimeProcessing → sign", async () => {
+      const { fake, signer, shell } = setup();
 
-    const result = await signAsync(
-      signer,
-      xadesRequest("1.0", [plainXmlDocument()])
-    );
+      const result = await signAsync(
+        signer,
+        xadesRequest("1.0", [plainXmlDocument()])
+      );
 
-    // getSignedXmlWithEnvelopeBase64 currently maps to an ASiC container;
-    // this locks the flow (deploy exists, nothing hangs), not the artifact
-    expect(result).toBe(fake.signatureContent);
-    expect(shell.errors).toEqual([]);
-  });
-
-  test("envelope version 1.1 (sign11) fails visibly instead of hanging", async () => {
-    const { signer, shell } = setup();
-
-    let result: unknown = "not-called";
-    signer.sign(xadesRequest("1.1", [plainXmlDocument()]), (r: unknown) => {
-      result = r;
+      // getSignedXmlWithEnvelopeBase64 currently maps to an ASiC container;
+      // this locks the flow (deploy exists, nothing hangs), not the artifact
+      expect(result).toBe(fake.signatureContent);
+      expect(shell.errors).toEqual([]);
     });
-    await settle();
 
-    expect(result).toBe("not-called");
-    expect(shell.errors).toHaveLength(1);
-    expect(shell.errors[0]).toContain("sign11");
-  });
+    test("envelope version 1.1 (sign11) fails visibly instead of hanging", async () => {
+      const { signer, shell } = setup();
 
-  test("envelope version 2.0 (sign20) fails visibly instead of hanging", async () => {
-    const { signer, shell } = setup();
+      let result: unknown = "not-called";
+      signer.sign(xadesRequest("1.1", [plainXmlDocument()]), (r: unknown) => {
+        result = r;
+      });
+      await settle();
 
-    let result: unknown = "not-called";
-    signer.sign(xadesRequest("2.0", [plainXmlDocument()]), (r: unknown) => {
-      result = r;
+      expect(result).toBe("not-called");
+      expect(shell.errors).toHaveLength(1);
+      expect(shell.errors[0]).toContain("sign11");
     });
-    await settle();
 
-    expect(result).toBe("not-called");
-    expect(shell.errors).toHaveLength(1);
-    expect(shell.errors[0]).toContain("sign20");
-  });
-});
+    test("envelope version 2.0 (sign20) fails visibly instead of hanging", async () => {
+      const { signer, shell } = setup();
+
+      let result: unknown = "not-called";
+      signer.sign(xadesRequest("2.0", [plainXmlDocument()]), (r: unknown) => {
+        result = r;
+      });
+      await settle();
+
+      expect(result).toBe("not-called");
+      expect(shell.errors).toHaveLength(1);
+      expect(shell.errors[0]).toContain("sign20");
+    });
+  }
+);

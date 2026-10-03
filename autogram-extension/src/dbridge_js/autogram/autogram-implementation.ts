@@ -207,10 +207,13 @@ export class DBridgeAutogramImpl implements ImplementationInterface {
     let result: SignedDocumentResult;
     try {
       // D.Bridge parameters are legacy (`POST /sign`) shaped
-      const { parameters: signatureParameters, xdcParameters, presentation } =
-        fromLegacySignatureParameters(
-          this.signRequest.signatureParameters(parameters)
-        );
+      const {
+        parameters: signatureParameters,
+        xdcParameters,
+        presentation,
+      } = fromLegacySignatureParameters(
+        this.signRequest.signatureParameters(parameters)
+      );
       result = await this.client.sign(
         { ...this.signRequest.documentToSign, xdcParameters },
         signatureParameters,

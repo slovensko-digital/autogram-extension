@@ -191,7 +191,10 @@ export class DSigAdapter {
 
   getSignerIdentification(callback) {
     this.log("getSignerIdentification", arguments);
-    this.resolve(() => this.__implementation.getSignerIdentification(), callback);
+    this.resolve(
+      () => this.__implementation.getSignerIdentification(),
+      callback
+    );
   }
 
   detectSupportedPlatforms(platforms, callback) {

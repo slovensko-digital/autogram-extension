@@ -68,7 +68,9 @@ export function toDitecError(e: unknown): DitecError {
   }
   const message = errorMessage(e);
   const detail =
-    typeof e === "object" && e !== null && typeof (e as Error).stack === "string"
+    typeof e === "object" &&
+    e !== null &&
+    typeof (e as Error).stack === "string"
       ? (e as Error).stack
       : undefined;
   if (AutogramError.is(e, "user-cancelled")) {
@@ -196,4 +198,3 @@ export type InputObject =
   | ObjectXadesBpPng
   | ObjectXadesPdf
   | ObjectXadesBp2Xml;
-

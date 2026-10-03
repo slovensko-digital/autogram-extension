@@ -130,7 +130,8 @@ function pfsSignFlow(
 describe("PFS EKR2 (ASiC) flow", () => {
   test("_ready shortcut, addXmlObject, signer identification and signature", async () => {
     const fake = new FakeImplementation();
-    fake.signerIdentification = "SERIALNUMBER=PNOSK-1234567890, CN=Ing. Ján Testovací, C=SK";
+    fake.signerIdentification =
+      "SERIALNUMBER=PNOSK-1234567890, CN=Ing. Ján Testovací, C=SK";
     const ditec = buildDitecX(fake);
 
     const { username, signature } = await pfsSignFlow(ditec, {
@@ -140,9 +141,11 @@ describe("PFS EKR2 (ASiC) flow", () => {
       xdcVersion: "1.5",
       contentXml: "<dokument/>",
       contentXsd: "<xs:schema/>",
-      xsdReference: "http://ekrform.financnasprava.sk/Formulare/dphv17/form.xsd",
+      xsdReference:
+        "http://ekrform.financnasprava.sk/Formulare/dphv17/form.xsd",
       contentXslt: "<xsl:stylesheet/>",
-      xslReference: "http://ekrform.financnasprava.sk/Formulare/dphv17/form.xsl",
+      xslReference:
+        "http://ekrform.financnasprava.sk/Formulare/dphv17/form.xsl",
     });
 
     expect(signature).toBe(fake.signatureContent);
@@ -150,8 +153,7 @@ describe("PFS EKR2 (ASiC) flow", () => {
     expect(username).toBe("Ing. Ján Testovací");
     // identifier = xdcNamespaceUri + "/" + version (their derivation)
     expect(fake.lastParameters).toMatchObject({
-      identifier:
-        "http://ekrform.financnasprava.sk/Formulare/dphv17/1.5",
+      identifier: "http://ekrform.financnasprava.sk/Formulare/dphv17/1.5",
       containerXmlns:
         "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
     });

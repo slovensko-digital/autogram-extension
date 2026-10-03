@@ -26,11 +26,18 @@ type Impl = RpcImpl<typeof autogramService.methods>;
 function bridge(overrides: Partial<Impl> = {}) {
   const calls: Array<[string, unknown]> = [];
   const impl: Impl = {
-    getLaunchURL: async (args) => (calls.push(["getLaunchURL", args]), "autogram://listen"),
+    getLaunchURL: async (args) => (
+      calls.push(["getLaunchURL", args]),
+      "autogram://listen"
+    ),
     info: async () => ({ status: "READY", version: "2.7.6" }),
-    waitForStatus: async (args) => (calls.push(["waitForStatus", args]), { status: "READY" }),
+    waitForStatus: async (args) => (
+      calls.push(["waitForStatus", args]),
+      { status: "READY" }
+    ),
     signLegacy: async (args) => (
-      calls.push(["signLegacy", args]), { content: "c2ln", signedBy: "CN=A", issuedBy: "CN=B" }
+      calls.push(["signLegacy", args]),
+      { content: "c2ln", signedBy: "CN=A", issuedBy: "CN=B" }
     ),
     signV1: async (args) => (
       calls.push(["signV1", args]),
@@ -42,8 +49,14 @@ function bridge(overrides: Partial<Impl> = {}) {
         issuedBy: "CN=B",
       }
     ),
-    startBatch: async (args) => (calls.push(["startBatch", args]), { batchId: "b1" }),
-    endBatch: async (args) => (calls.push(["endBatch", args]), { status: "FINISHED" }),
+    startBatch: async (args) => (
+      calls.push(["startBatch", args]),
+      { batchId: "b1" }
+    ),
+    endBatch: async (args) => (
+      calls.push(["endBatch", args]),
+      { status: "FINISHED" }
+    ),
     ...overrides,
   };
   const handler = createRpcHandler(autogramService, impl);
@@ -58,7 +71,9 @@ function bridge(overrides: Partial<Impl> = {}) {
       listeners.push(callback);
     },
   };
-  const channel = new AutogramDesktopChannel(transport as unknown as WebChannelCaller);
+  const channel = new AutogramDesktopChannel(
+    transport as unknown as WebChannelCaller
+  );
   return { channel, calls };
 }
 
@@ -70,7 +85,8 @@ describe("desktop RPC bridge", () => {
       container: "ASiC_E" as const,
       autoLoadEform: true,
       identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
-      containerXmlns: "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1" as const,
+      containerXmlns:
+        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1" as const,
       embedUsedSchemas: false,
       schema: "<xs:schema/>",
       schemaIdentifier: "s",
@@ -97,7 +113,11 @@ describe("desktop RPC bridge", () => {
       "batch-1"
     );
 
-    expect(result).toEqual({ content: "c2ln", signedBy: "CN=A", issuedBy: "CN=B" });
+    expect(result).toEqual({
+      content: "c2ln",
+      signedBy: "CN=A",
+      issuedBy: "CN=B",
+    });
     expect(calls).toEqual([
       [
         "signLegacy",
@@ -115,7 +135,11 @@ describe("desktop RPC bridge", () => {
     "sign accepts level %s",
     async (level) => {
       const { channel, calls } = bridge();
-      await channel.signLegacy({ content: "x" }, { level }, "application/pdf;base64");
+      await channel.signLegacy(
+        { content: "x" },
+        { level },
+        "application/pdf;base64"
+      );
       expect(calls[0][1]).toMatchObject({ signatureParameters: { level } });
     }
   );
@@ -139,7 +163,8 @@ describe("desktop RPC bridge", () => {
 
   test("user cancellation crosses the bridge as user-cancelled", async () => {
     const { channel } = bridge({
-      signLegacy: async () => Promise.reject(new UserCancelledSigningException()),
+      signLegacy: async () =>
+        Promise.reject(new UserCancelledSigningException()),
     });
     const error = await channel.signLegacy({ content: "x" }).catch((e) => e);
     expect(AutogramError.is(error, "user-cancelled")).toBe(true);
@@ -147,11 +172,20 @@ describe("desktop RPC bridge", () => {
 
   test("info, waitForStatus, launch URL and batches", async () => {
     const { channel, calls } = bridge();
-    await expect(channel.info()).resolves.toEqual({ status: "READY", version: "2.7.6" });
-    await expect(channel.waitForStatus("READY", 20, 1)).resolves.toEqual({ status: "READY" });
-    await expect(channel.getLaunchURL("listen")).resolves.toBe("autogram://listen");
+    await expect(channel.info()).resolves.toEqual({
+      status: "READY",
+      version: "2.7.6",
+    });
+    await expect(channel.waitForStatus("READY", 20, 1)).resolves.toEqual({
+      status: "READY",
+    });
+    await expect(channel.getLaunchURL("listen")).resolves.toBe(
+      "autogram://listen"
+    );
     await expect(channel.startBatch(3)).resolves.toEqual({ batchId: "b1" });
-    await expect(channel.endBatch("b1")).resolves.toEqual({ status: "FINISHED" });
+    await expect(channel.endBatch("b1")).resolves.toEqual({
+      status: "FINISHED",
+    });
     expect(calls).toEqual([
       ["waitForStatus", { status: "READY", timeout: 20, delay: 1 }],
       ["getLaunchURL", { command: "listen" }],
@@ -172,9 +206,17 @@ describe("desktop RPC bridge: /api/v1/sign", () => {
           filename: "a.xml",
           xdcParameters: { autoLoadEform: true },
         },
-        { content: "JVBERg==", mimeType: "application/pdf;base64", filename: "b.pdf" },
+        {
+          content: "JVBERg==",
+          mimeType: "application/pdf;base64",
+          filename: "b.pdf",
+        },
       ],
-      parameters: { form: "XAdES" as const, container: "ASiC_E" as const, requireQualifiedCertificate: true },
+      parameters: {
+        form: "XAdES" as const,
+        container: "ASiC_E" as const,
+        requireQualifiedCertificate: true,
+      },
       presentation: { visualizationWidth: "lg" as const },
     };
 

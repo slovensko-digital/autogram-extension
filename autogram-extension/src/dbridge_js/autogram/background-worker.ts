@@ -67,7 +67,9 @@ export class BackgroundWorker {
 
       if ("abort" in frame) {
         // Abort frames carry no service; every handler checks its own in-flight map.
-        this.handlers.forEach((handler) => void handler.handle(frame, senderId));
+        this.handlers.forEach(
+          (handler) => void handler.handle(frame, senderId)
+        );
         return;
       }
 
@@ -192,9 +194,7 @@ class AvmExecutor {
           documentRef
         );
         try {
-          await this.client.register(
-            await getAvmIntegrationRegistrationInfo()
-          );
+          await this.client.register(await getAvmIntegrationRegistrationInfo());
 
           return {
             signedDocument: await this.waitForSignatureSubroutine(
@@ -412,10 +412,7 @@ class AutogramExecutor {
     },
 
     endBatch: async ({ batchId }, context) => {
-      return this.client.endBatch(
-        batchId,
-        toAbortController(context.signal)
-      );
+      return this.client.endBatch(batchId, toAbortController(context.signal));
     },
   };
 }

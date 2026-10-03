@@ -1,7 +1,4 @@
-import {
-  DesktopLegacySignatureParameters,
-  DocumentToSign,
-} from "autogram-sdk";
+import { DesktopLegacySignatureParameters, DocumentToSign } from "autogram-sdk";
 import { Base64 } from "js-base64";
 import { ImplementationInterface } from "../implementation";
 import { SignRequest, SigningStatus } from "../sign-request";

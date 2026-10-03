@@ -84,12 +84,9 @@ export class ContentChannelPassthrough {
     }
     this.hello();
     // Stupid solution to keep the port alive and the worker active
-    this.helloInterval = setInterval(
-      () => {
-        this.hello();
-      },
-      20 * 1000
-    );
+    this.helloInterval = setInterval(() => {
+      this.hello();
+    }, 20 * 1000);
   }
 
   postMessageToBackground(frame: RpcCallerFrame, retryNumber = 0) {

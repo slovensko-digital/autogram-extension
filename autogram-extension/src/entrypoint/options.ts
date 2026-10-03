@@ -252,7 +252,9 @@ function initOptionsPage() {
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initOptionsPage, { once: true });
+  document.addEventListener("DOMContentLoaded", initOptionsPage, {
+    once: true,
+  });
 } else {
   initOptionsPage();
 }
