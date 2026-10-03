@@ -3,6 +3,7 @@ export {
   randomUUID,
   GetDocumentsResponse,
   ZDocumentToSign,
+  GetIntegrationDevicesResponseBody,
 } from "./lib/apiClient";
 
 export type {
@@ -10,6 +11,8 @@ export type {
   SignedDocument,
   DocumentToSign,
   AvmIntegrationDocument,
+  PairedDevice,
+  DBInterface,
 } from "./lib/apiClient";
 
 export {

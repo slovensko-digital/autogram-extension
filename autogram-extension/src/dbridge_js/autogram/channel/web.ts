@@ -2,6 +2,7 @@ import {
   AutogramVMobileIntegrationInterfaceStateful,
   AVMDocumentToSign,
   AVMSignedDocument,
+  PairedDevice,
   AutogramDesktopIntegrationInterface,
   DesktopLegacyAutogramDocument,
   DesktopLegacySignatureParameters,
@@ -123,6 +124,9 @@ export class AvmChannelWeb implements AutogramVMobileIntegrationInterfaceStatefu
   }
   async sendNotification(): Promise<void> {
     await this.rpc.sendNotification(null);
+  }
+  getPairedDevices(): Promise<PairedDevice[]> {
+    return this.rpc.getPairedDevices(null);
   }
   waitForSignature(
     abortController?: AbortController

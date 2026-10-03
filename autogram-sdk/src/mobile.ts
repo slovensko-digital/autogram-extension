@@ -23,10 +23,9 @@ import type {
   DBInterface,
   DocumentToSign,
   GetDocumentResult,
-  GetIntegrationDevicesResponseBody,
+  PairedDevice,
   SignedDocument,
 } from "./avm-api/lib/apiClient";
-import type { z } from "zod";
 import { AutogramError } from "./errors";
 import type { SignedObject } from "./types";
 import { createLogger } from "./log";
@@ -40,10 +39,7 @@ const log = createLogger("ag-sdk:mobile");
  */
 export type RequestToken = AvmIntegrationDocument;
 
-/** A mobile device paired with this integration. */
-export type PairedDevice = z.infer<
-  typeof GetIntegrationDevicesResponseBody
->[number];
+export type { PairedDevice };
 
 export type SignatureRequestStatus =
   | { state: "pending" }

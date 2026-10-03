@@ -12,6 +12,7 @@ import {
   defineRpcService,
   AVMGetDocumentsResponse,
   ZAVMDocumentToSign,
+  ZAVMPairedDevices,
   ZDesktopBatchEndResponseBody,
   ZDesktopBatchStartResponseBody,
   ZDesktopLegacyAutogramDocument,
@@ -62,6 +63,12 @@ export const avmService = defineRpcService("avm", {
     result: z.null(),
     timeoutMs: 10_000,
     timeoutMessage: "Časový limit odoslania upozornenia do mobilu vypršal",
+  },
+  getPairedDevices: {
+    args: z.null(),
+    result: ZAVMPairedDevices,
+    timeoutMs: 10_000,
+    timeoutMessage: "Časový limit načítania spárovaných zariadení vypršal",
   },
   waitForSignature: {
     args: z.null(),

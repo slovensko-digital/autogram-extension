@@ -4,14 +4,36 @@ import {
   AutogramVMobileIntegrationInterfaceStateful,
   AutogramVMobileIntegration,
   AvmRegistrationInfo,
+  DBInterface,
 } from "./avm-api/lib/apiClient";
-import { MobileClient, RestorePointStore, SignatureRequest } from "./mobile";
+import {
+  MobileClient,
+  PairedDevice,
+  RestorePointStore,
+  SignatureRequest,
+} from "./mobile";
 import { createLogger } from "./log";
 import { SignedObject } from "./types";
 
 const log = createLogger("ag-sdk:AvmSimpleChannel");
 
 const WAIT_FOR_SIGNATURE_TIMEOUT_MS = 1000 * 60 * 60 * 2; // 2 hours
+
+export interface AvmSimpleChannelOptions {
+  /**
+   * Send a push notification to paired devices when a document is added.
+   * Default `true`.
+   */
+  notifyDevices?: boolean;
+  /**
+   * Where the integration identity (key pair + integration GUID) and
+   * restore points are persisted. Pairings are bound to this identity, so
+   * the storage must survive page reloads for paired phones to keep
+   * receiving notifications. Default: IndexedDB of the current origin
+   * (`idb-keyval`).
+   */
+  storage?: DBInterface;
+}
 
 /**
  * Default direct implementation of {@link AutogramVMobileIntegrationInterfaceStateful}
@@ -22,8 +44,9 @@ const WAIT_FOR_SIGNATURE_TIMEOUT_MS = 1000 * 60 * 60 * 2; // 2 hours
  * (`addDocument` → `getQrCodeUrl` → `waitForSignature` → `reset`).
  *
  * {@link useRestorePoint} provides cross-page-reload continuity via
- * {@link RestorePointStore}: the request token is persisted in IndexedDB so
- * an in-progress signing session can be recovered after navigation.
+ * {@link RestorePointStore}: the request token is persisted in the
+ * configured storage (IndexedDB by default) so an in-progress signing
+ * session can be recovered after navigation.
  *
  * This class is the default channel used by `CombinedClient`. The
  * browser extension replaces it with `AvmChannelWeb`, which routes
@@ -31,23 +54,21 @@ const WAIT_FOR_SIGNATURE_TIMEOUT_MS = 1000 * 60 * 60 * 2; // 2 hours
  * instead of talking to the AVM API directly.
  */
 export class AvmSimpleChannel implements AutogramVMobileIntegrationInterfaceStateful {
-  private client = new MobileClient(
-    new AutogramVMobileIntegration({ get, set })
-  );
-  private restorePoints = new RestorePointStore(
-    { get, set },
-    this.client,
-    "restorePoint:"
-  );
+  private client: MobileClient;
+  private restorePoints: RestorePointStore;
 
   private request: SignatureRequest | null = null;
   private abortController: AbortController | null = null;
 
-  /**
-   * @param options.notifyDevices send a push notification to paired
-   * devices when a document is added (default `true`).
-   */
-  constructor(private options: { notifyDevices?: boolean } = {}) {}
+  constructor(private options: AvmSimpleChannelOptions = {}) {
+    const storage = options.storage ?? { get, set };
+    this.client = new MobileClient(new AutogramVMobileIntegration(storage));
+    this.restorePoints = new RestorePointStore(
+      storage,
+      this.client,
+      "restorePoint:"
+    );
+  }
 
   init(): Promise<void> {
     return Promise.resolve();
@@ -68,6 +89,9 @@ export class AvmSimpleChannel implements AutogramVMobileIntegrationInterfaceStat
   }
   async sendNotification(): Promise<void> {
     await this.currentRequest().notifyDevices();
+  }
+  getPairedDevices(): Promise<PairedDevice[]> {
+    return this.client.pairedDevices();
   }
   async waitForSignature(): Promise<AVMSignedDocument> {
     const request = this.currentRequest();

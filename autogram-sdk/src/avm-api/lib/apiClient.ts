@@ -440,9 +440,14 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
   /**
    * Get QR code URL for pairing this integration with a mobile device.
    *
+   * Optional — part of the notifications capability together with
+   * {@link sendNotification} and {@link getPairedDevices}. Channels that
+   * implement all three get the pairing UI; channels that skip them are
+   * signed by per-document QR scan only.
+   *
    * @returns URL string
    */
-  getPairingQrCodeUrl(): Promise<string>;
+  getPairingQrCodeUrl?(): Promise<string>;
   /**
    * Add a document to be signed (currently only one document is supported)
    * @param documentToSign Document to be signed
@@ -450,8 +455,19 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
   addDocument(documentToSign: DocumentToSign): Promise<void>;
   /**
    * Send a push notification for the current document to paired devices.
+   *
+   * Optional — part of the notifications capability (see
+   * {@link getPairingQrCodeUrl}).
    */
-  sendNotification(): Promise<void>;
+  sendNotification?(): Promise<void>;
+  /**
+   * List mobile devices paired with this integration (devices that receive
+   * push notifications).
+   *
+   * Optional — part of the notifications capability (see
+   * {@link getPairingQrCodeUrl}).
+   */
+  getPairedDevices?(): Promise<PairedDevice[]>;
   /**
    * Waits for the document to be signed, resolving when the document is signed.
    *
@@ -786,6 +802,10 @@ export type DocumentToSign = NonNullable<
 >["content"]["application/json"];
 
 export type SignedDocument = z.infer<typeof GetDocumentsResponse>;
+/** A mobile device paired with an integration. */
+export type PairedDevice = z.infer<
+  typeof GetIntegrationDevicesResponseBody
+>[number];
 export type GetDocumentResult =
   | {
       status: "pending";

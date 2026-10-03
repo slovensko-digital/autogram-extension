@@ -15,7 +15,10 @@ import type {
   SignedObject,
 } from "./types";
 
-import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
+import type {
+  AutogramVMobileIntegrationInterfaceStateful,
+  DBInterface,
+} from "./avm-api/index";
 import { AvmSimpleChannel } from "./channel-avm";
 import { AutogramRoot } from "./injected-ui/main";
 import type { AutogramDesktopIntegrationInterface } from "./autogram-api/index";
@@ -61,19 +64,36 @@ export interface AutogramClientOptions {
    * desktop app.
    */
   desktopChannel?: AutogramDesktopIntegrationInterface;
+  /**
+   * Where the default mobile channel persists the AVM integration identity
+   * (key pair + GUID; paired phones are bound to it) and restore points.
+   * Default: IndexedDB of the current origin. Ignored with a custom
+   * `mobileChannel`.
+   */
+  mobileStorage?: DBInterface;
   /** Called when the client resets its signing state. */
   onResetSignRequest?: () => void;
   /**
    * Send push notifications to paired mobile devices. Default `true`.
    * Applies to the default mobile channel; a custom `mobileChannel`
-   * decides about notifications itself.
+   * decides about notifications itself. When `false`, pairing is never
+   * offered with the default channel.
    */
   enableNotifications?: boolean;
   /** Platform reported when registering the AVM integration. */
   platform?: string;
   /** Display name reported when registering the AVM integration. */
   displayName?: string;
-  /** Whether pairing is enabled for mobile notifications. Default `false`. */
+  /**
+   * Offer pairing a phone for notifications: the link on the QR screen and
+   * the pairing suggestion after a mobile signature when no phone is
+   * paired yet. Default `false`.
+   *
+   * Only takes effect when the mobile channel implements the optional
+   * notification methods (`getPairingQrCodeUrl`, `sendNotification`,
+   * `getPairedDevices`) — the default channel does; a custom channel that
+   * omits them never shows pairing UI.
+   */
   pairingEnabled?: boolean;
 }
 
@@ -100,14 +120,20 @@ export async function createAutogramClient(
   const enableNotifications = options.enableNotifications ?? true;
   return CombinedClient.init(
     options.mobileChannel ??
-      new AvmSimpleChannel({ notifyDevices: enableNotifications }),
+      new AvmSimpleChannel({
+        notifyDevices: enableNotifications,
+        storage: options.mobileStorage,
+      }),
     options.desktopChannel ?? new AutogramDesktopSimpleChannel(),
     options.onResetSignRequest,
     {
       enableNotifications,
       platform: options.platform ?? "unknown",
       displayName: options.displayName ?? "",
-      pairingEnabled: options.pairingEnabled ?? false,
+      // pairing is pointless when the default channel never notifies
+      pairingEnabled:
+        (options.pairingEnabled ?? false) &&
+        (options.mobileChannel !== undefined || enableNotifications),
     }
   );
 }
@@ -149,12 +175,12 @@ export class CombinedClient {
         platform: options.platform,
         displayName: options.displayName,
         isMobileDevice,
+        notifications: options.pairingEnabled ?? false,
       }
     );
 
     this.clientMobileIntegration.init();
     this.ui.onRetryMobileNotification = this.retryMobileNotification.bind(this);
-    this.ui.pairingEnabled = options.pairingEnabled ?? false;
 
     this.resetSignRequest();
 
@@ -358,9 +384,12 @@ export class CombinedClient {
           this.ui.showQRCode(
             state.signingUrl,
             state.pairingUrl,
-            abortController,
-            this.ui.pairingEnabled
+            abortController
           );
+        } else if (state.state === "suggest-pairing") {
+          this.ui.suggestPairing(state.pairingUrl, abortController);
+        } else if (state.state === "paired") {
+          this.ui.pairingCompleted(state.devices);
         }
         // "preparing" has no dedicated screen today
         break;
@@ -385,7 +414,7 @@ export class CombinedClient {
 
   private async retryMobileNotification(): Promise<void> {
     try {
-      await this.clientMobileIntegration.sendNotification();
+      await this.clientMobileIntegration.sendNotification?.();
     } catch (error) {
       log.warn("Retrying mobile notification failed", error);
     }

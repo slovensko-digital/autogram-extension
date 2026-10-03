@@ -12,7 +12,10 @@ import type {
   DesktopSigningState,
   DesktopSigningStateConsumer,
 } from "./autogram-api/index";
-import type { AutogramVMobileIntegrationInterfaceStateful } from "./avm-api/index";
+import type {
+  AutogramVMobileIntegrationInterfaceStateful,
+  PairedDevice,
+} from "./avm-api/index";
 import { DesktopClient } from "./desktop-client";
 import {
   SigningMethod,
@@ -39,10 +42,46 @@ export type SigningState =
       type: "mobile";
       state: "qr-ready";
       signingUrl: string;
-      pairingUrl: string;
+      /** `null` when the integration does not support notifications */
+      pairingUrl: string | null;
     }
   | { type: "mobile-on-mobile"; state: "url-ready"; signingUrl: string }
-  | { type: "done" };
+  | { type: "done" }
+  /**
+   * Emitted after a successful mobile signature (after `done`, while
+   * `sign()` has already resolved) when the integration supports
+   * notifications but no device is paired yet. Re-emitted with a fresh
+   * URL before the pairing JWT expires. Abort the passed controller to
+   * stop waiting for the pairing.
+   */
+  | { type: "mobile"; state: "suggest-pairing"; pairingUrl: string }
+  /** A device was paired while `suggest-pairing` was shown. */
+  | { type: "mobile"; state: "paired"; devices: PairedDevice[] };
+
+/** A mobile channel that implements the optional notification methods. */
+export type NotificationCapableChannel =
+  AutogramVMobileIntegrationInterfaceStateful &
+    Required<
+      Pick<
+        AutogramVMobileIntegrationInterfaceStateful,
+        "getPairingQrCodeUrl" | "sendNotification" | "getPairedDevices"
+      >
+    >;
+
+/**
+ * Whether the channel implements the whole notifications capability
+ * (pairing QR, push notifications, paired-device listing). Integrations
+ * that skip it never get the pairing UI.
+ */
+export function supportsNotifications(
+  channel: AutogramVMobileIntegrationInterfaceStateful
+): channel is NotificationCapableChannel {
+  return (
+    typeof channel.getPairingQrCodeUrl === "function" &&
+    typeof channel.sendNotification === "function" &&
+    typeof channel.getPairedDevices === "function"
+  );
+}
 
 /**
  * What the flow needs from a UI.
@@ -76,6 +115,18 @@ export interface SigningFlowOptions {
    * Default: never.
    */
   isMobileDevice?: () => boolean;
+  /**
+   * Offer device pairing (link on the QR screen, pairing suggestion after
+   * a mobile signature). Only takes effect when the mobile channel
+   * {@link supportsNotifications}. Default `false`.
+   */
+  notifications?: boolean;
+  /** Paired-device polling while `suggest-pairing` is shown. Default 3 s. */
+  pairingPollIntervalMs?: number;
+  /** Pairing URL refresh period (its JWT lives 5 min). Default 4 min. */
+  pairingUrlRefreshMs?: number;
+  /** Stop polling for a pairing after this long. Default 15 min. */
+  pairingTimeoutMs?: number;
 }
 
 export interface SigningFlowSignOptions {
@@ -89,6 +140,8 @@ export interface SigningFlowSignOptions {
  */
 export class SigningFlow {
   private desktopClient: DesktopClient;
+  /** aborts the pairing suggestion of the previous mobile signature */
+  private pairingSuggestion: AbortController | null = null;
 
   constructor(
     desktop: AutogramDesktopIntegrationInterface,
@@ -117,6 +170,7 @@ export class SigningFlow {
     if (request.documents.length === 0) {
       throw new AutogramError("unknown", "No documents to sign");
     }
+    this.cancelPairingSuggestion();
 
     const abortController = new AbortController();
     options?.signal?.addEventListener(
@@ -213,7 +267,13 @@ export class SigningFlow {
         abortController
       );
 
-      return await this.waitForMobileSignature(abortController);
+      const result = await this.waitForMobileSignature(abortController);
+      const notificationChannel = this.notificationChannel();
+      if (notificationChannel) {
+        // fire and forget: sign() resolves without waiting for the pairing
+        void this.suggestPairing(notificationChannel);
+      }
+      return result;
     } catch (e) {
       log.error("signMobile failed", e);
       throw e;
@@ -243,9 +303,87 @@ export class SigningFlow {
     }
   }
 
+  /** Stops a pending pairing suggestion (its screen is being replaced). */
+  cancelPairingSuggestion() {
+    this.pairingSuggestion?.abort("Pairing suggestion replaced");
+    this.pairingSuggestion = null;
+  }
+
+  /** The mobile channel when pairing should be offered, else `null`. */
+  private notificationChannel(): NotificationCapableChannel | null {
+    return this.options.notifications && supportsNotifications(this.mobile)
+      ? this.mobile
+      : null;
+  }
+
+  /**
+   * Suggests pairing when no device is paired yet, then polls until a
+   * device shows up, the delegate aborts, or the timeout passes. Never
+   * throws — the signature is already delivered.
+   */
+  private async suggestPairing(mobile: NotificationCapableChannel) {
+    const abortController = new AbortController();
+    this.pairingSuggestion = abortController;
+    const { signal } = abortController;
+    const pollIntervalMs = this.options.pairingPollIntervalMs ?? 3_000;
+    const urlRefreshMs = this.options.pairingUrlRefreshMs ?? 4 * 60_000;
+    const timeoutMs = this.options.pairingTimeoutMs ?? 15 * 60_000;
+
+    const showPairingQr = async () => {
+      const pairingUrl = await mobile.getPairingQrCodeUrl();
+      if (!signal.aborted) {
+        this.delegate.onState(
+          { type: "mobile", state: "suggest-pairing", pairingUrl },
+          abortController
+        );
+      }
+    };
+
+    try {
+      if ((await mobile.getPairedDevices()).length > 0 || signal.aborted) {
+        return;
+      }
+      await showPairingQr();
+
+      const startedAt = Date.now();
+      let urlIssuedAt = startedAt;
+      while (!signal.aborted && Date.now() - startedAt < timeoutMs) {
+        await abortableDelay(pollIntervalMs, signal);
+        if (signal.aborted) {
+          return;
+        }
+        try {
+          const devices = await mobile.getPairedDevices();
+          if (signal.aborted) {
+            return;
+          }
+          if (devices.length > 0) {
+            this.delegate.onState(
+              { type: "mobile", state: "paired", devices },
+              abortController
+            );
+            return;
+          }
+          if (Date.now() - urlIssuedAt >= urlRefreshMs) {
+            await showPairingQr();
+            urlIssuedAt = Date.now();
+          }
+        } catch (e) {
+          log.warn("Polling paired devices failed", e);
+        }
+      }
+    } catch (e) {
+      log.warn("Pairing suggestion failed", e);
+    } finally {
+      if (this.pairingSuggestion === abortController) {
+        this.pairingSuggestion = null;
+      }
+    }
+  }
+
   private async prepareMobileSigning(
     request: SignRequest
-  ): Promise<{ signingUrl: string; pairingUrl: string }> {
+  ): Promise<{ signingUrl: string; pairingUrl: string | null }> {
     // AVM only knows the legacy single-document shape
     const {
       document,
@@ -280,9 +418,10 @@ export class SigningFlow {
       },
       payloadMimeType: payloadMimeType,
     });
+    const notificationChannel = this.notificationChannel();
     const [signingUrl, pairingUrl] = await Promise.all([
       this.mobile.getQrCodeUrl(),
-      this.mobile.getPairingQrCodeUrl(),
+      notificationChannel ? notificationChannel.getPairingQrCodeUrl() : null,
     ]);
     log.debug({ signingUrl, pairingUrl });
     return { signingUrl, pairingUrl };
@@ -302,4 +441,18 @@ export class SigningFlow {
 
     return fromAvmSignedDocument(signedDocument);
   }
+}
+
+function abortableDelay(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const onAbort = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", onAbort, { once: true });
+  });
 }

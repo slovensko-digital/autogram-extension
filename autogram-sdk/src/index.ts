@@ -39,6 +39,7 @@ export {
   randomUUID,
   GetDocumentsResponse as AVMGetDocumentsResponse,
   ZDocumentToSign as ZAVMDocumentToSign,
+  GetIntegrationDevicesResponseBody as ZAVMPairedDevices,
   createDeviceJwt,
 } from "./avm-api/index";
 
@@ -47,6 +48,7 @@ export type {
   SignedDocument as AVMSignedDocument,
   DocumentToSign as AVMDocumentToSign,
   AvmIntegrationDocument as AVMIntegrationDocument,
+  DBInterface as AVMStorage,
   DeviceRegistrationResponse as AVMDeviceRegistrationResponse,
   DeviceIntegrationsResponse as AVMDeviceIntegrationsResponse,
   DocumentVisualizationResponse as AVMDocumentVisualizationResponse,
@@ -88,6 +90,9 @@ export {
 
 export { DesktopClient } from "./desktop-client";
 export type { DesktopSignOptions } from "./desktop-client";
+
+export { AvmSimpleChannel } from "./channel-avm";
+export type { AvmSimpleChannelOptions } from "./channel-avm";
 
 export {
   MobileClient,

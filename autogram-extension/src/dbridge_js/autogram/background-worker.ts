@@ -279,6 +279,8 @@ class AvmExecutor {
     },
 
     getPairingQrCodeUrl: async () => {
+      // also requested after signing, when the MV3 worker may have restarted
+      await this.client.register(await getAvmIntegrationRegistrationInfo());
       return this.client.pairingQrCodeUrl();
     },
 
@@ -303,6 +305,12 @@ class AvmExecutor {
       }
       await request.notifyDevices();
       return null;
+    },
+
+    getPairedDevices: async () => {
+      // the MV3 worker may have restarted since loadOrRegister
+      await this.client.register(await getAvmIntegrationRegistrationInfo());
+      return this.client.pairedDevices();
     },
 
     waitForSignature: async (_args, context) => {

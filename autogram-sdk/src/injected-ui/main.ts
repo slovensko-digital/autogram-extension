@@ -8,6 +8,7 @@ import "./sign-mobile-on-mobile.screen";
 import "./signing-cancelled.screen";
 import "./restore-point-choice.screen";
 import "./error.screen";
+import "./suggest-pairing.screen";
 import {
   EventChoice,
   EventClose,
@@ -19,6 +20,7 @@ import { createLogger } from "../log";
 import { UserCancelledSigningException } from "../errors";
 import { isMobileDevice } from "../utils";
 import type { DesktopSigningState } from "../autogram-api/index";
+import type { PairedDevice } from "../avm-api/index";
 import sourceSans3FontCss from "./fonts/source-sans-3.css";
 
 const log = createLogger("ag-sdk:root");
@@ -32,6 +34,7 @@ enum Screens {
   signMobileOnMobile,
   useRestorePoint,
   error,
+  suggestPairing,
 }
 
 @customElement("autogram-root")
@@ -84,7 +87,7 @@ export class AutogramRoot extends LitElement {
   declare mobilePairingUrl: string | null;
 
   @property({ attribute: false })
-  declare pairingEnabled: boolean;
+  declare pairedDevices: PairedDevice[] | null;
 
   @property({ attribute: false })
   declare desktopSigningState: DesktopSigningState;
@@ -118,6 +121,7 @@ export class AutogramRoot extends LitElement {
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
     this.mobilePairingUrl = null;
+    this.pairedDevices = null;
     this.desktopSigningState = { type: "checkingApp" };
   }
 
@@ -195,7 +199,6 @@ export class AutogramRoot extends LitElement {
                     ._handleRetryMobileNotification}
                   .url=${this.mobileSigningUrl ?? ""}
                   .pairingUrl=${this.mobilePairingUrl}
-                  .pairingEnabled=${this.pairingEnabled}
                 ></autogram-sign-mobile-screen>`
               : this.screen === Screens.signingCancelled
                 ? html`<autogram-signing-cancelled-screen
@@ -217,7 +220,13 @@ export class AutogramRoot extends LitElement {
                           @autogram-close=${this._closeNow}
                           errorMessage=${this.errorMessage}
                         ></autogram-error-screen>`
-                      : ""}
+                      : this.screen === Screens.suggestPairing
+                        ? html`<autogram-suggest-pairing-screen
+                            @autogram-close=${this._closeSigningScreen}
+                            .pairingUrl=${this.mobilePairingUrl ?? ""}
+                            .pairedDevices=${this.pairedDevices}
+                          ></autogram-suggest-pairing-screen>`
+                        : ""}
       </dialog>
     `;
   }
@@ -281,17 +290,37 @@ export class AutogramRoot extends LitElement {
     }, 10000);
   }
 
+  /** @param pairingUrl `null` hides the pairing link */
   showQRCode(
     url: string,
-    pairingUrl: string,
-    abortController: AbortController,
-    pairingEnabled: boolean
+    pairingUrl: string | null,
+    abortController: AbortController
   ) {
     this.screen = Screens.signMobile;
     this.mobileSigningUrl = url;
     this.mobilePairingUrl = pairingUrl;
     this.abortController = abortController;
-    this.pairingEnabled = pairingEnabled;
+  }
+
+  /**
+   * Suggest pairing after a mobile signature. Called again with a fresh
+   * URL before the pairing JWT expires; closing aborts `abortController`.
+   */
+  suggestPairing(pairingUrl: string, abortController: AbortController) {
+    const alreadyShown = this.screen === Screens.suggestPairing;
+    this.screen = Screens.suggestPairing;
+    this.mobilePairingUrl = pairingUrl;
+    this.pairedDevices = null;
+    this.abortController = abortController;
+    if (!alreadyShown) {
+      this.show();
+    }
+  }
+
+  pairingCompleted(devices: PairedDevice[]) {
+    if (this.screen === Screens.suggestPairing) {
+      this.pairedDevices = devices;
+    }
   }
 
   openMobileOnMobile(url: string, abortController: AbortController) {
@@ -356,6 +385,7 @@ export class AutogramRoot extends LitElement {
     this.screen = Screens.choice;
     this.mobileSigningUrl = null;
     this.mobilePairingUrl = null;
+    this.pairedDevices = null;
     this.desktopSigningState = { type: "checkingApp" };
     if (this.abortController) {
       this.abortController.abort();

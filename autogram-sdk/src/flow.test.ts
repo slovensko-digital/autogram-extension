@@ -1,4 +1,9 @@
-import { SigningFlow, SigningFlowDelegate, SigningState } from "./flow";
+import {
+  SigningFlow,
+  SigningFlowDelegate,
+  SigningState,
+  supportsNotifications,
+} from "./flow";
 import { SigningMethod } from "./types";
 import { AutogramError, UserCancelledSigningException } from "./errors";
 import { fromLegacySignArgs, toSignRequest } from "./sign-request";
@@ -165,7 +170,8 @@ describe("SigningFlow mobile path", () => {
         type: "mobile",
         state: "qr-ready",
         signingUrl: "https://avm/qr",
-        pairingUrl: "https://avm/pair",
+        // pairing is opt-in (`notifications` option)
+        pairingUrl: null,
       },
       { type: "done" },
     ]);
@@ -204,6 +210,240 @@ describe("SigningFlow mobile path", () => {
     // the legacy fallback identification is applied by toLegacySignedObject,
     // not by the flow — the raw result carries no signatures
     expect(result.signatures).toEqual([]);
+  });
+});
+
+describe("SigningFlow notifications", () => {
+  const PHONE = { deviceId: "d1", platform: "android", displayName: "Pixel" };
+  const FAST = {
+    ...OPTIONS,
+    notifications: true,
+    pairingPollIntervalMs: 1,
+    pairingUrlRefreshMs: 60_000,
+    pairingTimeoutMs: 1_000,
+  };
+
+  /** resolves once the delegate saw a state matching `predicate` */
+  function waitForState(
+    delegate: { states: SigningState[] },
+    predicate: (s: SigningState) => boolean
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const started = Date.now();
+      const check = () => {
+        if (delegate.states.some(predicate)) return resolve();
+        if (Date.now() - started > 900) {
+          return reject(new Error("state not reached"));
+        }
+        setTimeout(check, 1);
+      };
+      check();
+    });
+  }
+  const isState = (state: string) => (s: SigningState) =>
+    s.type === "mobile" && s.state === state;
+
+  /** a fake whose paired-device list follows the given sequence */
+  function notifyingMobile(deviceLists: (typeof PHONE)[][]) {
+    let call = 0;
+    const mobile = fakeMobile({
+      getPairedDevices: async () => {
+        mobile.calls.push(["getPairedDevices", []]);
+        return deviceLists[Math.min(call++, deviceLists.length - 1)];
+      },
+    });
+    return mobile;
+  }
+
+  test("supportsNotifications requires all three optional methods", () => {
+    expect(supportsNotifications(fakeMobile())).toBe(false);
+    expect(
+      supportsNotifications(fakeMobile({ getPairedDevices: async () => [] }))
+    ).toBe(true);
+    expect(
+      supportsNotifications(
+        fakeMobile({
+          getPairedDevices: async () => [],
+          sendNotification: undefined,
+        })
+      )
+    ).toBe(false);
+  });
+
+  test("a channel without the notification methods gets no pairing UI", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    const mobile = fakeMobile({
+      getPairingQrCodeUrl: undefined,
+      sendNotification: undefined,
+    });
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    await flow.sign(REQUEST);
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(delegate.states).toContainEqual(
+      expect.objectContaining({ state: "qr-ready", pairingUrl: null })
+    );
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+  });
+
+  test("notifications option off: no pairing UI even when supported", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    const mobile = notifyingMobile([[]]);
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, {
+      ...FAST,
+      notifications: false,
+    });
+
+    await flow.sign(REQUEST);
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+    expect(mobile.calls.map(([n]) => n)).not.toContain("getPairedDevices");
+    expect(mobile.calls.map(([n]) => n)).not.toContain("getPairingQrCodeUrl");
+  });
+
+  test("already paired: QR screen gets the pairing link, no suggestion", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    const mobile = notifyingMobile([[PHONE]]);
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    await flow.sign(REQUEST);
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(delegate.states).toContainEqual(
+      expect.objectContaining({
+        state: "qr-ready",
+        pairingUrl: "https://avm/pair",
+      })
+    );
+    expect(mobile.calls.map(([n]) => n)).toContain("getPairedDevices");
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+  });
+
+  test("no paired device: suggests pairing after sign() resolved, then reports the pairing", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    let openGate: () => void = () => {};
+    const gate = new Promise<void>((resolve) => (openGate = resolve));
+    const lists = [[], [], [PHONE]];
+    let call = 0;
+    const mobile = fakeMobile({
+      getPairedDevices: async () => {
+        await gate;
+        return lists[Math.min(call++, lists.length - 1)];
+      },
+    });
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    // resolves while the device lookup is still blocked
+    const result = await flow.sign(REQUEST);
+    expect(result.content).toBe("bW9iaWxl");
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+
+    openGate();
+    await waitForState(delegate, isState("paired"));
+    expect(delegate.states.slice(-2)).toEqual([
+      {
+        type: "mobile",
+        state: "suggest-pairing",
+        pairingUrl: "https://avm/pair",
+      },
+      { type: "mobile", state: "paired", devices: [PHONE] },
+    ]);
+  });
+
+  test("refreshes the pairing URL before its JWT expires", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    let n = 0;
+    const mobile = fakeMobile({
+      getPairedDevices: async () => (n >= 6 ? [PHONE] : []),
+      getPairingQrCodeUrl: async () => `https://avm/pair/${n++}`,
+    });
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, {
+      ...FAST,
+      pairingUrlRefreshMs: 0,
+    });
+
+    await flow.sign(REQUEST);
+    await waitForState(delegate, isState("paired"));
+
+    const urls = delegate.states
+      .filter(isState("suggest-pairing"))
+      .map((s) => (s as { pairingUrl: string }).pairingUrl);
+    expect(urls.length).toBeGreaterThan(1);
+    expect(new Set(urls).size).toBe(urls.length);
+  });
+
+  test("aborting the suggestion stops polling", async () => {
+    let abortSuggestion: AbortController | null = null;
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    const onState = delegate.onState;
+    delegate.onState = (state, abortController) => {
+      onState(state, abortController);
+      if (state.type === "mobile" && state.state === "suggest-pairing") {
+        abortSuggestion = abortController;
+      }
+    };
+    const mobile = notifyingMobile([[]]);
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    await flow.sign(REQUEST);
+    await waitForState(delegate, isState("suggest-pairing"));
+    abortSuggestion!.abort();
+    await new Promise((r) => setTimeout(r, 10));
+    const pollsAfterAbort = mobile.calls.filter(
+      ([n]) => n === "getPairedDevices"
+    ).length;
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(mobile.calls.filter(([n]) => n === "getPairedDevices").length).toBe(
+      pollsAfterAbort
+    );
+    expect(delegate.states.some(isState("paired"))).toBe(false);
+  });
+
+  test("a new sign() cancels the previous suggestion", async () => {
+    const delegate = fakeDelegate(SigningMethod.reader);
+    const mobile = notifyingMobile([[]]);
+    let method = SigningMethod.mobile;
+    delegate.chooseMethod = () => Promise.resolve(method);
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    await flow.sign(REQUEST);
+    await waitForState(delegate, isState("suggest-pairing"));
+    method = SigningMethod.reader;
+    await flow.sign(REQUEST);
+    const statesAfterSecondSign = delegate.states.length;
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(delegate.states.length).toBe(statesAfterSecondSign);
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+  });
+
+  test("a failing device lookup never breaks the signature", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobile);
+    const mobile = fakeMobile({
+      getPairedDevices: async () => {
+        throw new Error("network down");
+      },
+    });
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    await expect(flow.sign(REQUEST)).resolves.toMatchObject({
+      content: "bW9iaWxl",
+    });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(delegate.states.at(-1)).toEqual({ type: "done" });
+  });
+
+  test("mobile-on-mobile signing never suggests pairing", async () => {
+    const delegate = fakeDelegate(SigningMethod.mobileOnMobile);
+    const mobile = notifyingMobile([[]]);
+    const flow = new SigningFlow(fakeDesktop(), mobile, delegate, FAST);
+
+    await flow.sign(REQUEST);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(delegate.states.some(isState("suggest-pairing"))).toBe(false);
   });
 });
 
