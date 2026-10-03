@@ -1,8 +1,6 @@
 import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { closeSvg } from "./svg";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
 import { EventRetryMobileNotification } from "./events";
 
@@ -52,12 +50,7 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
     });
 
     return html`
-      <div class="heading">
-        <h1>Naskenujte QR kód</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Naskenujte QR kód")}
       <div class="main">
         <div class="cols">
           <div class="col">
@@ -80,26 +73,16 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
                 Pokračujte v práci s podpísaným dokumentom na tomto počítači.
               </li>
             </ol>
-            <p>
-              ${this.pairingUrl
-                ? html`<a href="" @click="${this.openPairing}">
+            ${this.pairingUrl
+              ? html`<p class="hint">
+                  <a href="" @click="${this.openPairing}">
                     Chcete dostávať upozornenia do mobilu? Spárujte si tento
                     počítač.
-                  </a>`
-                : html``}
-            </p>
+                  </a>
+                </p>`
+              : html``}
           </div>
-          <div class="col">
-            <a href="${this.url}" target="_blank" rel="noopener">
-              <figure
-                role="img"
-                aria-label="QR kód"
-                style="width: 250px; height: 250px;"
-              >
-                ${unsafeSVG(qrCode)}
-              </figure>
-            </a>
-          </div>
+          ${this.renderQrCode(this.url, qrCode, "QR kód na podpísanie")}
         </div>
       </div>
     `;
@@ -117,12 +100,7 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
       : null;
 
     return html`
-      <div class="heading">
-        <h1>Spárujte si tento počítač</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Spárujte si tento počítač")}
       <div class="main">
         <div class="cols">
           <div class="col">
@@ -136,27 +114,18 @@ export class AutogramSignMobileScreen extends AutogramBaseScreen {
               <li>Naskenujte párovací QR kód.</li>
               <li>Po spárovaní sa vráťte späť a upozornenie pošleme znovu.</li>
             </ol>
-            <div class="button-wrapper">
-              <button class="button" @click="${this.returnToSigningQr}">
+            <div class="button-wrapper start">
+              <button
+                class="button secondary"
+                @click="${this.returnToSigningQr}"
+              >
                 Späť na podpisovanie
               </button>
             </div>
           </div>
-          <div class="col">
-            ${this.pairingUrl
-              ? html`
-                  <a href="${this.pairingUrl}" target="_blank" rel="noopener">
-                    <figure
-                      role="img"
-                      aria-label="Párovací QR kód"
-                      style="width: 250px; height: 250px;"
-                    >
-                      ${qrCode ? unsafeSVG(qrCode) : html``}
-                    </figure>
-                  </a>
-                `
-              : html`<p>Párovací QR kód sa nepodarilo pripraviť.</p>`}
-          </div>
+          ${this.pairingUrl && qrCode
+            ? this.renderQrCode(this.pairingUrl, qrCode, "Párovací QR kód")
+            : html`<p>Párovací QR kód sa nepodarilo pripraviť.</p>`}
         </div>
       </div>
     `;

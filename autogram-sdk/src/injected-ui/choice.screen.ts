@@ -4,7 +4,6 @@ import { computerSvg, mobileSvg } from "./svg";
 
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
-import { closeSvg } from "./svg";
 import { EventChoice } from "./events";
 import { createLogger } from "../log";
 import { SigningMethod } from "./types";
@@ -16,12 +15,7 @@ log.debug("AutogramChoiceScreen", customElements.get("autogram-choice-screen"));
 export class AutogramChoiceScreen extends AutogramBaseScreen {
   render() {
     return html`
-      <div class="heading">
-        <h1>Ako si prajete dokument podpísať?</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Ako si prajete dokument podpísať?")}
       <div class="main">
         <div class="choice-screen">
           <button class="tile" @click="${this.signUsingReader}">

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autogram UI gallery</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 32px 16px;
+        background: #f3f4f6;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      h2.label {
+        max-width: 800px;
+        margin: 32px auto 8px;
+        font:
+          600 13px/1.4 ui-monospace,
+          monospace;
+        color: #4b5563;
+        overflow-wrap: anywhere;
+      }
+      /* mirrors .dialog in <autogram-root>, which is a modal singleton */
+      .frame {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <p style="max-width: 800px; margin: 0 auto">
+      Every screen of the injected UI in one page, for design work. Build the
+      SDK first (<code>npm run build</code>), then <code>npm run demo</code> and
+      open <code>/demos/ui-gallery.html</code>.
+    </p>
+    <div id="gallery"></div>
+
+    <script src="../dist/index-all.iife.js"></script>
+    <script>
+      const signingUrl =
+        "https://autogram.slovensko.digital/api/v1/qr-code?guid=e7e95411-66a1-4f5e-9d2b-4fdb2b4b9f2a&key=aAAKfO0hXMWqvaG3PPAbnLU5bPDLP4bnPLxs4Mr4u2w%3D";
+      const pairingUrl =
+        "https://autogram.slovensko.digital/api/v1/pairing?integration=eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJkZW1vIn0.c2lnbmF0dXJl";
+
+      const screens = [
+        ["autogram-choice-screen", {}],
+        ["autogram-sign-reader-screen", { state: { type: "checkingApp" } }],
+        ["autogram-sign-reader-screen", { state: { type: "launchingApp" } }],
+        [
+          "autogram-sign-reader-screen",
+          { state: { type: "waitingForSignature" } },
+        ],
+        [
+          "autogram-sign-reader-screen",
+          { state: { type: "appMayNotBeInstalled" } },
+        ],
+        ["autogram-sign-reader-screen", { state: { type: "appNotInstalled" } }],
+        [
+          "autogram-sign-reader-screen",
+          {
+            state: {
+              type: "appVersionTooLow",
+              requiredVersion: "2.5.0",
+              detectedVersion: "2.3.1",
+            },
+          },
+        ],
+        [
+          "autogram-sign-reader-screen",
+          { state: { type: "signingCancelled" } },
+        ],
+        [
+          "autogram-sign-reader-screen",
+          {
+            state: { type: "error", message: "Autogram vrátil neznámu chybu." },
+          },
+        ],
+        ["autogram-sign-mobile-screen", { url: signingUrl, pairingUrl: null }],
+        ["autogram-sign-mobile-screen", { url: signingUrl, pairingUrl }],
+        [
+          "autogram-sign-mobile-screen",
+          { url: signingUrl, pairingUrl, step: 1 },
+        ],
+        ["autogram-signing-mobile-on-mobile-screen", { url: signingUrl }],
+        ["autogram-restore-point-choice-screen", {}],
+        ["autogram-suggest-pairing-screen", { pairingUrl }],
+        [
+          "autogram-suggest-pairing-screen",
+          {
+            pairingUrl,
+            pairedDevices: [{ deviceId: "1", displayName: "Pixel 8" }],
+          },
+        ],
+        ["autogram-signing-cancelled-screen", {}],
+        [
+          "autogram-error-screen",
+          { errorMessage: "Nepodarilo sa pripojiť k serveru." },
+        ],
+      ];
+
+      // instantiating the root registers fonts on the document
+      document.body.appendChild(document.createElement("autogram-root"));
+
+      const gallery = document.getElementById("gallery");
+      for (const [tag, props] of screens) {
+        const label = document.createElement("h2");
+        label.className = "label";
+        label.textContent = `<${tag}> ${JSON.stringify(props.state ?? (props.step !== undefined ? { step: props.step } : props.pairedDevices ? { paired: true } : props.pairingUrl ? { pairing: true } : {}))}`;
+        const frame = document.createElement("div");
+        frame.className = "frame";
+        const el = Object.assign(document.createElement(tag), props);
+        frame.appendChild(el);
+        gallery.append(label, frame);
+      }
+    </script>
+  </body>
+</html>

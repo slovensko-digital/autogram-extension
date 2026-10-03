@@ -1,8 +1,6 @@
 import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { closeSvg } from "./svg";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
 import type { PairedDevice } from "../avm-api/index";
 
@@ -41,12 +39,7 @@ export class AutogramSuggestPairingScreen extends AutogramBaseScreen {
     });
 
     return html`
-      <div class="heading">
-        <h1>Dokument je podpísaný</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Dokument je podpísaný")}
       <div class="main">
         <div class="cols">
           <div class="col">
@@ -59,21 +52,13 @@ export class AutogramSuggestPairingScreen extends AutogramBaseScreen {
               <li>V mobile otvorte Autogram v mobile.</li>
               <li>Naskenujte párovací QR kód.</li>
             </ol>
-            <div class="button-wrapper" style="margin-top: 24px;">
-              <button class="button" @click="${this.close}">Teraz nie</button>
+            <div class="button-wrapper start">
+              <button class="button secondary" @click="${this.close}">
+                Teraz nie
+              </button>
             </div>
           </div>
-          <div class="col">
-            <a href="${this.pairingUrl}" target="_blank" rel="noopener">
-              <figure
-                role="img"
-                aria-label="Párovací QR kód"
-                style="width: 250px; height: 250px;"
-              >
-                ${unsafeSVG(qrCode)}
-              </figure>
-            </a>
-          </div>
+          ${this.renderQrCode(this.pairingUrl, qrCode, "Párovací QR kód")}
         </div>
       </div>
     `;
@@ -86,14 +71,9 @@ export class AutogramSuggestPairingScreen extends AutogramBaseScreen {
       .join(", ");
 
     return html`
-      <div class="heading">
-        <h1>Mobil je spárovaný</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Mobil je spárovaný")}
       <div class="main">
-        <div class="mobile-on-mobile-content">
+        <div class="centered-content">
           <p role="status">
             ${names
               ? html`Zariadenie <strong>${names}</strong> je spárované.`

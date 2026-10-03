@@ -12,6 +12,11 @@ const avmIntegration = new AutogramVMobileIntegration({
   set,
 });
 
+const PLATFORM_LABELS: Record<string, string> = {
+  ios: "iOS",
+  android: "Android",
+};
+
 const QR_REFRESH_INTERVAL_MS = 4 * 60 * 1000;
 let qrRefreshTimer: ReturnType<typeof setTimeout> | null = null;
 let qrIsOutdated = false;
@@ -207,7 +212,8 @@ async function loadPairedDevices() {
 
       const platform = document.createElement("span");
       platform.className = "device-platform";
-      platform.textContent = device.platform;
+      platform.textContent =
+        PLATFORM_LABELS[device.platform.toLowerCase()] ?? device.platform;
 
       const unpair = document.createElement("button");
       unpair.type = "button";

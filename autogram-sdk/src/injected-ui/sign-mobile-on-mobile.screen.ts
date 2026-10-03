@@ -1,8 +1,6 @@
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { closeSvg } from "./svg";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
 @customElement("autogram-signing-mobile-on-mobile-screen")
 export class AutogramSigningMobileOnMobileScreen extends AutogramBaseScreen {
@@ -11,14 +9,9 @@ export class AutogramSigningMobileOnMobileScreen extends AutogramBaseScreen {
 
   render() {
     return html`
-      <div class="heading">
-        <h1>Autogram v mobile</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Autogram v mobile")}
       <div class="main">
-        <div class="mobile-on-mobile-content">
+        <div class="centered-content">
           <p>
             Ak sa aplikácia Autogram v mobile neotvorila automaticky, použite
             tlačidlo nižšie.

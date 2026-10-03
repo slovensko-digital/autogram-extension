@@ -1,8 +1,6 @@
 import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { closeSvg } from "./svg";
-import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AutogramBaseScreen } from "./base.screen";
 import { EventRestorePointResult } from "./events";
 
@@ -10,12 +8,7 @@ import { EventRestorePointResult } from "./events";
 export class AutogramRestorePointChoiceScreen extends AutogramBaseScreen {
   render() {
     return html`
-      <div class="heading">
-        <h1>Obnoviť podpis?</h1>
-        <button class="close" @click="${this.close}">
-          ${unsafeSVG(closeSvg)}
-        </button>
-      </div>
+      ${this.renderHeading("Obnoviť podpis?")}
       <div class="main">
         <div class="restore-point-intro">
           <p>

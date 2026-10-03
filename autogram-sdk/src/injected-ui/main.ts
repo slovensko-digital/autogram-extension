@@ -21,7 +21,7 @@ import { UserCancelledSigningException } from "../errors";
 import { isMobileDevice } from "../utils";
 import type { DesktopSigningState } from "../autogram-api/index";
 import type { PairedDevice } from "../avm-api/index";
-import sourceSans3FontCss from "./fonts/source-sans-3.css";
+import { themeTokens } from "./theme";
 
 const log = createLogger("ag-sdk:root");
 
@@ -42,40 +42,53 @@ export class AutogramRoot extends LitElement {
   /**
    * Styles for the component
    */
-  static styles = css`
-    :host {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #87858599;
-      padding: 10px;
-      z-index: 999999;
+  static styles = [
+    themeTokens,
+    css`
+      :host {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgb(17 24 39 / 0.55);
+        padding: 16px;
+        z-index: 999999;
 
-      /* display: flex; */
-      justify-content: center;
-      align-items: center;
+        /* display: flex; */
+        justify-content: center;
+        align-items: center;
 
-      flex-direction: column;
+        flex-direction: column;
 
-      font-family: "Source Sans 3";
-      font-style: normal;
-    }
+        font-family: var(--ag-font);
+        font-style: normal;
+      }
 
-    .dialog {
-      /* Neutral/White */
-      background: #ffffff;
-      /* Neutral/N300 */
-      border: 1px solid #e0e0e0;
-      border-radius: 10px 10px 10px 10px;
+      .dialog {
+        box-sizing: border-box;
+        padding: 0;
+        background: var(--ag-surface);
+        color: var(--ag-text);
+        border: none;
+        border-radius: var(--ag-radius-lg);
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        overflow: auto;
 
-      max-width: 800px;
-      max-height: 800px;
-      width: 100%;
-    }
-  `;
+        max-width: 800px;
+        max-height: min(800px, calc(100vh - 32px));
+        width: 100%;
+      }
+
+      /* :host already dims the page */
+      .dialog::backdrop {
+        background: transparent;
+      }
+    `,
+  ];
 
   @property()
   declare screen: Screens;
@@ -234,7 +247,6 @@ export class AutogramRoot extends LitElement {
   connectedCallback(): void {
     log.debug("connectedCallback");
     super.connectedCallback();
-    this.addFonts();
   }
 
   disconnectedCallback(): void {
@@ -391,22 +403,6 @@ export class AutogramRoot extends LitElement {
       this.abortController.abort();
     }
     this.abortController = null;
-  }
-
-  private static readonly fontStyleId = "autogram-root-fonts";
-
-  addFonts() {
-    // Fonts are vendored (embedded as base64 in the bundle) rather than
-    // loaded from Google Fonts, since this component is injected into
-    // arbitrary host pages that may block third-party font requests.
-    if (document.getElementById(AutogramRoot.fontStyleId)) {
-      return;
-    }
-
-    const style = document.createElement("style");
-    style.id = AutogramRoot.fontStyleId;
-    style.textContent = sourceSans3FontCss;
-    document.head.appendChild(style);
   }
 }
 
