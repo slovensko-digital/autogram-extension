@@ -13,7 +13,6 @@ export interface FileDescriptor {
   path: string;
 }
 
-
 export function generateManifest(
   seed: Record<string, unknown>,
   files: FileDescriptor[],
@@ -104,7 +103,8 @@ export function generateManifest(
             "128": "static/logo-128.png",
             "512": "static/logo-512.png",
           },
-          // default_popup: "static/popup.html",
+          default_title: "__MSG_appName__",
+          default_popup: "static/popup.html",
         },
         options_page: "static/options.html",
         web_accessible_resources: [
