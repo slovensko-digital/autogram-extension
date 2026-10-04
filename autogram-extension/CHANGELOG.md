@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/slovensko-digital/autogram-extension/compare/v4.0.0...v4.0.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* default device notifications and signed document restore to true ([10600e8](https://github.com/slovensko-digital/autogram-extension/commit/10600e89755bf1e5dbe62fef836d906d1812d930))
+
 ## [4.0.0](https://github.com/slovensko-digital/autogram-extension/compare/v3.4.0...v4.0.0) (2026-10-03)
 
 
