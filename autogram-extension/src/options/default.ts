@@ -1,8 +1,8 @@
 export const defaultOptionsStorage = {
   options: {
     extensionEnabled: true,
-    restorePointEnabled: false,
-    notifyPairedDevices: false,
+    restorePointEnabled: true,
+    notifyPairedDevices: true,
   },
 };
 
