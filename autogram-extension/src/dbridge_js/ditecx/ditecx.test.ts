@@ -149,6 +149,16 @@ describe("schranka portal compatibility", () => {
   });
 });
 
+// Used by the esluzbykosice.sk lomtec Signer widget for signature ids.
+describe("utils", () => {
+  test("generateGuid returns a GUID-shaped string", async () => {
+    const ditecX = await constructDitecX();
+    expect(ditecX.utils.generateGuid()).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+    );
+  });
+});
+
 function asPromise<T = unknown>(
   fn: (...args: unknown[]) => void
 ): (...args: unknown[]) => Promise<T> {

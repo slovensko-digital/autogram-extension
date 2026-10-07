@@ -160,6 +160,12 @@ supportedSites.addSite(
   CONFLICT_RESOLUTION_IMMUTABLE_PROXY
 );
 
+supportedSites.addSite(
+    "https://www.esluzbykosice.sk/*",
+    INTERVAL_INJECTION,
+    CONFLICT_RESOLUTION_REPLACE_ORIGINAL
+);
+
 // The message composer also ships its own direct client to the local
 // Autogram desktop app (see native-autogram-intercept.ts) — independent of
 // window.ditec. We pin it to its D.Signer path (our window.ditec) and hide

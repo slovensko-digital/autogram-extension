@@ -72,6 +72,7 @@ export type DitecX = {
     ERROR_LAUNCH_FORBIDDEN: number;
     isDitecError: (error: unknown) => boolean;
     extendClass: (...args: unknown[]) => void;
+    generateGuid: () => string;
   };
   versions: object;
   dSigXadesJs: DSigXadesAdapter;
@@ -115,6 +116,30 @@ export function buildDitecX(implementation: ImplementationInterface): DitecX {
       },
       extendClass: function (...args) {
         log.debug("extendClass", args);
+      },
+      // Portal widgets build signature/object ids with it, e.g. the
+      // esluzbykosice.sk lomtec Signer: "signature_" + generateGuid().
+      // Same format as the real ditec.utils.generateGuid.
+      generateGuid: function () {
+        function xxxx() {
+          return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+        }
+        return (
+          xxxx() +
+          xxxx() +
+          "-" +
+          xxxx() +
+          "-" +
+          xxxx() +
+          "-" +
+          xxxx() +
+          "-" +
+          xxxx() +
+          xxxx() +
+          xxxx()
+        );
       },
     },
     versions: {},

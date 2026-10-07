@@ -37,8 +37,15 @@ export class XadesBpXmlStrategy implements ObjectStrategy {
     // initializedCallback): append xdcVersion unless the identifier
     // already ends with it. A bare `includes("/")` check is wrong here —
     // it matches every URI, so a versionless URI would stay versionless.
-    const identifier = this.obj.xdcIdentifier;
-    if (identifier.split("/").pop() === this.obj.xdcVersion) {
+    //
+    // esluzbykosice.sk passes empty xdcIdentifier/xdcVersion and carries
+    // the versioned identifier only in objectFormatIdentifier.
+    const identifier =
+      this.obj.xdcIdentifier || this.obj.objectFormatIdentifier || "";
+    if (
+      !this.obj.xdcVersion ||
+      identifier.split("/").pop() === this.obj.xdcVersion
+    ) {
       return identifier;
     }
     return identifier + "/" + this.obj.xdcVersion;
