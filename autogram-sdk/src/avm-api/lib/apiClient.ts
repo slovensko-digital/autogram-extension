@@ -46,6 +46,11 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
 
   private db: DBInterface;
 
+  /**
+   * Pending `loadOrRegister()`, shared by concurrent callers
+   */
+  private loading: Promise<void> | null = null;
+
   public constructor(db: DBInterface) {
     this.apiClient = new AutogramVMobileIntegrationApiClient();
     this.db = db;
@@ -56,18 +61,29 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
    * Loads the key pair and integration GUID from the local database, or registers a new integration if not found.
    * Pre-condition: None. Post-condition: `getIntegrationGuid()` will return non-null.
    */
-  public async loadOrRegister({
+  public loadOrRegister(info: AvmRegistrationInfo): Promise<void> {
+    // Concurrent callers (e.g. options page showing pairing QR code and paired
+    // devices at once) share one load/registration, otherwise each registers
+    // new integration and key pair and GUID get mixed up
+    return (this.loading ??= this.doLoadOrRegister(info).finally(() => {
+      this.loading = null;
+    }));
+  }
+
+  private async doLoadOrRegister({
     platform = "integration",
     displayName = "Integration",
   }: AvmRegistrationInfo) {
-    this.loadSubtleCrypto();
+    await this.loadSubtleCrypto();
     // load
-    this.keyPair = await this.getKeyPairFromDb();
+    const keyPair = await this.getKeyPairFromDb();
+    const integrationGuid = await this.getIntegrationGuidFromDb();
+    log.debug(keyPair);
 
-    this.integrationGuid = await this.getIntegrationGuidFromDb();
-    log.debug(this.keyPair);
-
-    if (!this.keyPair || !this.integrationGuid) {
+    if (keyPair && integrationGuid) {
+      this.keyPair = keyPair;
+      this.integrationGuid = integrationGuid;
+    } else {
       await this.register({ platform, displayName });
     }
 
@@ -149,29 +165,42 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
     platform = "integration",
     displayName = "Integration",
   }: AvmRegistrationInfo) {
-    if (this.keyPair && this.integrationGuid) {
-      throw new Error("Already registered.");
+    try {
+      const keyPair = await this.subtleCrypto.generateKey(
+        // ES256
+        {
+          name: "ECDSA",
+          namedCurve: "P-256",
+        },
+        // non-extractable: the private key can still be persisted to IndexedDB
+        // via structured clone and used for signing, but page scripts cannot
+        // export the raw key material; the public key is always exportable
+        false,
+        ["sign", "verify"]
+      );
+      const publicKey = await this.exportPublicKeyStr(keyPair.publicKey);
+
+      log.info("Registering integration", { displayName, platform, publicKey });
+
+      const res = await this.apiClient.registerIntegration({
+        platform,
+        displayName,
+        publicKey:
+          "-----BEGIN PUBLIC KEY-----\n" +
+          publicKey +
+          "\n-----END PUBLIC KEY-----",
+      });
+
+      await this.saveIntegrationRegistration(keyPair, res.guid);
+
+      this.keyPair = keyPair;
+      this.integrationGuid = res.guid;
+
+      log.info("Integration registered", res);
+    } catch (error) {
+      log.error("Failed to register integration", error);
+      throw error;
     }
-
-    await this.generateKeys();
-
-    const publicKey = await this.getPublicKeyStr();
-
-    log.info("Registering integration", { displayName, platform, publicKey });
-
-    const res = await this.apiClient.registerIntegration({
-      platform,
-      displayName,
-      publicKey:
-        "-----BEGIN PUBLIC KEY-----\n" +
-        publicKey +
-        "\n-----END PUBLIC KEY-----",
-    });
-
-    this.integrationGuid = res.guid;
-    await this.saveIntegrationGuid(res.guid);
-
-    log.info("Integration registered", res);
   }
 
   /**
@@ -353,28 +382,12 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
     return this.subtleCrypto.exportKey("raw", key).then(arrayBufferToBase64);
   }
 
-  private async generateKeys() {
-    log.info("Generating keys");
-    // ES256
-    const keyPair = await this.subtleCrypto.generateKey(
-      {
-        name: "ECDSA",
-        namedCurve: "P-256",
-      },
-      // non-extractable: the private key can still be persisted to IndexedDB
-      // via structured clone and used for signing, but page scripts cannot
-      // export the raw key material; the public key is always exportable
-      false,
-      ["sign", "verify"]
-    );
-    log.debug("Key pair generated", keyPair);
-    await this.saveKeyPair(keyPair);
-    this.keyPair = keyPair;
-    log.debug("Keys generated", this.keyPair);
-  }
-
-  private async saveKeyPair(keyPair: CryptoKeyPair) {
-    return this.db.set("keyPair", keyPair); // TODO: toto je zle, lebo zapisujeme v kontexte webu, nie rozsirenia
+  private async saveIntegrationRegistration(
+    keyPair: CryptoKeyPair,
+    guid: string
+  ) {
+    await this.db.set("keyPair", keyPair);
+    await this.db.set("integrationGuid", guid);
   }
 
   private async getKeyPairFromDb(): Promise<CryptoKeyPair | null> {
@@ -384,10 +397,6 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
       }
       return null;
     });
-  }
-
-  private async saveIntegrationGuid(guid: string) {
-    return this.db.set("integrationGuid", guid);
   }
 
   private async getIntegrationGuidFromDb(): Promise<string | null> {
@@ -403,8 +412,12 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
     if (!this.keyPair) {
       throw new Error("Key pair missing");
     }
+    return this.exportPublicKeyStr(this.keyPair.publicKey);
+  }
+
+  private exportPublicKeyStr(publicKey: CryptoKey) {
     return this.subtleCrypto
-      .exportKey("spki", this.keyPair.publicKey)
+      .exportKey("spki", publicKey)
       .then(arrayBufferToBase64);
   }
 
