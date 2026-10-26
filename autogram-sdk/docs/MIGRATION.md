@@ -1,6 +1,8 @@
 # Migration guide
 
-## Unreleased: integration is registered on demand
+## 0.7.x → 0.8.0
+
+### Integration is registered on demand
 
 **Breaking.** Signing by QR code does not need an integration (the server
 requires only the document encryption key), so it is no longer registered up
