@@ -194,7 +194,7 @@ class AvmExecutor {
           documentRef
         );
         try {
-          await this.client.register(await getAvmIntegrationRegistrationInfo());
+          await this.client.init(await getAvmIntegrationRegistrationInfo());
 
           return {
             signedDocument: await this.waitForSignatureSubroutine(
@@ -264,7 +264,7 @@ class AvmExecutor {
 
   readonly impl: RpcImpl<typeof avmService.methods> = {
     loadOrRegister: async () => {
-      await this.client.register(await getAvmIntegrationRegistrationInfo());
+      await this.client.init(await getAvmIntegrationRegistrationInfo());
       return null;
     },
 
@@ -280,7 +280,7 @@ class AvmExecutor {
 
     getPairingQrCodeUrl: async () => {
       // also requested after signing, when the MV3 worker may have restarted
-      await this.client.register(await getAvmIntegrationRegistrationInfo());
+      await this.client.init(await getAvmIntegrationRegistrationInfo());
       return this.client.pairingQrCodeUrl();
     },
 
@@ -309,7 +309,7 @@ class AvmExecutor {
 
     getPairedDevices: async () => {
       // the MV3 worker may have restarted since loadOrRegister
-      await this.client.register(await getAvmIntegrationRegistrationInfo());
+      await this.client.init(await getAvmIntegrationRegistrationInfo());
       return this.client.pairedDevices();
     },
 

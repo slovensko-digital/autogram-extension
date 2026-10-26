@@ -53,6 +53,7 @@ export type SignatureRequestStatus =
  * structurally; tests can substitute a fake.
  */
 export interface MobileIntegrationBackend {
+  init(regInfo: AvmRegistrationInfo): Promise<void>;
   loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   addDocument(documentToSign: DocumentToSign): Promise<AvmIntegrationDocument>;
   getQrCodeUrl(
@@ -155,6 +156,14 @@ export class SignatureRequest {
  */
 export class MobileClient {
   constructor(private backend: MobileIntegrationBackend) {}
+
+  /**
+   * Load the persisted integration, if any, without registering. Signing by
+   * QR code needs no integration; pairing registers it on demand. Idempotent.
+   */
+  init(info: AvmRegistrationInfo): Promise<void> {
+    return this.backend.init(info);
+  }
 
   /** Load the persisted integration or register a new one. Idempotent. */
   register(info: AvmRegistrationInfo): Promise<void> {

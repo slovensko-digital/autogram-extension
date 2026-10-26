@@ -51,23 +51,70 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
    */
   private loading: Promise<void> | null = null;
 
+  /**
+   * Used when integration is registered on demand
+   */
+  private registrationInfo: AvmRegistrationInfo = { platform: "integration" };
+
   public constructor(db: DBInterface) {
     this.apiClient = new AutogramVMobileIntegrationApiClient();
     this.db = db;
   }
 
   /**
-   * Initialize integration: must be called once at startup before any document operations.
-   * Loads the key pair and integration GUID from the local database, or registers a new integration if not found.
+   * Initialize integration without registering it: loads the key pair and integration GUID from the local database, if any.
+   * Signing by QR code does not need an integration, so it is registered on demand by methods that need it
+   * (pairing QR code, signing QR code with `enableIntegration`).
+   * Pre-condition: None. Post-condition: `getIntegrationGuid()` is non-null only if integration was registered before.
+   */
+  public async init(info: AvmRegistrationInfo): Promise<void> {
+    this.registrationInfo = info;
+    await this.loadIntegration();
+  }
+
+  /**
+   * Initialize integration: loads the key pair and integration GUID from the local database, or registers a new integration if not found.
+   * Use `init()` instead when integration GUID is not needed right away.
    * Pre-condition: None. Post-condition: `getIntegrationGuid()` will return non-null.
    */
   public loadOrRegister(info: AvmRegistrationInfo): Promise<void> {
+    this.registrationInfo = info;
+    return this.ensureIntegration();
+  }
+
+  private ensureIntegration(): Promise<void> {
     // Concurrent callers (e.g. options page showing pairing QR code and paired
     // devices at once) share one load/registration, otherwise each registers
     // new integration and key pair and GUID get mixed up
-    return (this.loading ??= this.doLoadOrRegister(info).finally(() => {
+    return (this.loading ??= this.doLoadOrRegister(
+      this.registrationInfo
+    ).finally(() => {
       this.loading = null;
     }));
+  }
+
+  /**
+   * Loads persisted integration, never registers.
+   * @returns `false` when integration is not registered (yet)
+   */
+  private async loadIntegration(): Promise<boolean> {
+    if (this.loading) {
+      // pending registration decides; its error is reported to its caller
+      await this.loading.catch(() => undefined);
+    }
+
+    if (!this.keyPair || !this.integrationGuid) {
+      await this.loadSubtleCrypto();
+      const keyPair = await this.getKeyPairFromDb();
+      const integrationGuid = await this.getIntegrationGuidFromDb();
+
+      if (keyPair && integrationGuid) {
+        this.keyPair = keyPair;
+        this.integrationGuid = integrationGuid;
+      }
+    }
+
+    return this.keyPair !== null && this.integrationGuid !== null;
   }
 
   private async doLoadOrRegister({
@@ -98,16 +145,12 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
    * Share this URL with user (as QR code) after uploading document.
    * Pre-condition: `addDocument()` must be called first. Post-condition: Mobile app can scan and sign.
    * @param doc Document reference returned from `addDocument()`, containing document GUID and encryption key.
-   * @param enableIntegration Set to true to enable push notifications from the device to this integration.
+   * @param enableIntegration Set to true to enable push notifications from the device to this integration (registers integration if needed).
    */
   public async getQrCodeUrl(
     doc: AvmIntegrationDocument,
     enableIntegration = false
   ) {
-    if (!this.integrationGuid) {
-      throw new Error("Integration guid missing");
-    }
-
     if (!doc.guid || !doc.encryptionKey) {
       log.debug(doc);
       throw new Error("Document guid or key missing");
@@ -115,6 +158,7 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
 
     let integrationObj = {};
     if (enableIntegration) {
+      await this.ensureIntegration();
       const integration = await this.getIntegrationBearerToken(true);
       log.debug("Integration JWT", integration);
       integrationObj = { integration: integration };
@@ -151,9 +195,11 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
   /**
    * Generate QR code for setting up push notifications: optional setup step.
    * Use when you want mobile app to send notifications to this integration about new signatures.
-   * Pre-condition: `loadOrRegister()` completed.
+   * Registers integration if needed.
+   * Pre-condition: `init()` or `loadOrRegister()` completed.
    */
   public async getPairingQrCodeUrl() {
+    await this.ensureIntegration();
     const integrationJwt = await this.getIntegrationBearerToken(true);
     return this.apiClient.qrCodeRegisterIntegrationUrl(integrationJwt);
   }
@@ -206,20 +252,17 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
   /**
    * Upload document to server for signing: first step of signing process (after integration initialization).
    * Generates encryption key and sends document to server. Must be called before `getQrCodeUrl()` and `waitForSignature()`.
-   * Pre-condition: `loadOrRegister()` completed. Post-condition: Document is encrypted on server, ready to sign.
+   * Does not need integration. Post-condition: Document is encrypted on server, ready to sign.
    * @returns Document reference needed for subsequent signing operations.
    */
   public async addDocument(
     document: DocumentToSign
   ): Promise<AvmIntegrationDocument> {
+    await this.loadSubtleCrypto();
     // TODO zatial funguje iba pre jeden dokument
     const encryptionKey = await this.initDocumentKey();
     log.debug("Sending document", document);
-    const res = await this.apiClient.postDocuments(
-      document,
-      await this.getIntegrationBearerToken(),
-      encryptionKey
-    );
+    const res = await this.apiClient.postDocuments(document, encryptionKey);
 
     return {
       guid: res.guid,
@@ -230,9 +273,13 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
 
   /**
    * List all mobile devices currently paired with this integration.
-   * Pre-condition: `loadOrRegister()` completed.
+   * Empty when integration is not registered (yet) - nothing could be paired.
+   * Pre-condition: `init()` or `loadOrRegister()` completed.
    */
-  public async getDevices() {
+  public async getDevices(): Promise<PairedDevice[]> {
+    if (!(await this.loadIntegration())) {
+      return [];
+    }
     return this.apiClient.getIntegrationDevices(
       await this.getIntegrationBearerToken()
     );
@@ -242,9 +289,12 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
    * Unpair a mobile device from this integration. It stops receiving push
    * notifications from this integration. Idempotent: a device that is not
    * paired (any more) is not an error.
-   * Pre-condition: `loadOrRegister()` completed.
+   * Pre-condition: `init()` or `loadOrRegister()` completed.
    */
   public async unpairDevice(deviceId: string): Promise<void> {
+    if (!(await this.loadIntegration())) {
+      return;
+    }
     await this.apiClient.deleteIntegrationDevice(
       deviceId,
       await this.getIntegrationBearerToken()
@@ -261,6 +311,10 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
   ): Promise<void> {
     if (!documentRef.guid || !documentRef.encryptionKey) {
       log.warn("Cannot send notification: document guid or key missing");
+      return;
+    }
+    if (!(await this.loadIntegration())) {
+      log.debug("No notification sent: integration not registered");
       return;
     }
     try {
@@ -454,7 +508,8 @@ export interface AutogramVMobileIntegrationInterfaceStateful {
    */
   init(): Promise<void>;
   /**
-   * Load existing or register new integration with the Autogram v mobile server
+   * Load existing integration with the Autogram v mobile server; new one is
+   * registered on demand, when pairing needs it
    */
   loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   /**
@@ -635,20 +690,15 @@ export class AutogramVMobileIntegrationApiClient {
     data: NonNullable<
       paths[typeof this._documents]["post"]["requestBody"]
     >["content"]["application/json"],
-    bearerToken: string,
     documentEncryptionKey: string
   ) {
     if (!documentEncryptionKey) {
       throw new Error("Document encryption key missing");
     }
-    if (!bearerToken) {
-      throw new Error("Bearer token missing");
-    }
     const res = await fetch(this.baseUrl + this._documents, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + bearerToken,
         "X-Encryption-Key": documentEncryptionKey,
       },
       body: JSON.stringify(data),

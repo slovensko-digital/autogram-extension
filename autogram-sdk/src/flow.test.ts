@@ -404,6 +404,42 @@ describe("SigningFlow notifications", () => {
     await pending;
   });
 
+  test("waitForPairing uses the setup listing when its own first listing fails", async () => {
+    let release: () => void = () => {};
+    const signed = new Promise<void>((resolve) => (release = resolve));
+    // setup sees no device; the wait's first listing fails, then the phone pairs
+    const listings: Array<() => Promise<(typeof PHONE)[]>> = [
+      async () => [],
+      async () => {
+        throw new Error("offline");
+      },
+      async () => [PHONE],
+    ];
+    let call = 0;
+    const mobile = fakeMobile({
+      getPairedDevices: () =>
+        listings[Math.min(call++, listings.length - 1)](),
+    });
+    mobile.waitForSignature = async () => {
+      await signed;
+      return null as never;
+    };
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      FAST
+    );
+    const pending = flow.sign(REQUEST).catch(() => undefined);
+    await new Promise((r) => setTimeout(r, 5));
+
+    const devices = await flow.waitForPairing(new AbortController().signal);
+    expect(devices).toEqual([PHONE]);
+
+    release();
+    await pending;
+  });
+
   test("waitForPairing does not resolve while only an already paired device is listed", async () => {
     let release: () => void = () => {};
     const signed = new Promise<void>((resolve) => (release = resolve));

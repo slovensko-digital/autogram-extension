@@ -368,8 +368,12 @@ export class SigningFlow {
         return null;
       }
     };
-    // device ids already paired; null until the first successful listing
-    let knownDeviceIds = (await listDeviceIds())?.ids ?? null;
+    // device ids already paired; when this listing fails, the one from signing
+    // setup is used - it was taken before any pairing QR was shown, so a phone
+    // pairing meanwhile still counts as new. null only when both failed, then
+    // the first successful listing is the baseline.
+    let knownDeviceIds =
+      (await listDeviceIds())?.ids ?? pairing.pairedDeviceIds;
 
     const startedAt = Date.now();
     while (!signal.aborted && Date.now() - startedAt < timeoutMs) {
@@ -479,13 +483,13 @@ export class SigningFlow {
       payloadMimeType: payloadMimeType,
     });
     const notificationChannel = this.notificationChannel();
-    const [signingUrl, pairingUrl, hasPairedDevice] = await Promise.all([
+    const [signingUrl, pairingUrl, pairedDeviceIds] = await Promise.all([
       this.mobile.getQrCodeUrl(),
       notificationChannel ? notificationChannel.getPairingQrCodeUrl() : null,
       // a failed lookup counts as unknown: better no suggestion than a wrong one
       notificationChannel
         ? notificationChannel.getPairedDevices().then(
-            (devices) => devices.length > 0,
+            (devices) => new Set(devices.map((d) => d.deviceId)),
             (e) => {
               log.warn("Listing paired devices failed", e);
               return null;
@@ -493,8 +497,14 @@ export class SigningFlow {
           )
         : null,
     ]);
+    const hasPairedDevice = pairedDeviceIds ? pairedDeviceIds.size > 0 : null;
     this.pairing = notificationChannel
-      ? { pairingUrl, pairingUrlIssuedAt: Date.now(), hasPairedDevice }
+      ? {
+          pairingUrl,
+          pairingUrlIssuedAt: Date.now(),
+          hasPairedDevice,
+          pairedDeviceIds,
+        }
       : null;
     log.debug({ signingUrl, pairingUrl, hasPairedDevice });
     return { signingUrl, pairingUrl };
@@ -522,6 +532,11 @@ interface PairingSession {
   pairingUrlIssuedAt: number;
   /** `null` when the lookup failed */
   hasPairedDevice: boolean | null;
+  /**
+   * Devices paired at signing setup, before any pairing QR was shown;
+   * `null` when the lookup failed
+   */
+  pairedDeviceIds: Set<string> | null;
 }
 
 function abortableDelay(ms: number, signal: AbortSignal): Promise<void> {

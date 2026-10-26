@@ -74,7 +74,8 @@ export class AvmSimpleChannel implements AutogramVMobileIntegrationInterfaceStat
     return Promise.resolve();
   }
   async loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void> {
-    await this.client.register(regInfo);
+    // integration is registered on demand, only pairing needs it
+    await this.client.init(regInfo);
   }
   async getQrCodeUrl(): Promise<string> {
     return this.currentRequest().qrCodeUrl();
