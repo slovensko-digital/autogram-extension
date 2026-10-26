@@ -86,9 +86,14 @@ export class AutogramVMobileIntegration implements AutogramVMobileIntegrationPri
   }
 
   private async loadSavedOrRegister() {
-    if (!(await this.loadSavedIntegration())) {
-      await this.register(this.registrationInfo);
-    }
+    // Other instances sharing the database (e.g. extension options page and
+    // background worker) may register at the same time; under the lock the
+    // one that waited reads the integration the other has just saved
+    await withLock(INTEGRATION_LOCK, async () => {
+      if (!(await this.loadSavedIntegration())) {
+        await this.register(this.registrationInfo);
+      }
+    });
 
     log.debug("keys init", {
       public: await this.getPublicKeyStr(),
@@ -916,4 +921,16 @@ export function randomUUID() {
 
 async function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const INTEGRATION_LOCK = "autogram-sdk:integration";
+
+/**
+ * Runs `fn` holding Web Lock `name`, shared by all pages and workers of the
+ * origin (unlike IndexedDB transaction it is held across `await fetch()`).
+ * Runs `fn` directly where Web Locks are not available (e.g. Node).
+ */
+function withLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  const locks = globalThis.navigator?.locks;
+  return locks ? locks.request(name, fn) : fn();
 }
