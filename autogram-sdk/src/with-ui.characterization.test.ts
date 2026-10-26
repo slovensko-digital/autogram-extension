@@ -96,7 +96,6 @@ function fakeDesktop(
 function fakeMobile() {
   return recorder<AutogramVMobileIntegrationInterfaceStateful>({
     init: async () => undefined,
-    loadOrRegister: async () => undefined,
     getQrCodeUrl: async () => "https://avm/qr",
     getPairingQrCodeUrl: async () => "https://avm/pair",
     addDocument: async () => undefined,

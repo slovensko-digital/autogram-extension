@@ -107,11 +107,9 @@ export class AvmChannelWeb implements AutogramVMobileIntegrationInterfaceStatefu
     this.rpc = createRpcClient(avmService, channel);
   }
 
-  async init() {}
-
   /* registration info is provided by the background worker itself */
-  async loadOrRegister(): Promise<void> {
-    await this.rpc.loadOrRegister(null);
+  async init(): Promise<void> {
+    await this.rpc.init(null);
   }
   getQrCodeUrl(): Promise<string> {
     return this.rpc.getQrCodeUrl(null);
