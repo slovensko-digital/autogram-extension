@@ -41,7 +41,6 @@ function fakeBackend(
   return {
     calls,
     init: record("init", undefined),
-    loadOrRegister: record("loadOrRegister", undefined),
     addDocument: record("addDocument", TOKEN),
     getQrCodeUrl: record("getQrCodeUrl", "https://avm/qr-code?guid=doc-guid"),
     getPairingQrCodeUrl: record("getPairingQrCodeUrl", "https://avm/pair"),

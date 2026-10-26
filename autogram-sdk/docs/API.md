@@ -210,7 +210,8 @@ import { AutogramVMobileIntegration, MobileClient } from "autogram-sdk";
 import { get, set } from "idb-keyval";
 
 const mobile = new MobileClient(new AutogramVMobileIntegration({ get, set }));
-await mobile.register({ platform: "web", displayName: "My app" });
+// loads saved integration; it is registered on demand, when pairing needs it
+await mobile.init({ platform: "web", displayName: "My app" });
 
 const request = await mobile.requestSignature({
   document: { content, filename },
@@ -277,7 +278,7 @@ const result = await store.use(restorePointId, currentRequest?.token ?? null);
 Direct client for the AVM server API, used as the backend of
 `MobileClient` (any `MobileIntegrationBackend` implementation works, which
 is how the browser extension bridges calls to its background worker).
-Key methods: `loadOrRegister`, `addDocument`, `getQrCodeUrl(docRef,
+Key methods: `init`, `addDocument`, `getQrCodeUrl(docRef,
 enableIntegration?)`, `getPairingQrCodeUrl`, `sendNotification(docRef)`,
 `checkDocumentStatus(docRef)`, `waitForSignature(docRef, abortController)`,
 `getDevices`, `unpairDevice(deviceId)`, `setBaseUrl`/`getBaseUrl`, `getIntegrationGuid`.

@@ -263,7 +263,7 @@ class AvmExecutor {
   }
 
   readonly impl: RpcImpl<typeof avmService.methods> = {
-    loadOrRegister: async () => {
+    init: async () => {
       await this.client.init(await getAvmIntegrationRegistrationInfo());
       return null;
     },
@@ -308,7 +308,7 @@ class AvmExecutor {
     },
 
     getPairedDevices: async () => {
-      // the MV3 worker may have restarted since loadOrRegister
+      // the MV3 worker may have restarted since init
       await this.client.init(await getAvmIntegrationRegistrationInfo());
       return this.client.pairedDevices();
     },

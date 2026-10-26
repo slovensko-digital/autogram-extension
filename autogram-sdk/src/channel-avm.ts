@@ -70,10 +70,7 @@ export class AvmSimpleChannel implements AutogramVMobileIntegrationInterfaceStat
     );
   }
 
-  init(): Promise<void> {
-    return Promise.resolve();
-  }
-  async loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void> {
+  async init(regInfo: AvmRegistrationInfo): Promise<void> {
     // integration is registered on demand, only pairing needs it
     await this.client.init(regInfo);
   }

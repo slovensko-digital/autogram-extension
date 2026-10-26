@@ -74,7 +74,6 @@ function fakeMobile(
   return {
     calls,
     init: record("init", undefined),
-    loadOrRegister: record("loadOrRegister", undefined),
     getQrCodeUrl: record("getQrCodeUrl", "https://avm/qr"),
     getPairingQrCodeUrl: record("getPairingQrCodeUrl", "https://avm/pair"),
     addDocument: record("addDocument", undefined),
@@ -177,13 +176,11 @@ describe("SigningFlow mobile path", () => {
     ]);
 
     const callNames = mobile.calls.map(([name]) => name);
-    expect(callNames).toContain("loadOrRegister");
+    expect(callNames).toContain("init");
     expect(callNames).toContain("reset");
 
-    const [, loadOrRegisterArgs] = mobile.calls.find(
-      ([name]) => name === "loadOrRegister"
-    )!;
-    expect(loadOrRegisterArgs[0]).toEqual({
+    const [, initArgs] = mobile.calls.find(([name]) => name === "init")!;
+    expect(initArgs[0]).toEqual({
       platform: "test-platform",
       displayName: "Test",
     });

@@ -179,7 +179,7 @@ export class CombinedClient {
       }
     );
 
-    this.clientMobileIntegration.init();
+    // channel is initialized by the flow before each mobile signing
     this.ui.onRetryMobileNotification = this.retryMobileNotification.bind(this);
     this.ui.onWaitForPairing = (signal, onPairingUrl) =>
       this.flow.waitForPairing(signal, onPairingUrl);

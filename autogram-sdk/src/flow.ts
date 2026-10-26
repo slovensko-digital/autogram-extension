@@ -469,7 +469,7 @@ export class SigningFlow {
       level = undefined;
     }
 
-    await this.mobile.loadOrRegister({
+    await this.mobile.init({
       platform: this.options.platform,
       displayName: this.options.displayName,
     });

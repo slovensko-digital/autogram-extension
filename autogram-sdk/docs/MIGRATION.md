@@ -1,5 +1,27 @@
 # Migration guide
 
+## Unreleased: integration is registered on demand
+
+**Breaking.** Signing by QR code does not need an integration (the server
+requires only the document encryption key), so it is no longer registered up
+front. `init(regInfo)` replaces `loadOrRegister(regInfo)` everywhere:
+
+| Before | After |
+| --- | --- |
+| `AutogramVMobileIntegration.loadOrRegister(info)` | `init(info)` |
+| `MobileClient.register(info)` | `MobileClient.init(info)` |
+| channel `loadOrRegister(info)` and no-arg `init()` | channel `init(info)`, called by the signing flow before each mobile signing |
+| `MobileIntegrationBackend.loadOrRegister` | `MobileIntegrationBackend.init` |
+
+`init()` only loads a saved integration. It is registered when first needed:
+by `getPairingQrCodeUrl()` and by `getQrCodeUrl(docRef, true)`.
+Without one, `getDevices()` returns `[]`, and `unpairDevice()` and
+`sendNotification()` do nothing.
+`getIntegrationGuid()` is `null` until the integration is registered, so read
+it after the pairing QR code is created.
+
+`POST /documents` no longer sends the integration bearer token.
+
 ## 0.6.x → 0.7.0
 
 **Breaking.** The SDK now speaks the Autogram desktop `POST /api/v1/sign`

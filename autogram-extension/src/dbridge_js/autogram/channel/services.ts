@@ -34,11 +34,11 @@ const ZUrl = z.string();
 /* ------------------------------------------------------------------ */
 
 export const avmService = defineRpcService("avm", {
-  loadOrRegister: {
+  init: {
     args: z.null(),
     result: z.null(),
     timeoutMs: 10_000,
-    timeoutMessage: "Časový limit registrácie rozšírenia vypršal",
+    timeoutMessage: "Časový limit inicializácie rozšírenia vypršal",
   },
   getQrCodeUrl: {
     args: z.null(),

@@ -54,7 +54,6 @@ export type SignatureRequestStatus =
  */
 export interface MobileIntegrationBackend {
   init(regInfo: AvmRegistrationInfo): Promise<void>;
-  loadOrRegister(regInfo: AvmRegistrationInfo): Promise<void>;
   addDocument(documentToSign: DocumentToSign): Promise<AvmIntegrationDocument>;
   getQrCodeUrl(
     doc: AvmIntegrationDocument,
@@ -163,11 +162,6 @@ export class MobileClient {
    */
   init(info: AvmRegistrationInfo): Promise<void> {
     return this.backend.init(info);
-  }
-
-  /** Load the persisted integration or register a new one. Idempotent. */
-  register(info: AvmRegistrationInfo): Promise<void> {
-    return this.backend.loadOrRegister(info);
   }
 
   /**
