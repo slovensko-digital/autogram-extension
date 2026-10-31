@@ -90,7 +90,7 @@
     "js-base64": "^3.7.7",
     "loglevel": "^1.9.2",
     "webextension-polyfill": "^0.8.0",
-    "zod": "^3.23.8"
+    "zod": "^4.6.7"
   },
   "directories": {
     "test": "tests"
