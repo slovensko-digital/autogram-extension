@@ -7,7 +7,7 @@
  * the SDK, where they are type-checked against the generated API types.
  */
 
-import { z } from "zod";
+import { z } from "zod/v4-mini";
 import {
   defineRpcService,
   AVMGetDocumentsResponse,
@@ -83,7 +83,7 @@ export const avmService = defineRpcService("avm", {
   },
   useRestorePoint: {
     args: z.object({ restorePoint: z.string() }),
-    result: ZSignedObject.nullable(),
+    result: z.nullable(ZSignedObject),
     timeoutMs: 2_000,
     timeoutMessage: "Časový limit na zapamätané podpisovanie vypršal",
   },
@@ -95,7 +95,7 @@ export const avmService = defineRpcService("avm", {
 
 export const autogramService = defineRpcService("autogram", {
   getLaunchURL: {
-    args: z.object({ command: z.literal("listen").optional() }),
+    args: z.object({ command: z.optional(z.literal("listen")) }),
     result: ZUrl,
   },
   info: {
@@ -106,9 +106,9 @@ export const autogramService = defineRpcService("autogram", {
   },
   waitForStatus: {
     args: z.object({
-      status: z.literal("READY").optional(),
-      timeout: z.number().optional(),
-      delay: z.number().optional(),
+      status: z.optional(z.literal("READY")),
+      timeout: z.optional(z.number()),
+      delay: z.optional(z.number()),
     }),
     result: ZDesktopServerInfo,
     timeoutMs: (args: { timeout?: number }) =>
@@ -118,9 +118,9 @@ export const autogramService = defineRpcService("autogram", {
   signLegacy: {
     args: z.object({
       document: ZDesktopLegacyAutogramDocument,
-      signatureParameters: ZDesktopLegacySignatureParameters.optional(),
-      payloadMimeType: z.string().optional(),
-      batchId: z.string().optional(),
+      signatureParameters: z.optional(ZDesktopLegacySignatureParameters),
+      payloadMimeType: z.optional(z.string()),
+      batchId: z.optional(z.string()),
     }),
     result: ZDesktopSignResponseBody,
     // long-running: resolves when the user signs in the desktop app

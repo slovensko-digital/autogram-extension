@@ -1,6 +1,6 @@
 import { components, paths } from "./avm-api.generated";
 import fetch from "cross-fetch";
-import z from "zod";
+import { z } from "zod/v4-mini";
 import { SignJWT } from "jose";
 import { createLogger } from "../../log";
 
@@ -262,7 +262,7 @@ export class AutogramVMobileClientApiClient {
     return this.readJsonOrThrow(response, PostDocumentSignResponse);
   }
 
-  private async readJsonOrThrow<S extends z.ZodTypeAny>(
+  private async readJsonOrThrow<S extends z.ZodMiniType>(
     response: Response,
     schema: S
   ): Promise<z.output<S>> {
@@ -302,12 +302,12 @@ export class AutogramVMobileClientApiClient {
 }
 
 const PostDeviceResponse = z.object({
-  guid: z.string().optional(),
+  guid: z.optional(z.string()),
 });
 
 const GetDeviceIntegrationsResponse = z.array(
-  z
-    .union([
+  z.pipe(
+    z.union([
       z.object({
         integrationId: z.string(), // TODO add fallback to integration_id
         platform: z.string(),
@@ -318,18 +318,19 @@ const GetDeviceIntegrationsResponse = z.array(
         platform: z.string(),
         display_name: z.string(),
       }),
-    ])
-    .transform((item) => ({
+    ]),
+    z.transform((item) => ({
       integrationId:
         "integrationId" in item ? item.integrationId : item.integration_id,
       platform: item.platform,
       displayName: "displayName" in item ? item.displayName : item.display_name,
     }))
+  )
 );
 
 const GetDocumentVisualizationResponse = z.object({
   mimeType: z.string(),
-  filename: z.string().optional(),
+  filename: z.optional(z.string()),
   content: z.string(),
 });
 
