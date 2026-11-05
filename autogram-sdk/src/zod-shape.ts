@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from "zod/v4-mini";
 
 /**
  * Compile-time drift check for a hand-written zod object shape against a
@@ -9,7 +9,7 @@ import type { z } from "zod";
  * is fine.
  */
 export type ZodShapeOf<T> = {
-  [K in keyof T]-?: z.ZodType<T[K], z.ZodTypeDef, unknown>;
+  [K in keyof T]-?: z.ZodMiniType<T[K], unknown>;
 };
 
 /**
@@ -18,5 +18,5 @@ export type ZodShapeOf<T> = {
  * keys are allowed, but field types are not checked.
  */
 export type ZodKeysOf<T> = {
-  [K in keyof T]-?: z.ZodTypeAny;
+  [K in keyof T]-?: z.ZodMiniType;
 };

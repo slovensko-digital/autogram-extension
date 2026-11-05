@@ -1,6 +1,6 @@
 // import fetch from "cross-fetch";
 import { SignJWT } from "jose";
-import z from "zod";
+import { z } from "zod/v4-mini";
 import { paths } from "./avm-api.generated";
 import { Base64 } from "js-base64";
 import { createLogger } from "../../log";
@@ -818,21 +818,21 @@ export const PostDocumentsResponse = z.object({
 export const ApiErrorResponse = z.object({
   code: z.string(),
   message: z.string(),
-  details: z.string().optional(),
+  details: z.optional(z.string()),
 });
 
 export const GetDocumentsResponse = z.object({
   filename: z.string(),
   mimeType: z.string(),
   content: z.string(),
-  signers: z
-    .array(
+  signers: z.optional(
+    z.array(
       z.object({
-        signedBy: z.string().optional(),
-        issuedBy: z.string().optional(),
+        signedBy: z.optional(z.string()),
+        issuedBy: z.optional(z.string()),
       })
     )
-    .optional(),
+  ),
 });
 
 /**
@@ -843,36 +843,35 @@ export const GetDocumentsResponse = z.object({
 export const ZDocumentToSign = z.object({
   document: z.object({
     content: z.string(),
-    filename: z.string().optional(),
+    filename: z.optional(z.string()),
   } satisfies ZodShapeOf<DocumentToSign["document"]>),
-  parameters: z
-    .object({
-      checkPDFACompliance: z.boolean().optional().nullable(),
-      autoLoadEform: z.boolean().optional().nullable(),
-      level: z.string().optional().nullable(),
-      container: z.string().optional().nullable(),
-      containerXmlns: z.string().optional().nullable(),
-      embedUsedSchemas: z.boolean().optional().nullable(),
-      identifier: z.string().optional().nullable(),
-      packaging: z.string().optional().nullable(),
-      digestAlgorithm: z.string().optional().nullable(),
-      en319132: z.boolean().optional().nullable(),
-      infoCanonicalization: z.string().optional().nullable(),
-      propertiesCanonicalization: z.string().optional().nullable(),
-      keyInfoCanonicalization: z.string().optional().nullable(),
-      schema: z.string().optional().nullable(),
-      schemaIdentifier: z.string().optional().nullable(),
-      transformation: z.string().optional().nullable(),
-      transformationIdentifier: z.string().optional().nullable(),
-      transformationLanguage: z.string().optional().nullable(),
-      transformationMediaDestinationTypeDescription: z
-        .string()
-        .optional()
-        .nullable(),
-      transformationTargetEnvironment: z.string().optional().nullable(),
+  parameters: z.optional(
+    z.object({
+      checkPDFACompliance: z.nullable(z.optional(z.boolean())),
+      autoLoadEform: z.nullable(z.optional(z.boolean())),
+      level: z.nullable(z.optional(z.string())),
+      container: z.nullable(z.optional(z.string())),
+      containerXmlns: z.nullable(z.optional(z.string())),
+      embedUsedSchemas: z.nullable(z.optional(z.boolean())),
+      identifier: z.nullable(z.optional(z.string())),
+      packaging: z.nullable(z.optional(z.string())),
+      digestAlgorithm: z.nullable(z.optional(z.string())),
+      en319132: z.nullable(z.optional(z.boolean())),
+      infoCanonicalization: z.nullable(z.optional(z.string())),
+      propertiesCanonicalization: z.nullable(z.optional(z.string())),
+      keyInfoCanonicalization: z.nullable(z.optional(z.string())),
+      schema: z.nullable(z.optional(z.string())),
+      schemaIdentifier: z.nullable(z.optional(z.string())),
+      transformation: z.nullable(z.optional(z.string())),
+      transformationIdentifier: z.nullable(z.optional(z.string())),
+      transformationLanguage: z.nullable(z.optional(z.string())),
+      transformationMediaDestinationTypeDescription: z.nullable(
+        z.optional(z.string())
+      ),
+      transformationTargetEnvironment: z.nullable(z.optional(z.string())),
     } satisfies ZodKeysOf<NonNullable<DocumentToSign["parameters"]>>)
-    .optional(),
-  payloadMimeType: z.string().optional(),
+  ),
+  payloadMimeType: z.optional(z.string()),
 } satisfies ZodKeysOf<DocumentToSign>);
 
 // Types

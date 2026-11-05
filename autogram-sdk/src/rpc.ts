@@ -23,7 +23,7 @@
  * frames, so long-running calls are cancelled on the far side too.
  */
 
-import { z } from "zod";
+import { z } from "zod/v4-mini";
 import { AutogramError, SerializedAutogramError } from "./errors";
 import { createLogger } from "./log";
 
@@ -64,8 +64,8 @@ export type RpcResponseFrame = z.infer<typeof ZRpcResponseFrame>;
 /* ------------------------------------------------------------------ */
 
 export interface RpcMethodDef<
-  A extends z.ZodTypeAny = z.ZodTypeAny,
-  R extends z.ZodTypeAny = z.ZodTypeAny,
+  A extends z.ZodMiniType = z.ZodMiniType,
+  R extends z.ZodMiniType = z.ZodMiniType,
 > {
   args: A;
   result: R;
