@@ -128,14 +128,16 @@ function setPushStatus(message: string) {
   setText("pushStatusOutput", message);
 }
 
-async function loadOrRegisterIntegration() {
+async function initIntegration() {
   applyBaseUrl();
   setStatus("Loading integration state...");
   logEvent(`Using AVM server ${integration.getBaseUrl()}`);
-  await integration.loadOrRegister({
+  await integration.init({
     platform: "web",
     displayName: "AVM example integration",
   });
+  // pairing QR code registers the integration if it is not registered yet
+  await showPairingQr();
   const state = {
     baseUrl: integration.getBaseUrl(),
     integrationGuid: integration.getIntegrationGuid(),
@@ -144,7 +146,6 @@ async function loadOrRegisterIntegration() {
   $("integrationState").j = state;
   setStatus("Integration ready.");
   logEvent(`Integration ready: ${integration.getIntegrationGuid()}`);
-  await showPairingQr();
 }
 
 async function resetIntegrationState() {
@@ -602,7 +603,7 @@ function openQrUrlNoJwt() {
 
 async function ensureIntegrationReady() {
   if (!integration.getIntegrationGuid()) {
-    await loadOrRegisterIntegration();
+    await initIntegration();
   }
 }
 
@@ -1131,7 +1132,7 @@ function bindFileInput() {
 }
 
 function installGlobalFunctions() {
-  globalThis["loadOrRegisterIntegration"] = runAction(loadOrRegisterIntegration);
+  globalThis["initIntegration"] = runAction(initIntegration);
   globalThis["resetIntegrationState"] = runAction(resetIntegrationState);
   globalThis["createSigningSession"] = runAction(createSigningSession);
   globalThis["waitForSignature"] = runAction(waitForSignature);

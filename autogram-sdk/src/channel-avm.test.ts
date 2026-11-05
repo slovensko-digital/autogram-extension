@@ -46,7 +46,7 @@ describe("AvmSimpleChannel", () => {
 
     const channel = new AvmSimpleChannel({ storage });
     // identity found in storage: no registration request
-    await channel.loadOrRegister({ platform: "test" });
+    await channel.init({ platform: "test" });
     expect(requests).toHaveLength(0);
 
     await expect(channel.getPairedDevices()).resolves.toEqual([]);

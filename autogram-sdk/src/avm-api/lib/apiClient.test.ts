@@ -41,11 +41,12 @@ describe("avm api client", () => {
 });
 
 describe("avm integration: integration tests", () => {
-  test("load or register", async () => {
+  test("init without saved integration does not register", async () => {
     const apiClient = new AutogramVMobileIntegration({
       get,
       set,
     });
-    await apiClient.loadOrRegister();
+    await apiClient.init({ platform: "test" });
+    expect(apiClient.getIntegrationGuid()).toBeNull();
   });
 });

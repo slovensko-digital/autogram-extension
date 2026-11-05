@@ -122,9 +122,8 @@ async function showPairingQrCode() {
   pairingQrStatus.textContent = "Pripravujem párovací QR kód...";
 
   try {
-    await avmIntegration.loadOrRegister(
-      await getAvmIntegrationRegistrationInfo()
-    );
+    await avmIntegration.init(await getAvmIntegrationRegistrationInfo());
+    // registers integration on fresh profile
     const pairingUrl = await avmIntegration.getPairingQrCodeUrl();
     pairingQrUrl.value = pairingUrl;
     qrIsOutdated = false;
@@ -182,17 +181,21 @@ function openPairingUrl() {
 async function loadPairedDevices() {
   const container = document.getElementById("pairedDevicesList");
   const status = document.getElementById("pairedDevicesStatus");
+  const refresh = document.getElementById(
+    "refreshPairedDevices"
+  ) as HTMLButtonElement | null;
   if (!container || !status) {
     return;
   }
 
   status.textContent = "Načítavam zariadenia...";
   container.replaceChildren();
+  if (refresh) {
+    refresh.disabled = true;
+  }
 
   try {
-    await avmIntegration.loadOrRegister(
-      await getAvmIntegrationRegistrationInfo()
-    );
+    await avmIntegration.init(await getAvmIntegrationRegistrationInfo());
     const devices = await avmIntegration.getDevices();
 
     status.textContent = "";
@@ -234,6 +237,10 @@ async function loadPairedDevices() {
   } catch (error) {
     log.error("Failed to load paired devices", error);
     status.textContent = "Nepodarilo sa načítať zariadenia.";
+  } finally {
+    if (refresh) {
+      refresh.disabled = false;
+    }
   }
 }
 
@@ -255,9 +262,7 @@ async function unpairDevice(
   status.textContent = "Ruším párovanie...";
 
   try {
-    await avmIntegration.loadOrRegister(
-      await getAvmIntegrationRegistrationInfo()
-    );
+    await avmIntegration.init(await getAvmIntegrationRegistrationInfo());
     await avmIntegration.unpairDevice(device.deviceId);
     await loadPairedDevices();
     // keep the confirmation unless the list itself reports something
@@ -301,6 +306,10 @@ function initOptionsPage() {
   initPairingQrControls();
   void loadPairedDevices();
 
+  // no polling: the page may stay open for days; paired phone shows up on click
+  document
+    .getElementById("refreshPairedDevices")
+    ?.addEventListener("click", () => void loadPairedDevices());
   document.getElementById("save")?.addEventListener("click", save_options);
 }
 

@@ -74,7 +74,6 @@ function fakeMobile(
   return {
     calls,
     init: record("init", undefined),
-    loadOrRegister: record("loadOrRegister", undefined),
     getQrCodeUrl: record("getQrCodeUrl", "https://avm/qr"),
     getPairingQrCodeUrl: record("getPairingQrCodeUrl", "https://avm/pair"),
     addDocument: record("addDocument", undefined),
@@ -177,13 +176,11 @@ describe("SigningFlow mobile path", () => {
     ]);
 
     const callNames = mobile.calls.map(([name]) => name);
-    expect(callNames).toContain("loadOrRegister");
+    expect(callNames).toContain("init");
     expect(callNames).toContain("reset");
 
-    const [, loadOrRegisterArgs] = mobile.calls.find(
-      ([name]) => name === "loadOrRegister"
-    )!;
-    expect(loadOrRegisterArgs[0]).toEqual({
+    const [, initArgs] = mobile.calls.find(([name]) => name === "init")!;
+    expect(initArgs[0]).toEqual({
       platform: "test-platform",
       displayName: "Test",
     });
@@ -399,6 +396,42 @@ describe("SigningFlow notifications", () => {
 
     const devices = await flow.waitForPairing(new AbortController().signal);
     expect(devices).toEqual([PHONE, TABLET]);
+
+    release();
+    await pending;
+  });
+
+  test("waitForPairing uses the setup listing when its own first listing fails", async () => {
+    let release: () => void = () => {};
+    const signed = new Promise<void>((resolve) => (release = resolve));
+    // setup sees no device; the wait's first listing fails, then the phone pairs
+    const listings: Array<() => Promise<(typeof PHONE)[]>> = [
+      async () => [],
+      async () => {
+        throw new Error("offline");
+      },
+      async () => [PHONE],
+    ];
+    let call = 0;
+    const mobile = fakeMobile({
+      getPairedDevices: () =>
+        listings[Math.min(call++, listings.length - 1)](),
+    });
+    mobile.waitForSignature = async () => {
+      await signed;
+      return null as never;
+    };
+    const flow = new SigningFlow(
+      fakeDesktop(),
+      mobile,
+      fakeDelegate(SigningMethod.mobile),
+      FAST
+    );
+    const pending = flow.sign(REQUEST).catch(() => undefined);
+    await new Promise((r) => setTimeout(r, 5));
+
+    const devices = await flow.waitForPairing(new AbortController().signal);
+    expect(devices).toEqual([PHONE]);
 
     release();
     await pending;
