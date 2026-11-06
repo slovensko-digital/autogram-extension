@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.1.0](https://github.com/slovensko-digital/autogram-extension/compare/v4.0.1...v4.1.0) (2026-11-06)
+
+
+### Features
+
+* register AVM integration only when pairing, refresh paired devices, fix race ([#263](https://github.com/slovensko-digital/autogram-extension/issues/263)) ([5b917b1](https://github.com/slovensko-digital/autogram-extension/commit/5b917b14ae093f8b6cb0fc73676d4eb30a0e20ad))
+* support kosice, add generateGuid utility and enhance XadesBpXml identifier handling ([3dbd35c](https://github.com/slovensko-digital/autogram-extension/commit/3dbd35cfd0e2995be36ebf849cfe221f971eea17))
+
 ## [4.0.1](https://github.com/slovensko-digital/autogram-extension/compare/v4.0.0...v4.0.1) (2026-10-04)
 
 
