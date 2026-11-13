@@ -32,9 +32,9 @@ export type InjectionStrategy =
  */
 export const CONFLICT_RESOLUTION_REPLACE_ORIGINAL = "replace-original" as const;
 /**
- * Replace `ditec` object with a proxy object wrapping our injected version that will be used instead of the original object,
- * Existing members cannot be overwritten; late component scripts may add
- * their own helper classes without replacing the Autogram adapters.
+ * Install our `ditec` replacement (even when the page has no `ditec` yet)
+ * behind a read-only facade, so D.Bridge scripts loaded later cannot
+ * replace or extend it (see immutable-ditec.ts).
  */
 export const CONFLICT_RESOLUTION_IMMUTABLE_PROXY = "immutable-proxy" as const;
 
@@ -155,9 +155,10 @@ for (const url of basicUrls) {
   );
 }
 
-// The new SP SPA loads D.Bridge lazily, after the initial page load.
-// Install before those scripts and keep their component assignments from
-// replacing the Autogram adapters (otherwise signing falls back to DB206).
+// The new SP portal (moj-portal SPA) loads SignerService and the slovensko.sk
+// D.Bridge scripts only when a signature is requested, so there is no
+// `ditec` to replace on page load; the immutable proxy installs ours up
+// front and keeps those late scripts from overriding it (#272).
 supportedSites.addSite(
   "https://esluzby.socpoist.sk/*",
   DIRECT_INJECTION,

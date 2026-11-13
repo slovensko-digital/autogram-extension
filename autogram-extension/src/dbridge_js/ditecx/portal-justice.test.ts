@@ -11,7 +11,7 @@
  *
  * obcan.justice.sk is configured with the immutable-proxy conflict
  * resolution (supported-sites.ts), so the replay talks to
- * `wrapWithProxy(buildDitecX(...))` exactly like the production page.
+ * `immutableDitec(buildDitecX(...))` exactly like the production page.
  *
  * The repeated-signature scenarios pin down the report in issue #101
  * (https://github.com/slovensko-digital/autogram-extension/issues/101#issuecomment-4978486015):
@@ -32,7 +32,7 @@ jest.mock("../autogram/autogram-implementation", () => ({
 
 import { Base64 } from "js-base64";
 import { buildDitecX } from "./ditecx";
-import { wrapWithProxy } from "../proxy";
+import { immutableDitec } from "../immutable-ditec";
 import { FakeImplementation } from "./testing/fake-implementation";
 import { FETCH_FIXTURES_HINT } from "./testing/load-dsigner-multi";
 import {
@@ -55,7 +55,7 @@ function setup() {
   const ditecX = buildDitecX(fake);
   // The site's production conflict resolution: page code talks to an
   // immutable proxy around our ditec, never to the object directly.
-  const ditec = wrapWithProxy(ditecX);
+  const ditec = immutableDitec(ditecX);
   const { shell } = loadJusticeSignDriver(ditec, SOURCE_PDF_BASE64);
   return { fake, ditecX, shell };
 }

@@ -9,6 +9,7 @@ import { createLogger } from "../log";
 import { captureException } from "../sentry";
 import { ExtensionOptions } from "../options/default";
 import { installNativeAutogramIntercept } from "./autogram/native-autogram-intercept";
+import { immutableDitec } from "./immutable-ditec";
 
 const log = createLogger("ag-ext.inject-ditec");
 
@@ -74,9 +75,9 @@ abstract class ConflictResolver {
 class ProxyConflictResolver extends ConflictResolver {
   public static readonly key = CONFLICT_RESOLUTION_IMMUTABLE_PROXY;
   inject(windowAny, extensionOptions) {
-    Promise.all([import("./proxy"), constructDitecX(extensionOptions)])
-      .then(([{ wrapWithProxy }, ditecX]) => {
-        windowAny.ditec = wrapWithProxy(ditecX);
+    constructDitecX(extensionOptions)
+      .then((ditecX) => {
+        windowAny.ditec = immutableDitec(ditecX);
       })
       // A silent failure here leaves the portal's own D.Bridge in charge
       // and signing falls back to D.Launcher (issue #101) — always log it.

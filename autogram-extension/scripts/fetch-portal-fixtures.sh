@@ -29,6 +29,15 @@ while read -r expected url fixture; do
         continue
       fi
       ;;
+    socpoist-signer:*)
+      # No static URL: SignerService is embedded as a data: URL in a
+      # content-hashed Nuxt chunk of the SP portal.
+      if ! node scripts/fetch-socpoist-signer.mjs "$target"; then
+        echo "ERROR: failed to fetch $url" >&2
+        STATUS=2
+        continue
+      fi
+      ;;
     *)
       if ! curl --fail --silent --show-error --location -o "$target" "$url"; then
         echo "ERROR: failed to download $url" >&2

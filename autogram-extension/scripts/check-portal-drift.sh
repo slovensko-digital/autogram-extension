@@ -25,6 +25,17 @@ while read -r expected url fixture; do
       fi
       rm -f "$tmp"
       ;;
+    socpoist-signer:*)
+      # No static URL: SignerService is embedded as a data: URL in a
+      # content-hashed Nuxt chunk of the SP portal.
+      tmp=$(mktemp)
+      if node scripts/fetch-socpoist-signer.mjs "$tmp"; then
+        actual=$(shasum -a 256 "$tmp" | cut -d' ' -f1)
+      else
+        actual=""
+      fi
+      rm -f "$tmp"
+      ;;
     *)
       # Download to a file first: hashing a piped curl would turn a failed
       # download into the empty-input hash and misreport it as drift.

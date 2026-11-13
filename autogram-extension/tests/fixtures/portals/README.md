@@ -24,12 +24,20 @@ a pointer to this file.
 | `DSignerMulti-20250601.js` | <https://schranka.slovensko.sk/Content/jscript/DSignerMulti.js?v=20250601> | fetched 2026-07-10 |
 | `justice-sign-pdf-20260716.js` | inline script of <https://obcan.justice.sk/podpisovanie-dokumentov> after a PDF upload | fetched 2026-07-16 |
 | `DSignerMulti-nove-20260830.js` | <https://message-constructor-web.slovensko.sk/dSigner/scripts/DSignerMulti.js> (the "nove.slovensko.sk" message composer) | fetched 2026-08-30 |
+| `socpoist-SignerService-20261113.js` | `SignerService.js` of <https://esluzby.socpoist.sk/moj-portal/>, embedded as a `data:` URL in a Nuxt chunk | fetched 2026-11-13 |
+| `sksk-dbridge-v1.0-*-20261113.js` | <https://www.slovensko.sk/static/zep/dbridge_js/v1.0/> (`config`, `dCommon`, `dSigXades`, `dSigXadesBp`, `dSigXadesExtender`, `dViewer`), the D.Bridge library the SP portal loads next to SignerService | fetched 2026-11-13 |
 
 The justice.sk driver has no static URL: the portal renders it inline into
 the response of the document-upload POST, with fresh session UUIDs each
 time. `scripts/fetch-justice-driver.mjs` replays the upload with a canned
 `sample.pdf`, extracts the script and pins the UUIDs so the checksum is
 stable; the manifest marks it with the `justice-upload:` pseudo-scheme.
+
+The SP SignerService has no static URL either: the portal ships it as a
+base64 `data:` URL inside a content-hashed Nuxt chunk whose name changes on
+every deploy. `scripts/fetch-socpoist-signer.mjs` finds the chunk and
+decodes the script; the manifest marks it with the `socpoist-signer:`
+pseudo-scheme.
 
 The manifest also tracks the D.Bridge library scripts (not downloaded as
 fixtures) purely for drift detection.

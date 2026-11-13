@@ -87,16 +87,12 @@ function getSpyHandler(prefix?: string, depth?: number, mutable?: boolean) {
     },
 
     set(target: object, prop: PropertyKey, value: unknown, receiver?: unknown) {
-      // Late-loaded D.Bridge scripts define helpers before extending their
-      // prototypes. Keep those additions while protecting existing adapters.
-      if (mutable || !Reflect.has(target, prop)) {
+      if (mutable) {
         return Reflect.set(target, prop, value, receiver);
       }
       const name = `${prefix}.${prop.toString()}`;
       logger.push({ type: "set", name, target, prop, value, receiver });
-      // Acknowledge ignored writes: returning false throws in strict-mode
-      // D.Bridge scripts loaded after our immutable replacement (#272).
-      return true;
+      return false;
     },
   };
   return spyHandler;
