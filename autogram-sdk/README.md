@@ -238,6 +238,8 @@ The SDK is released by [release-please](https://github.com/googleapis/release-pl
 
 The workflow authenticates with [npm trusted publishing](https://docs.npmjs.com/trusted-publishers), so there is no npm token in the repository secrets. On npmjs.com, the trusted publisher accepts only `release.yml` in this repository running in the `npm` environment, and only for `npm stage publish`. Publishing with tokens is disallowed. The `npm` environment (Settings → Environments) only allows `master`.
 
+A new trusted publisher configuration has to complete its first publish within 2 days, otherwise it [expires](https://docs.npmjs.com/trusted-publishers/) and can't be used or edited. If it shows as expired or still pending validation with a past deadline, delete it and create it again with the same settings right before merging the release PR.
+
 ### Using with npm link
 
 1. Run `npm run build:watch` in the autogram-sdk directory
