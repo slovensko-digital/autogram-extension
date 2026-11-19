@@ -226,6 +226,16 @@ npm run generate-docs
 
 The [`deploy-pages`](../.github/workflows/deploy-pages.yml) workflow regenerates the docs on every push to `master` and publishes them to https://slovensko-digital.github.io/autogram-extension/autogram-sdk/.
 
+### Release
+
+The SDK is released by [release-please](https://github.com/googleapis/release-please) like the extension (see [DEVELOPERS.md](../autogram-extension/DEVELOPERS.md#release)), but separately from it:
+
+1. Commits that touch `autogram-sdk/` go into their own `chore: release autogram-sdk X.Y.Z` PR. It bumps `package.json`, the root `package-lock.json` and `CHANGELOG.md`.
+   - Below 1.0.0: `fix` → patch, `feat` and breaking changes (`!` / `BREAKING CHANGE`) → minor.
+2. Merging that PR creates the `autogram-sdk-vX.Y.Z` tag and GitHub release. The `Release` workflow then runs typecheck and tests, builds the package with `npm run build:release` and publishes it to npm.
+
+Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers): npm accepts the GitHub Actions OIDC token from `release.yml` in this repository, so there is no npm token in the repository secrets. It is configured in the package settings on npmjs.com.
+
 ### Using with npm link
 
 1. Run `npm run build:watch` in the autogram-sdk directory

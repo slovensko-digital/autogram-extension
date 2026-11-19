@@ -15,6 +15,8 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs['autogram-extension--release_created'] }}
       tag_name: ${{ steps.release.outputs['autogram-extension--tag_name'] }}
+      sdk_release_created: ${{ steps.release.outputs['autogram-sdk--release_created'] }}
+      sdk_tag_name: ${{ steps.release.outputs['autogram-sdk--tag_name'] }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
@@ -57,3 +59,49 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "$TAG" autogram-extension/web-ext-artifacts/autogram-extension-mv*.zip --clobber
+
+  publish-sdk:
+    needs: release-please
+    if: needs.release-please.outputs.sdk_release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # mark the extension release as latest again
+      id-token: write # npm trusted publishing (OIDC), no npm token needed
+    env:
+      TAG: ${{ needs.release-please.outputs.sdk_tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - name: Update npm
+        run: npm install -g npm@11
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and test
+        run: npx turbo run typecheck test --filter=autogram-sdk
+
+      - name: Build
+        run: npm run build:release --workspace=autogram-sdk
+
+      - name: Publish to npm
+        working-directory: autogram-sdk
+        run: npm publish
+
+      # GitHub marks the newest release as latest. Keep that on the extension
+      # release, because the README sends users to the releases for the zips.
+      - name: Mark the latest extension release as latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXT_TAG=$(gh release list --exclude-drafts --exclude-pre-releases --limit 50 --json tagName --jq '[.[] | select(.tagName | test("^v[0-9]"))][0].tagName')
+          if [ -n "$EXT_TAG" ]; then gh release edit "$EXT_TAG" --latest; fi

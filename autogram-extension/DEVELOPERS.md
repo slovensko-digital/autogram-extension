@@ -24,13 +24,13 @@ Releases are made by [release-please](https://github.com/googleapis/release-plea
 
 1. PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/) (`fix: …`, `feat: …`, `feat!: …`), because the squash commit uses the PR title. The `PR title` workflow checks this.
 2. On each push to `master`, release-please opens or updates a `chore: release X.Y.Z` PR. It bumps `package.json`, the root `package-lock.json` and `CHANGELOG.md`.
-   - Only commits that touch `autogram-extension/` count. SDK and example changes don't bump the extension.
+   - Only commits that touch `autogram-extension/` count. SDK and example changes don't bump the extension. The SDK has its own release PR and is published to npm, see [autogram-sdk/README.md](../autogram-sdk/README.md#release).
    - `fix` → patch, `feat` → minor, `!` / `BREAKING CHANGE` → major.
 3. Merging that PR creates the `vX.Y.Z` tag and GitHub release. The workflow then runs typecheck, lint and tests, builds the mv2 and mv3 zips and attaches them to the release.
 4. Upload the zips to the browser stores by hand.
 5. Safari (macOS and iOS are two separate apps in App Store Connect): run `npm run release:safari -- <build-number>` in `autogram-extension/`. It sets `MARKETING_VERSION` from `package.json` and `CURRENT_PROJECT_VERSION` to `<build-number>`, builds mv2 into `dist/`, archives both apps and uploads them to App Store Connect. The build number must be higher than the last uploaded one. Use `--no-upload` to only archive, or `--only macos|ios` for one app. Commit the changed `project.pbxproj`. Then, in App Store Connect, create the new version for each app, pick the build and submit it for review.
 
-The current version is stored in `/.release-please-manifest.json`; the config is in `/release-please-config.json`. To force a specific version, add `"release-as": "X.Y.Z"` to the package in the config, and remove it after the release.
+The current versions are stored in `/.release-please-manifest.json`; the config is in `/release-please-config.json`. To force a specific version, add `"release-as": "X.Y.Z"` to the package in the config, and remove it after the release.
 
 ## Developing
 
