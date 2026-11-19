@@ -33,6 +33,9 @@
       "require": "./dist/avm-api/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "npx jest",
     "build": "tsdown",
@@ -51,7 +54,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/slovensko-digital/autogram-extension.git"
+    "url": "git+https://github.com/slovensko-digital/autogram-extension.git",
+    "directory": "autogram-sdk"
   },
   "keywords": [
     "slovensko.digital",
@@ -65,9 +69,9 @@
   "author": "pomali",
   "license": "EUPL-1.2",
   "bugs": {
-    "url": "https://github.com/slovensko-digital/autogram-sdk/issues"
+    "url": "https://github.com/slovensko-digital/autogram-extension/issues"
   },
-  "homepage": "https://github.com/slovensko-digital/autogram-sdk#readme",
+  "homepage": "https://github.com/slovensko-digital/autogram-extension/tree/master/autogram-sdk#readme",
   "devDependencies": {
     "@types/bwip-js": "^3.2.3",
     "@types/jest": "^30.0.0",
