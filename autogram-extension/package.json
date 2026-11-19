@@ -27,6 +27,7 @@
     "build:prod:mv3": "AE_MANIFEST_VERSION=3 npm run webext:build",
     "prebuild:prod:safari": "AE_MANIFEST_VERSION=2 npm run vite:build-prod",
     "build:prod:safari": "AE_MANIFEST_VERSION=2 npm run webext:build",
+    "release:safari": "./scripts/release-safari.sh",
     "vite:build-dev": "AE_INCLUDE_DEBUG_URLS=1 tsx scripts/vite-build-iife.ts",
     "vite:build-prod": "NODE_ENV=production tsx scripts/vite-build-iife.ts",
     "vite:watch": "AE_INCLUDE_DEBUG_URLS=1 tsx scripts/vite-build-iife.ts --watch",
