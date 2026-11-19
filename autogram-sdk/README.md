@@ -234,7 +234,9 @@ The SDK is released by [release-please](https://github.com/googleapis/release-pl
    - Below 1.0.0: `fix` → patch, `feat` and breaking changes (`!` / `BREAKING CHANGE`) → minor.
 2. Merging that PR creates the `autogram-sdk-vX.Y.Z` tag and GitHub release. The `Release` workflow then runs typecheck and tests, builds the package with `npm run build:release` and publishes it to npm.
 
-Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers): npm accepts the GitHub Actions OIDC token from `release.yml` in this repository, so there is no npm token in the repository secrets. It is configured in the package settings on npmjs.com.
+Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers): npm accepts the GitHub Actions OIDC token only from `release.yml` in this repository running in the `npm` environment, so there is no npm token in the repository secrets. It is configured in the package settings on npmjs.com, which also disallow publishing with tokens.
+
+The `npm` environment (Settings → Environments) only allows `master` and needs an approval from the `sro-maintainers` team. The publish job waits until someone from the team approves it under Actions → the run → Review deployments.
 
 ### Using with npm link
 
