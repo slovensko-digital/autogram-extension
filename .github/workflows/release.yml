@@ -65,7 +65,7 @@ jobs:
     if: needs.release-please.outputs.sdk_release_created == 'true'
     runs-on: ubuntu-latest
     # Requires approval by sro-maintainers and only runs on master. npm trusts
-    # only this environment, so no other branch or workflow can publish.
+    # only this environment, so no other branch or workflow can stage a version.
     environment: npm
     permissions:
       contents: write # mark the extension release as latest again
@@ -83,9 +83,9 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing needs npm 11.5.1 or newer.
+      # Staged publishing needs npm 11.15.0 or newer.
       - name: Update npm
-        run: npm install -g npm@11
+        run: npm install -g npm@^11.15.0
 
       - name: Install dependencies
         run: npm ci
@@ -96,9 +96,22 @@ jobs:
       - name: Build
         run: npm run build:release --workspace=autogram-sdk
 
-      - name: Publish to npm
+      # The trusted publisher on npm only allows staging. The version goes live
+      # after a maintainer approves it with 2FA, which OIDC can't do.
+      - name: Stage on npm
         working-directory: autogram-sdk
-        run: npm publish
+        run: npm stage publish
+
+      - name: Ask for approval on npm
+        run: |
+          {
+            echo "### ${TAG} is staged on npm"
+            echo
+            echo "It is not public yet. A maintainer of \`autogram-sdk\` on npm has to approve it with 2FA:"
+            echo
+            echo "- npmjs.com → Staged Packages → Approve, or"
+            echo "- \`npm stage list autogram-sdk\` and \`npm stage approve <stage-id>\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # GitHub marks the newest release as latest. Keep that on the extension
       # release, because the README sends users to the releases for the zips.
