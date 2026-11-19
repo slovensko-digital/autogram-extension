@@ -226,6 +226,20 @@ npm run generate-docs
 
 The [`deploy-pages`](../.github/workflows/deploy-pages.yml) workflow regenerates the docs on every push to `master` and publishes them to https://slovensko-digital.github.io/autogram-extension/autogram-sdk/.
 
+### Release
+
+The SDK is released by [release-please](https://github.com/googleapis/release-please) like the extension (see [DEVELOPERS.md](../autogram-extension/DEVELOPERS.md#release)), but separately from it:
+
+1. Commits that touch `autogram-sdk/` go into their own `chore: release autogram-sdk X.Y.Z` PR. It bumps `package.json`, the root `package-lock.json` and `CHANGELOG.md`.
+   - Below 1.0.0: `fix` → patch, `feat` and breaking changes (`!` / `BREAKING CHANGE`) → minor.
+2. Merging that PR creates the `autogram-sdk-vX.Y.Z` tag and GitHub release. The `publish-sdk` job in the `Release` workflow runs in the `npm` environment, so it waits until someone from the `sro-maintainers` team approves it under Actions → the run → Review deployments.
+3. The job runs typecheck and tests, builds the package with `npm run build:release` and [stages](https://docs.npmjs.com/staged-publishing) it on npm with `npm stage publish`. The staged version is not public yet.
+4. A maintainer of the npm package approves it with 2FA: npmjs.com → Staged Packages → Approve, or `npm stage list autogram-sdk` and `npm stage approve <stage-id>`. Only then is the version published.
+
+The workflow authenticates with [npm trusted publishing](https://docs.npmjs.com/trusted-publishers), so there is no npm token in the repository secrets. On npmjs.com, the trusted publisher accepts only `release.yml` in this repository running in the `npm` environment, and only for `npm stage publish`. Publishing with tokens is disallowed. The `npm` environment (Settings → Environments) only allows `master`.
+
+A new trusted publisher configuration has to complete its first publish within 2 days, otherwise it [expires](https://docs.npmjs.com/trusted-publishers/) and can't be used or edited. If it shows as expired or still pending validation with a past deadline, delete it and create it again with the same settings right before merging the release PR.
+
 ### Using with npm link
 
 1. Run `npm run build:watch` in the autogram-sdk directory
