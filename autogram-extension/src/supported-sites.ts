@@ -33,7 +33,8 @@ export type InjectionStrategy =
 export const CONFLICT_RESOLUTION_REPLACE_ORIGINAL = "replace-original" as const;
 /**
  * Replace `ditec` object with a proxy object wrapping our injected version that will be used instead of the original object,
- * this proxy is immutable, every `set()` operation will be ignored.
+ * Existing members cannot be overwritten; late component scripts may add
+ * their own helper classes without replacing the Autogram adapters.
  */
 export const CONFLICT_RESOLUTION_IMMUTABLE_PROXY = "immutable-proxy" as const;
 
@@ -153,6 +154,15 @@ for (const url of basicUrls) {
     CONFLICT_RESOLUTION_REPLACE_ORIGINAL
   );
 }
+
+// The new SP SPA loads D.Bridge lazily, after the initial page load.
+// Install before those scripts and keep their component assignments from
+// replacing the Autogram adapters (otherwise signing falls back to DB206).
+supportedSites.addSite(
+  "https://esluzby.socpoist.sk/*",
+  DIRECT_INJECTION,
+  CONFLICT_RESOLUTION_IMMUTABLE_PROXY
+);
 
 supportedSites.addSite(
   "https://obcan.justice.sk/*",
